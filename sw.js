@@ -1,10 +1,13 @@
 const CACHE_NAME =
-  "naam-jap-counter-v1";
+  "naam-jap-counter-svg-v3";
 
 const APP_FILES = [
   "./",
   "./index.html",
-  "./manifest.json"
+  "./manifest.json",
+  "./sw.js",
+  "./icon-192.svg",
+  "./icon-512.svg"
 ];
 
 self.addEventListener(
@@ -49,6 +52,12 @@ self.addEventListener(
 self.addEventListener(
   "fetch",
   event => {
+    if (
+      event.request.method !== "GET"
+    ) {
+      return;
+    }
+
     event.respondWith(
       caches.match(event.request)
         .then(cachedResponse => {
@@ -58,6 +67,14 @@ self.addEventListener(
 
           return fetch(event.request)
             .then(networkResponse => {
+              if (
+                !networkResponse ||
+                networkResponse.status !== 200 ||
+                networkResponse.type !== "basic"
+              ) {
+                return networkResponse;
+              }
+
               const responseClone =
                 networkResponse.clone();
 
@@ -87,27 +104,25 @@ self.addEventListener(
     event.notification.close();
 
     event.waitUntil(
-      clients.matchAll({
+      self.clients.matchAll({
         type: "window",
         includeUncontrolled: true
       }).then(clientList => {
         for (
           const client of clientList
         ) {
-          if (
-            "focus" in client
-          ) {
+          if ("focus" in client) {
             return client.focus();
           }
         }
 
-        if (
-          clients.openWindow
-        ) {
-          return clients.openWindow(
+        if (self.clients.openWindow) {
+          return self.clients.openWindow(
             "./index.html"
           );
         }
+
+        return undefined;
       })
     );
   }
