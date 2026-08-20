@@ -2,10 +2,46 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1"
+  />
+
+  <meta
+    name="description"
+    content="Naam Jap Voice Counter is a free online mantra and naam simran counter that uses browser speech recognition."
+  />
+
+  <meta
+    name="keywords"
+    content="naam jap counter, mantra counter, voice jap counter, naam simran counter, online mantra counter"
+  />
+
+  <meta name="robots" content="index, follow" />
   <meta name="theme-color" content="#020617" />
 
-  <title>Naam Jap Voice Counter - Free Online Mantra Counter Tool</title>
+  <link rel="canonical" href="https://yourdomain.com/" />
+
+  <title>
+    Naam Jap Voice Counter - Free Online Mantra Counter
+  </title>
+
+  <!--
+    AdSense approval ke baad apna real publisher ID lagayein.
+
+    Example:
+    ca-pub-XXXXXXXXXXXXXXXX
+
+    Is code ko approval se pehle active na karein.
+  -->
+
+  <!--
+  <script
+    async
+    src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX"
+    crossorigin="anonymous">
+  </script>
+  -->
 
   <style>
     :root {
@@ -54,6 +90,10 @@
         "Segoe UI", sans-serif;
     }
 
+    html {
+      scroll-behavior: smooth;
+    }
+
     body {
       min-height: 100vh;
       display: flex;
@@ -67,7 +107,7 @@
 
     .card {
       width: 100%;
-      max-width: 520px;
+      max-width: 720px;
       background: var(--card-bg);
       border-radius: 24px;
       box-shadow: var(--shadow-main), var(--shadow-outline);
@@ -79,7 +119,7 @@
       display: flex;
       justify-content: center;
       gap: 8px;
-      margin-bottom: 20px;
+      margin-bottom: 22px;
       flex-wrap: wrap;
     }
 
@@ -87,7 +127,7 @@
       background: transparent;
       border: 1px solid var(--border);
       color: var(--text);
-      padding: 6px 12px;
+      padding: 7px 12px;
       border-radius: 999px;
       font-size: 0.8rem;
       cursor: pointer;
@@ -110,25 +150,6 @@
       display: block;
     }
 
-    .static-page h2 {
-      font-size: 1.25rem;
-      margin-bottom: 12px;
-      color: #2563eb;
-    }
-
-    .static-page p,
-    .static-page li {
-      font-size: 0.85rem;
-      line-height: 1.5;
-      color: var(--subtext);
-      margin-bottom: 10px;
-    }
-
-    .static-page ul {
-      padding-left: 20px;
-      margin-bottom: 10px;
-    }
-
     .title-row {
       display: flex;
       align-items: center;
@@ -138,8 +159,8 @@
     }
 
     .title {
-      font-size: 1.35rem;
-      font-weight: 700;
+      font-size: 1.4rem;
+      font-weight: 750;
     }
 
     .theme-btn {
@@ -147,28 +168,29 @@
       border: 1px solid var(--border);
       background: transparent;
       font-size: 0.78rem;
-      padding: 5px 10px;
+      padding: 6px 10px;
       cursor: pointer;
       color: var(--subtext);
+      white-space: nowrap;
     }
 
     .subtitle {
-      font-size: 0.8rem;
+      font-size: 0.82rem;
       color: var(--subtext);
       margin-bottom: 18px;
     }
 
     .field-label {
       font-size: 0.82rem;
-      margin-bottom: 4px;
+      margin-bottom: 5px;
       color: var(--text);
-      font-weight: 500;
+      font-weight: 600;
     }
 
     .input,
     select {
       width: 100%;
-      padding: 9px 11px;
+      padding: 10px 11px;
       border-radius: 11px;
       border: 1px solid var(--border);
       font-size: 0.9rem;
@@ -191,7 +213,7 @@
     .row {
       display: flex;
       gap: 10px;
-      margin-bottom: 12px;
+      margin-bottom: 13px;
       flex-wrap: wrap;
     }
 
@@ -202,9 +224,9 @@
       font-size: 0.78rem;
       background: var(--pill-bg);
       border-radius: 999px;
-      padding: 4px 9px;
+      padding: 5px 9px;
       color: var(--pill-text);
-      margin-bottom: 4px;
+      margin-bottom: 5px;
     }
 
     .pill-error {
@@ -243,7 +265,7 @@
     }
 
     .count-box {
-      margin: 12px 0 14px;
+      margin: 14px 0 16px;
       text-align: center;
     }
 
@@ -252,19 +274,19 @@
       letter-spacing: 0.08em;
       text-transform: uppercase;
       color: var(--subtext);
-      margin-bottom: 4px;
+      margin-bottom: 5px;
     }
 
     .count-value {
-      font-size: 3rem;
+      font-size: 3.2rem;
       font-weight: 800;
       line-height: 1;
     }
 
     .count-note {
-      font-size: 0.72rem;
+      font-size: 0.74rem;
       color: var(--subtext);
-      margin-top: 5px;
+      margin-top: 6px;
       word-break: break-word;
     }
 
@@ -276,11 +298,11 @@
 
     .btn {
       flex: 1;
-      padding: 9px 12px;
+      padding: 10px 12px;
       border-radius: 999px;
       border: none;
       font-size: 0.9rem;
-      font-weight: 600;
+      font-weight: 650;
       cursor: pointer;
       display: inline-flex;
       align-items: center;
@@ -311,7 +333,7 @@
 
     .btn-secondary {
       flex: 0 0 auto;
-      padding-inline: 12px;
+      padding-inline: 14px;
       font-size: 0.8rem;
       background: var(--reset-bg);
       color: var(--reset-text);
@@ -319,7 +341,7 @@
 
     .btn-stop {
       flex: 0 0 auto;
-      padding-inline: 12px;
+      padding-inline: 14px;
       font-size: 0.8rem;
       background: var(--stop-bg);
       color: var(--stop-text);
@@ -328,7 +350,7 @@
     .status {
       font-size: 0.78rem;
       color: var(--pill-text);
-      margin-bottom: 8px;
+      margin-bottom: 9px;
       min-height: 18px;
     }
 
@@ -340,11 +362,11 @@
       border-radius: 12px;
       background: var(--transcript-bg);
       border: 1px dashed var(--transcript-border);
-      padding: 8px 9px;
+      padding: 9px;
       font-size: 0.8rem;
       color: var(--pill-text);
-      max-height: 90px;
-      min-height: 38px;
+      max-height: 100px;
+      min-height: 40px;
       overflow-y: auto;
       white-space: pre-wrap;
     }
@@ -355,21 +377,80 @@
     }
 
     .seo-content {
-      margin-top: 20px;
+      margin-top: 22px;
       border-top: 1px solid var(--border);
-      padding-top: 15px;
+      padding-top: 17px;
+    }
+
+    .seo-content h2,
+    .seo-content h3 {
+      margin-bottom: 7px;
+      line-height: 1.3;
+    }
+
+    .seo-content h2 {
+      font-size: 1.15rem;
+      color: #2563eb;
     }
 
     .seo-content h3 {
-      font-size: 0.95rem;
-      margin-bottom: 6px;
+      font-size: 0.98rem;
+      margin-top: 15px;
     }
 
-    .seo-content p {
-      font-size: 0.78rem;
+    .seo-content p,
+    .static-page p,
+    .static-page li {
+      font-size: 0.82rem;
       color: var(--subtext);
-      line-height: 1.5;
+      line-height: 1.6;
       margin-bottom: 10px;
+    }
+
+    .static-page h2 {
+      font-size: 1.25rem;
+      margin-bottom: 13px;
+      color: #2563eb;
+    }
+
+    .static-page ul {
+      padding-left: 20px;
+      margin-bottom: 12px;
+    }
+
+    .static-page strong,
+    .seo-content strong {
+      color: var(--text);
+    }
+
+    .ad-container {
+      width: 100%;
+      min-height: 90px;
+      margin: 20px 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      border-radius: 10px;
+    }
+
+    .ad-label {
+      font-size: 0.68rem;
+      color: var(--subtext);
+      text-align: center;
+      margin-bottom: 4px;
+    }
+
+    .notice-box {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 11px;
+      margin: 15px 0;
+      background: var(--pill-bg);
+    }
+
+    .notice-box p {
+      margin-bottom: 0;
     }
 
     footer {
@@ -377,6 +458,7 @@
       color: var(--subtext);
       text-align: center;
       margin-top: 10px;
+      line-height: 1.5;
     }
 
     @media (max-width: 480px) {
@@ -404,14 +486,19 @@
       .btn-primary {
         flex: 1 1 100%;
       }
+
+      .btn-stop,
+      .btn-secondary {
+        flex: 1;
+      }
     }
   </style>
 </head>
 
 <body>
-  <div class="card">
+  <main class="card">
     <!-- Navigation -->
-    <div class="nav-bar">
+    <nav class="nav-bar" aria-label="Main navigation">
       <a href="#home" class="nav-link active" data-page="home">
         Home
       </a>
@@ -431,27 +518,40 @@
       <a href="#contact" class="nav-link" data-page="contact">
         Contact
       </a>
-    </div>
+    </nav>
 
     <!-- Home -->
-    <div id="page-home" class="page-content active">
+    <section id="page-home" class="page-content active">
       <div class="title-row">
-        <div class="title">Naam Jap Voice Counter</div>
+        <h1 class="title">
+          Naam Jap Voice Counter
+        </h1>
 
-        <button id="themeToggle" class="theme-btn" type="button">
+        <button
+          id="themeToggle"
+          class="theme-btn"
+          type="button"
+          aria-label="Toggle dark mode">
           🌙 Dark
         </button>
       </div>
 
-      <div class="subtitle">
+      <p class="subtitle">
         Mic se jo naam bologe, wahi count hoga 📿
-      </div>
+      </p>
+
+      <!-- Optional Ad Placement 1
+      Approval ke baad actual AdSense code yahan lagayein.
+      Is ad ko buttons ke paas na lagayein.
+      -->
 
       <div class="row">
         <div style="flex: 1 1 100%;">
-          <div class="field-label">
+          <label
+            class="field-label"
+            for="mantraInput">
             Jap / Naam comma se alag-alag likhein
-          </div>
+          </label>
 
           <input
             id="mantraInput"
@@ -459,188 +559,438 @@
             type="text"
             value="ram, raam"
             placeholder="Jaise: ram, raam, om, allah"
-            autocomplete="off"
-          />
+            autocomplete="off" />
         </div>
       </div>
 
       <div class="row">
         <div style="flex: 1 1 100%;">
-          <div class="field-label">
+          <label
+            class="field-label"
+            for="languageSelect">
             Recognition language
-          </div>
+          </label>
 
           <select id="languageSelect">
-            <option value="hi-IN">Hindi - India</option>
-            <option value="en-IN">English - India</option>
-            <option value="en-US">English - US</option>
+            <option value="hi-IN">
+              Hindi - India
+            </option>
+
+            <option value="en-IN">
+              English - India
+            </option>
+
+            <option value="en-US">
+              English - US
+            </option>
           </select>
         </div>
       </div>
 
-      <div class="pill" id="supportPill">
+      <div
+        class="pill"
+        id="supportPill"
+        role="status">
         <span class="pill-dot"></span>
-        <span id="supportText">Speech ready</span>
+        <span id="supportText">
+          Speech ready
+        </span>
       </div>
 
       <div class="count-box">
-        <div class="count-label">Total Jap Count</div>
+        <div class="count-label">
+          Total Jap Count
+        </div>
 
-        <div class="count-value" id="countDisplay">
+        <div
+          class="count-value"
+          id="countDisplay"
+          aria-live="polite">
           0
         </div>
 
-        <div class="count-note" id="mantraPreview">
+        <div
+          class="count-note"
+          id="mantraPreview">
           Counting: "ram", "raam"
         </div>
       </div>
 
+      <!-- Action buttons ke paas ads nahi hain -->
       <div class="btn-row">
-        <button id="startBtn" class="btn btn-primary" type="button">
+        <button
+          id="startBtn"
+          class="btn btn-primary"
+          type="button">
           <span id="startIcon">▶</span>
-          <span id="startLabel">Start Listening</span>
+          <span id="startLabel">
+            Start Listening
+          </span>
         </button>
 
-        <button id="stopBtn" class="btn btn-stop" type="button" disabled>
+        <button
+          id="stopBtn"
+          class="btn btn-stop"
+          type="button"
+          disabled>
           ■ Stop
         </button>
 
-        <button id="resetBtn" class="btn btn-secondary" type="button">
+        <button
+          id="resetBtn"
+          class="btn btn-secondary"
+          type="button">
           Reset
         </button>
       </div>
 
-      <div class="status" id="statusText"></div>
-
-      <div class="field-label">
-        Latest suna hua text
+      <div
+        class="status"
+        id="statusText"
+        role="status"
+        aria-live="polite">
       </div>
 
-      <div class="transcript-box" id="transcriptBox">
+      <label class="field-label" for="transcriptBox">
+        Latest suna hua text
+      </label>
+
+      <div
+        class="transcript-box"
+        id="transcriptBox"
+        aria-live="polite">
         <span class="transcript-placeholder">
           Yaha last suna hua sentence dikhega…
         </span>
       </div>
 
-      <div class="seo-content">
-        <h3>Naam Jap Ke Labh aur Mahatva</h3>
+      <article class="seo-content">
+        <h2>
+          Free Naam Jap Voice Counter
+        </h2>
 
         <p>
-          Bhagwan ka naam simran ya jap karna man ko shanti deta hai.
-          Yeh digital voice counter aapke haath ko free rakhta hai,
-          taaki aapka dhyan meditation aur bhakti par rahe.
+          Naam Jap Voice Counter ek free online tool hai jo mantra
+          repetition, naam simran, meditation aur devotional practice
+          ko track karne mein madad karta hai.
         </p>
 
         <p>
-          Aap apna mantra comma se alag-alag enter karke hands-free
-          jap counting kar sakte hain.
+          Is tool mein aap apna mantra ya naam enter kar sakte hain.
+          Microphone start karne ke baad browser speech recognition
+          aapki speech ko recognize karta hai aur matching words ka
+          count screen par dikhata hai.
         </p>
+
+        <h3>
+          Is Tool Ko Kaise Use Karein?
+        </h3>
+
+        <p>
+          Sabse pehle input box mein mantra likhein. Agar aap multiple
+          names count karna chahte hain, toh unhe comma se separate
+          karein. Uske baad correct language select karke
+          <strong>Start Listening</strong> button press karein.
+        </p>
+
+        <p>
+          Jap complete hone ke baad <strong>Stop</strong> button press
+          karein. Aapka count browser mein save rahega. Count ko
+          dobara zero karne ke liye <strong>Reset</strong> button ka
+          use karein.
+        </p>
+
+        <h3>
+          Voice Counting Ki Accuracy
+        </h3>
+
+        <p>
+          Speech recognition ki accuracy microphone quality,
+          pronunciation, selected language, internet connection aur
+          background noise par depend karti hai.
+        </p>
+
+        <p>
+          Kabhi-kabhi browser kisi word ko galat samajh sakta hai.
+          Isliye transcript aur displayed count ko check karna
+          important hai.
+        </p>
+
+        <h3>
+          Naam Jap Aur Meditation
+        </h3>
+
+        <p>
+          Naam jap aur mantra repetition kai logon ke liye daily
+          meditation aur spiritual routine ka hissa hota hai. Digital
+          counter ek simple tracking aid provide karta hai, jisse
+          manual counting ke bina practice ka record maintain kiya ja
+          sakta hai.
+        </p>
+
+        <div class="notice-box">
+          <p>
+            <strong>Important:</strong>
+            Yeh tool personal meditation aur devotional practice ke
+            liye hai. Speech recognition result ko official religious,
+            medical, legal, ya financial record na samjhein.
+          </p>
+        </div>
+      </article>
+
+      <!-- Optional Ad Placement 2 -->
+      <div class="ad-label">
+        Advertisement
       </div>
-    </div>
+
+      <div class="ad-container">
+        <!--
+        AdSense approval ke baad example:
+
+        <ins
+          class="adsbygoogle"
+          style="display:block"
+          data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+          data-ad-slot="1234567890"
+          data-ad-format="auto"
+          data-full-width-responsive="true">
+        </ins>
+
+        <script>
+          (adsbygoogle = window.adsbygoogle || []).push({});
+        </script>
+        -->
+      </div>
+    </section>
 
     <!-- About -->
-    <div id="page-about" class="page-content static-page">
-      <h2>About Us</h2>
+    <section id="page-about" class="page-content static-page">
+      <h2>
+        About Us
+      </h2>
 
       <p>
-        Welcome to <strong>Naam Jap Voice Counter</strong>, a modern
-        web utility designed to simplify spiritual counting and
-        meditation tracking through browser speech recognition.
+        Naam Jap Voice Counter ek browser-based online utility hai jo
+        users ko mantra repetition aur naam simran track karne mein
+        help karti hai.
       </p>
 
       <p>
-        Hamara maksad sadhako ko ek aasaan digital madhyam dena hai,
-        jisse woh bina physical mala ya clicker ke apna jap track
-        kar saken.
+        Is website ka purpose ek simple hands-free counting experience
+        provide karna hai. Users apna preferred naam ya mantra enter
+        karke microphone ke through matching words count kar sakte hain.
       </p>
 
       <p>
-        Yeh tool personal meditation aur devotional practice ke liye
-        banaya gaya hai.
+        Hamara goal meditation, prayer aur devotional practice ko
+        simple aur accessible banana hai.
       </p>
-    </div>
+
+      <p>
+        Yeh website traditional mala, spiritual teacher, medical
+        advice, ya personal religious practice ka replacement nahi hai.
+        Yeh sirf ek digital counting aid hai.
+      </p>
+
+      <p>
+        Website ke features browser support aur speech recognition
+        technology ke according kaam karte hain.
+      </p>
+    </section>
 
     <!-- Privacy -->
-    <div id="page-privacy" class="page-content static-page">
-      <h2>Privacy Policy</h2>
+    <section id="page-privacy" class="page-content static-page">
+      <h2>
+        Privacy Policy
+      </h2>
 
       <p>
         Last updated: August 2026
       </p>
 
       <p>
-        Naam Jap Voice Counter khud aapki voice audio ko record ya
-        permanently store nahi karta.
+        Naam Jap Voice Counter respects your privacy. Yeh website
+        browser-based speech recognition aur meditation counting tool
+        provide karti hai.
       </p>
 
       <p>
-        Speech recognition browser ke speech recognition system par
-        depend karta hai. Browser aur operating system ke hisaab se
-        processing local ya browser-supported service ke through ho
-        sakti hai.
+        Hum aapki microphone audio ko intentionally record, sell,
+        store, ya apne server par permanently save nahi karte.
       </p>
 
       <p>
-        <strong>Local Storage:</strong> Browser local storage ka use
-        jap count, selected language aur theme preference save karne
-        ke liye hota hai.
+        Speech recognition browser-supported technology ke through
+        work karta hai. Browser, device aur settings ke according
+        speech processing local ya browser-supported service ke
+        through ho sakti hai.
       </p>
 
       <p>
-        <strong>Third-Party Ads:</strong> Future mein website par
-        third-party advertising services use ki ja sakti hain.
+        <strong>Microphone Permission:</strong>
+        Microphone permission sirf tab request ki ja sakti hai jab aap
+        Start Listening button press karte hain. Aap permission deny
+        bhi kar sakte hain.
       </p>
-    </div>
+
+      <p>
+        <strong>Local Storage:</strong>
+        Website browser local storage ka use jap count, selected
+        language aur theme preference save karne ke liye kar sakti hai.
+      </p>
+
+      <p>
+        Local storage mein save information aapke browser mein rehti
+        hai aur hum ise intentionally apne server par send nahi karte.
+      </p>
+
+      <p>
+        <strong>Advertising Cookies:</strong>
+        Agar Google AdSense ya koi other advertising service enable ki
+        jaati hai, toh advertising partners cookies, web beacons, IP
+        addresses ya similar technologies ka use ads serve karne,
+        ad performance measure karne aur invalid activity prevent
+        karne ke liye kar sakte hain.
+      </p>
+
+      <p>
+        Third parties users ke browser par cookies place aur read kar
+        sakti hain ya ads serve karne ke result mein web beacons ka
+        use kar sakti hain.
+      </p>
+
+      <p>
+        Google advertising cookies ka use relevant advertisements
+        serve karne ke liye kar sakta hai. Users Google Ads Settings
+        ke through personalized advertising choices manage kar sakte
+        hain.
+      </p>
+
+      <p>
+        <strong>Third-Party Services:</strong>
+        Website future mein Google AdSense, analytics, hosting, ya
+        browser speech recognition services ka use kar sakti hai.
+        Third-party services apni respective privacy policies ke
+        according information process kar sakti hain.
+      </p>
+
+      <p>
+        <strong>Children's Privacy:</strong>
+        Yeh website children se knowingly personal information collect
+        karne ke liye design nahi ki gayi hai.
+      </p>
+
+      <p>
+        <strong>Policy Updates:</strong>
+        Hum is Privacy Policy ko time to time update kar sakte hain.
+        Changes isi page par updated date ke saath publish kiye jayenge.
+      </p>
+
+      <p>
+        Privacy ke baare mein question ho toh contact karein:
+        <strong>yourrealemail@gmail.com</strong>
+      </p>
+    </section>
 
     <!-- Terms -->
-    <div id="page-terms" class="page-content static-page">
-      <h2>Terms &amp; Conditions</h2>
+    <section id="page-terms" class="page-content static-page">
+      <h2>
+        Terms &amp; Conditions
+      </h2>
 
       <p>
-        Is website ko use karke aap in terms and conditions se agree
-        karte hain.
+        Last updated: August 2026
+      </p>
+
+      <p>
+        Naam Jap Voice Counter website use karke aap in Terms and
+        Conditions se agree karte hain.
       </p>
 
       <ul>
         <li>
-          Yeh tool "as is" basis par provide kiya gaya hai.
+          Website personal meditation, devotional aur counting
+          purposes ke liye provide ki gayi hai.
         </li>
 
         <li>
-          Speech recognition ki accuracy microphone, background noise,
-          language aur browser support par depend karti hai.
+          Website "as is" aur "as available" basis par provide ki
+          jaati hai.
         </li>
 
         <li>
-          Yeh tool personal meditation aur devotional purpose ke liye
-          use kiya ja sakta hai.
+          Speech recognition accuracy browser, microphone, language,
+          pronunciation, internet connection aur background noise par
+          depend kar sakti hai.
         </li>
 
         <li>
-          Voice recognition galat ho sakta hai, isliye count ko
-          official record na samjhein.
+          Displayed jap count ko official religious, medical, legal,
+          financial ya professional record na samjhein.
+        </li>
+
+        <li>
+          Users website ko damage karne, misuse karne ya normal
+          operation mein interfere karne ki koshish nahi karenge.
+        </li>
+
+        <li>
+          Website ke features ko kabhi bhi update, suspend ya
+          discontinue kiya ja sakta hai.
+        </li>
+
+        <li>
+          Hum speech recognition errors, browser problems, service
+          interruptions ya local data loss ke liye responsible nahi
+          honge.
+        </li>
+
+        <li>
+          Users ko advertisements par accidental ya invalid clicks
+          generate nahi karne chahiye.
         </li>
       </ul>
-    </div>
-
-    <!-- Contact -->
-    <div id="page-contact" class="page-content static-page">
-      <h2>Contact Us</h2>
 
       <p>
-        Agar aapko is tool mein problem aati hai ya aap koi feature
-        suggest karna chahte hain, toh humse contact karein.
+        Agar aap in terms se agree nahi karte, toh website ka use
+        band kar dein.
+      </p>
+    </section>
+
+    <!-- Contact -->
+    <section id="page-contact" class="page-content static-page">
+      <h2>
+        Contact Us
+      </h2>
+
+      <p>
+        Agar aapko website use karte waqt problem aaye, bug mile, ya
+        koi feature suggest karna ho, toh humse contact karein.
       </p>
 
       <p>
         Email:
-        <strong>support@naamjapcounter.com</strong>
+        <strong>yourrealemail@gmail.com</strong>
       </p>
-    </div>
-  </div>
+
+      <p>
+        Contact karte waqt problem ka short description aur apne
+        browser/device ki information share karein.
+      </p>
+    </section>
+  </main>
 
   <footer>
-    &copy; 2026 Naam Jap Voice Counter. All rights reserved.
+    <p>
+      &copy; 2026 Naam Jap Voice Counter. All rights reserved.
+    </p>
+
+    <p>
+      Use of this website is subject to our
+      <a href="#privacy">Privacy Policy</a>
+      and
+      <a href="#terms">Terms &amp; Conditions</a>.
+    </p>
   </footer>
 
   <script>
@@ -700,19 +1050,44 @@
     // --------------------------------
 
     const mantraInput = document.getElementById("mantraInput");
-    const languageSelect = document.getElementById("languageSelect");
-    const supportText = document.getElementById("supportText");
-    const supportPill = document.getElementById("supportPill");
-    const countDisplay = document.getElementById("countDisplay");
-    const mantraPreview = document.getElementById("mantraPreview");
-    const startBtn = document.getElementById("startBtn");
-    const stopBtn = document.getElementById("stopBtn");
-    const startIcon = document.getElementById("startIcon");
-    const startLabel = document.getElementById("startLabel");
-    const resetBtn = document.getElementById("resetBtn");
-    const statusText = document.getElementById("statusText");
-    const transcriptBox = document.getElementById("transcriptBox");
-    const themeToggle = document.getElementById("themeToggle");
+    const languageSelect =
+      document.getElementById("languageSelect");
+
+    const supportText =
+      document.getElementById("supportText");
+
+    const supportPill =
+      document.getElementById("supportPill");
+
+    const countDisplay =
+      document.getElementById("countDisplay");
+
+    const mantraPreview =
+      document.getElementById("mantraPreview");
+
+    const startBtn =
+      document.getElementById("startBtn");
+
+    const stopBtn =
+      document.getElementById("stopBtn");
+
+    const startIcon =
+      document.getElementById("startIcon");
+
+    const startLabel =
+      document.getElementById("startLabel");
+
+    const resetBtn =
+      document.getElementById("resetBtn");
+
+    const statusText =
+      document.getElementById("statusText");
+
+    const transcriptBox =
+      document.getElementById("transcriptBox");
+
+    const themeToggle =
+      document.getElementById("themeToggle");
 
     // --------------------------------
     // Speech Recognition
@@ -729,44 +1104,54 @@
     let finalTranscript = "";
 
     /*
-      Every new Start gets a new session ID.
-      Stop ke baad purane session ka late result ignore hoga.
+      Har Start par unique session ID banega.
+      Stop ke baad old result event ignore ho jayega.
     */
     let sessionCounter = 0;
     let activeSessionId = 0;
 
     // --------------------------------
-    // Load Saved Data
+    // Load Local Data
     // --------------------------------
 
-    const savedCount = localStorage.getItem("japCount");
+    const savedCount =
+      localStorage.getItem("japCount");
 
     if (savedCount !== null) {
-      const parsedCount = parseInt(savedCount, 10);
+      const parsedCount =
+        parseInt(savedCount, 10);
 
-      if (!Number.isNaN(parsedCount) && parsedCount >= 0) {
+      if (
+        !Number.isNaN(parsedCount) &&
+        parsedCount >= 0
+      ) {
         totalCount = parsedCount;
-        countDisplay.textContent = String(totalCount);
+        countDisplay.textContent =
+          String(totalCount);
       }
     }
 
-    const savedLanguage = localStorage.getItem("japLanguage");
+    const savedLanguage =
+      localStorage.getItem("japLanguage");
 
     if (savedLanguage) {
       languageSelect.value = savedLanguage;
     }
 
-    if (localStorage.getItem("japTheme") === "dark") {
+    if (
+      localStorage.getItem("japTheme") === "dark"
+    ) {
       document.body.classList.add("dark");
       themeToggle.textContent = "☀️ Light";
     }
 
     // --------------------------------
-    // Theme
+    // Theme Toggle
     // --------------------------------
 
     themeToggle.addEventListener("click", () => {
-      const isDark = document.body.classList.toggle("dark");
+      const isDark =
+        document.body.classList.toggle("dark");
 
       localStorage.setItem(
         "japTheme",
@@ -779,7 +1164,7 @@
     });
 
     // --------------------------------
-    // Language
+    // Language Change
     // --------------------------------
 
     languageSelect.addEventListener("change", () => {
@@ -789,16 +1174,20 @@
       );
 
       if (recognition && !listening) {
-        recognition.lang = languageSelect.value;
+        recognition.lang =
+          languageSelect.value;
       }
 
-      statusText.classList.remove("status-error");
+      statusText.classList.remove(
+        "status-error"
+      );
+
       statusText.textContent =
         "Language update ho gayi.";
     });
 
     // --------------------------------
-    // Helpers
+    // Helper Functions
     // --------------------------------
 
     function updateTargetWords() {
@@ -806,7 +1195,9 @@
 
       targetWords = raw
         .split(",")
-        .map((word) => word.trim().toLowerCase())
+        .map((word) =>
+          word.trim().toLowerCase()
+        )
         .filter(Boolean);
 
       if (targetWords.length === 0) {
@@ -814,7 +1205,9 @@
           "No mantra set - please enter at least one.";
       } else {
         mantraPreview.textContent =
-          'Counting: "' + targetWords.join('", "') + '"';
+          'Counting: "' +
+          targetWords.join('", "') +
+          '"';
       }
     }
 
@@ -828,9 +1221,12 @@
         stopBtn.disabled = false;
 
         startIcon.textContent = "●";
-        startLabel.textContent = "Listening...";
+        startLabel.textContent =
+          "Listening...";
 
-        supportText.textContent = "Mic active";
+        supportText.textContent =
+          "Mic active";
+
         statusText.textContent =
           "Sunn raha hoon… jap bolo.";
       } else {
@@ -840,22 +1236,29 @@
         stopBtn.disabled = true;
 
         startIcon.textContent = "▶";
-        startLabel.textContent = "Start Listening";
+        startLabel.textContent =
+          "Start Listening";
 
-        supportText.textContent = "Speech ready";
+        supportText.textContent =
+          "Speech ready";
       }
     }
 
     function showTranscript(text) {
       transcriptBox.textContent = text;
-      transcriptBox.scrollTop = transcriptBox.scrollHeight;
+      transcriptBox.scrollTop =
+        transcriptBox.scrollHeight;
     }
 
     function resetTranscriptPlaceholder() {
       transcriptBox.innerHTML = "";
 
-      const span = document.createElement("span");
-      span.className = "transcript-placeholder";
+      const span =
+        document.createElement("span");
+
+      span.className =
+        "transcript-placeholder";
+
       span.textContent =
         "Yaha last suna hua sentence dikhega…";
 
@@ -865,12 +1268,18 @@
     function normalizeText(text) {
       return text
         .toLowerCase()
-        .replace(/[।,.;:!?()[\]{}"'`]/g, " ")
+        .replace(
+          /[।,.;:!?()[\]{}"'`]/g,
+          " "
+        )
         .replace(/\s+/g, " ")
         .trim();
     }
 
-    function countOccurrences(text, targetList) {
+    function countOccurrences(
+      text,
+      targetList
+    ) {
       const tokens = normalizeText(text)
         .split(" ")
         .filter(Boolean);
@@ -884,9 +1293,14 @@
       supportText.textContent =
         "⚠ Speech support available nahi hai";
 
-      supportPill.classList.add("pill-error");
+      supportPill.classList.add(
+        "pill-error"
+      );
 
-      statusText.classList.add("status-error");
+      statusText.classList.add(
+        "status-error"
+      );
+
       statusText.textContent =
         "SpeechRecognition ke liye Chrome ya Edge use karo.";
 
@@ -896,7 +1310,7 @@
     }
 
     // --------------------------------
-    // Create Recognition
+    // Create Recognition Session
     // --------------------------------
 
     function createRecognition() {
@@ -905,141 +1319,198 @@
         return null;
       }
 
-      const currentSessionId = ++sessionCounter;
-      activeSessionId = currentSessionId;
+      const currentSessionId =
+        ++sessionCounter;
 
-      const currentRecognition = new SpeechRecognition();
+      activeSessionId =
+        currentSessionId;
+
+      const currentRecognition =
+        new SpeechRecognition();
 
       currentRecognition.continuous = true;
       currentRecognition.interimResults = true;
       currentRecognition.maxAlternatives = 1;
-      currentRecognition.lang = languageSelect.value;
+      currentRecognition.lang =
+        languageSelect.value;
 
-      currentRecognition.processedFinalIndexes = new Set();
+      currentRecognition.processedFinalIndexes =
+        new Set();
 
       currentRecognition.onstart = () => {
-        if (currentSessionId !== activeSessionId) {
+        if (
+          currentSessionId !==
+          activeSessionId
+        ) {
           return;
         }
 
         setListeningState(true);
 
-        supportPill.classList.remove("pill-error");
-        statusText.classList.remove("status-error");
+        supportPill.classList.remove(
+          "pill-error"
+        );
+
+        statusText.classList.remove(
+          "status-error"
+        );
       };
 
-      currentRecognition.onresult = (event) => {
-        /*
-          Important:
-          Agar yeh purane recognition session ka event hai,
-          toh usko ignore karo.
-        */
-        if (currentSessionId !== activeSessionId) {
-          return;
-        }
-
-        if (!listening) {
-          return;
-        }
-
-        let interimTranscript = "";
-        let added = 0;
-
-        for (
-          let i = event.resultIndex;
-          i < event.results.length;
-          i++
-        ) {
-          const result = event.results[i];
-          const transcript = result[0].transcript.trim();
-
-          if (result.isFinal) {
-            if (
-              !currentRecognition.processedFinalIndexes.has(i)
-            ) {
-              added += countOccurrences(
-                transcript,
-                targetWords
-              );
-
-              currentRecognition.processedFinalIndexes.add(i);
-              finalTranscript += transcript + " ";
-            }
-          } else {
-            interimTranscript += transcript + " ";
+      currentRecognition.onresult =
+        (event) => {
+          /*
+            Old session ke result ko ignore karo.
+          */
+          if (
+            currentSessionId !==
+            activeSessionId
+          ) {
+            return;
           }
-        }
 
-        const visibleTranscript =
-          (finalTranscript + interimTranscript).trim();
+          if (!listening) {
+            return;
+          }
 
-        if (visibleTranscript) {
-          showTranscript(visibleTranscript);
-        }
+          let interimTranscript = "";
+          let added = 0;
 
-        if (added > 0) {
-          totalCount += added;
+          for (
+            let i = event.resultIndex;
+            i < event.results.length;
+            i++
+          ) {
+            const result =
+              event.results[i];
 
-          countDisplay.textContent = String(totalCount);
+            const transcript =
+              result[0].transcript.trim();
 
-          localStorage.setItem(
-            "japCount",
-            String(totalCount)
+            if (result.isFinal) {
+              if (
+                !currentRecognition
+                  .processedFinalIndexes
+                  .has(i)
+              ) {
+                added += countOccurrences(
+                  transcript,
+                  targetWords
+                );
+
+                currentRecognition
+                  .processedFinalIndexes
+                  .add(i);
+
+                finalTranscript +=
+                  transcript + " ";
+              }
+            } else {
+              interimTranscript +=
+                transcript + " ";
+            }
+          }
+
+          const visibleTranscript =
+            (
+              finalTranscript +
+              interimTranscript
+            ).trim();
+
+          if (visibleTranscript) {
+            showTranscript(
+              visibleTranscript
+            );
+          }
+
+          if (added > 0) {
+            totalCount += added;
+
+            countDisplay.textContent =
+              String(totalCount);
+
+            localStorage.setItem(
+              "japCount",
+              String(totalCount)
+            );
+
+            statusText.classList.remove(
+              "status-error"
+            );
+
+            statusText.textContent =
+              `+${added} jap detect hua. Total: ${totalCount}`;
+          }
+        };
+
+      currentRecognition.onerror =
+        (event) => {
+          if (
+            currentSessionId !==
+            activeSessionId
+          ) {
+            return;
+          }
+
+          if (event.error === "aborted") {
+            return;
+          }
+
+          statusText.classList.add(
+            "status-error"
           );
 
-          statusText.classList.remove("status-error");
-          statusText.textContent =
-            `+${added} jap detect hua. Total: ${totalCount}`;
-        }
-      };
-
-      currentRecognition.onerror = (event) => {
-        if (currentSessionId !== activeSessionId) {
-          return;
-        }
-
-        if (event.error === "aborted") {
-          return;
-        }
-
-        statusText.classList.add("status-error");
-
-        if (
-          event.error === "not-allowed" ||
-          event.error === "service-not-allowed"
-        ) {
-          statusText.textContent =
-            "Mic permission allow karo, phir dobara Start dabao.";
-        } else if (event.error === "no-speech") {
-          statusText.textContent =
-            "Koi speech detect nahi hui.";
-        } else if (event.error === "audio-capture") {
-          statusText.textContent =
-            "Microphone available nahi hai.";
-        } else if (event.error === "network") {
-          statusText.textContent =
-            "Speech service/network error.";
-        } else {
-          statusText.textContent =
-            "Speech error: " + event.error;
-        }
-      };
+          if (
+            event.error === "not-allowed" ||
+            event.error ===
+              "service-not-allowed"
+          ) {
+            statusText.textContent =
+              "Mic permission allow karo, phir dobara Start dabao.";
+          } else if (
+            event.error === "no-speech"
+          ) {
+            statusText.textContent =
+              "Koi speech detect nahi hui.";
+          } else if (
+            event.error === "audio-capture"
+          ) {
+            statusText.textContent =
+              "Microphone available nahi hai.";
+          } else if (
+            event.error === "network"
+          ) {
+            statusText.textContent =
+              "Speech service/network error.";
+          } else {
+            statusText.textContent =
+              "Speech error: " +
+              event.error;
+          }
+        };
 
       currentRecognition.onend = () => {
-        if (currentSessionId !== activeSessionId) {
+        if (
+          currentSessionId !==
+          activeSessionId
+        ) {
           return;
         }
 
         listening = false;
 
         startBtn.disabled = false;
-        startBtn.classList.remove("disabled");
+        startBtn.classList.remove(
+          "disabled"
+        );
 
         stopBtn.disabled = true;
 
         startIcon.textContent = "▶";
-        startLabel.textContent = "Start Listening";
-        supportText.textContent = "Speech ready";
+        startLabel.textContent =
+          "Start Listening";
+
+        supportText.textContent =
+          "Speech ready";
 
         statusText.textContent =
           "Listening stopped.";
@@ -1056,25 +1527,28 @@
       updateTargetWords();
 
       if (targetWords.length === 0) {
-        statusText.classList.add("status-error");
+        statusText.classList.add(
+          "status-error"
+        );
+
         statusText.textContent =
           "Pehle mantra likho.";
+
         return;
       }
 
       if (listening) {
         statusText.textContent =
           "Recognition already running hai.";
+
         return;
       }
 
       finalTranscript = "";
       resetTranscriptPlaceholder();
 
-      /*
-        Har Start par new recognition object banta hai.
-      */
-      recognition = createRecognition();
+      recognition =
+        createRecognition();
 
       if (!recognition) {
         return;
@@ -1083,9 +1557,15 @@
       try {
         recognition.start();
       } catch (error) {
-        console.error("Start error:", error);
+        console.error(
+          "Start error:",
+          error
+        );
 
-        if (error.name === "InvalidStateError") {
+        if (
+          error.name ===
+          "InvalidStateError"
+        ) {
           statusText.textContent =
             "Recognition already running hai.";
         } else {
@@ -1105,26 +1585,36 @@
       }
 
       /*
-        Session ID turant change kar do.
-        Stop ke baad old recognition ka koi bhi
-        late result ignore ho jayega.
+        Session ko immediately invalid karo.
+        Iske baad old recognition ka late
+        result count nahi hoga.
       */
-      activeSessionId = ++sessionCounter;
+      activeSessionId =
+        ++sessionCounter;
+
       listening = false;
 
-      const recognitionToStop = recognition;
+      const recognitionToStop =
+        recognition;
+
       recognition = null;
 
       setListeningState(false);
 
-      statusText.classList.remove("status-error");
+      statusText.classList.remove(
+        "status-error"
+      );
+
       statusText.textContent =
         "Listening stopped. Pending speech count nahi hui.";
 
       try {
         recognitionToStop.stop();
       } catch (error) {
-        console.warn("Stop error:", error);
+        console.warn(
+          "Stop error:",
+          error
+        );
       }
     });
 
@@ -1136,11 +1626,17 @@
       totalCount = 0;
 
       countDisplay.textContent = "0";
-      localStorage.removeItem("japCount");
+
+      localStorage.removeItem(
+        "japCount"
+      );
 
       resetTranscriptPlaceholder();
 
-      statusText.classList.remove("status-error");
+      statusText.classList.remove(
+        "status-error"
+      );
+
       statusText.textContent =
         "Reset kar diya. Naya jap shuru kar sakte ho.";
     });
@@ -1149,14 +1645,17 @@
     // Mantra Input
     // --------------------------------
 
-    mantraInput.addEventListener("input", () => {
-      updateTargetWords();
+    mantraInput.addEventListener(
+      "input",
+      () => {
+        updateTargetWords();
 
-      if (listening) {
-        statusText.textContent =
-          "Mantra list update ho gayi.";
+        if (listening) {
+          statusText.textContent =
+            "Mantra list update ho gayi.";
+        }
       }
-    });
+    );
 
     // --------------------------------
     // Initial Setup
