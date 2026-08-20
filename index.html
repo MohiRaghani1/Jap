@@ -9,7 +9,7 @@
 
   <meta
     name="description"
-    content="Naam Jap Voice Counter is a free online mantra and naam simran counter that uses browser speech recognition."
+    content="Naam Jap Voice Counter is a free online mantra and naam simran counter using browser speech recognition."
   />
 
   <meta
@@ -20,28 +20,15 @@
   <meta name="robots" content="index, follow" />
   <meta name="theme-color" content="#020617" />
 
-  <link rel="canonical" href="https://yourdomain.com/" />
+  <!-- Apne actual domain se replace karein -->
+  <link
+    rel="canonical"
+    href="https://yourdomain.com/"
+  />
 
   <title>
     Naam Jap Voice Counter - Free Online Mantra Counter
   </title>
-
-  <!--
-    AdSense approval ke baad apna real publisher ID lagayein.
-
-    Example:
-    ca-pub-XXXXXXXXXXXXXXXX
-
-    Is code ko approval se pehle active na karein.
-  -->
-
-  <!--
-  <script
-    async
-    src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX"
-    crossorigin="anonymous">
-  </script>
-  -->
 
   <style>
     :root {
@@ -423,24 +410,6 @@
       color: var(--text);
     }
 
-    .ad-container {
-      width: 100%;
-      min-height: 90px;
-      margin: 20px 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      overflow: hidden;
-      border-radius: 10px;
-    }
-
-    .ad-label {
-      font-size: 0.68rem;
-      color: var(--subtext);
-      text-align: center;
-      margin-bottom: 4px;
-    }
-
     .notice-box {
       border: 1px solid var(--border);
       border-radius: 12px;
@@ -459,6 +428,15 @@
       text-align: center;
       margin-top: 10px;
       line-height: 1.5;
+    }
+
+    footer a {
+      color: #2563eb;
+      text-decoration: none;
+    }
+
+    footer a:hover {
+      text-decoration: underline;
     }
 
     @media (max-width: 480px) {
@@ -498,30 +476,51 @@
 <body>
   <main class="card">
     <!-- Navigation -->
-    <nav class="nav-bar" aria-label="Main navigation">
-      <a href="#home" class="nav-link active" data-page="home">
+    <nav
+      class="nav-bar"
+      aria-label="Main navigation">
+
+      <a
+        href="#home"
+        class="nav-link active"
+        data-page="home">
         Home
       </a>
 
-      <a href="#about" class="nav-link" data-page="about">
+      <a
+        href="#about"
+        class="nav-link"
+        data-page="about">
         About Us
       </a>
 
-      <a href="#privacy" class="nav-link" data-page="privacy">
+      <a
+        href="#privacy"
+        class="nav-link"
+        data-page="privacy">
         Privacy Policy
       </a>
 
-      <a href="#terms" class="nav-link" data-page="terms">
+      <a
+        href="#terms"
+        class="nav-link"
+        data-page="terms">
         Terms
       </a>
 
-      <a href="#contact" class="nav-link" data-page="contact">
+      <a
+        href="#contact"
+        class="nav-link"
+        data-page="contact">
         Contact
       </a>
     </nav>
 
-    <!-- Home -->
-    <section id="page-home" class="page-content active">
+    <!-- Home Page -->
+    <section
+      id="page-home"
+      class="page-content active">
+
       <div class="title-row">
         <h1 class="title">
           Naam Jap Voice Counter
@@ -539,11 +538,6 @@
       <p class="subtitle">
         Mic se jo naam bologe, wahi count hoga 📿
       </p>
-
-      <!-- Optional Ad Placement 1
-      Approval ke baad actual AdSense code yahan lagayein.
-      Is ad ko buttons ke paas na lagayein.
-      -->
 
       <div class="row">
         <div style="flex: 1 1 100%;">
@@ -591,7 +585,9 @@
         class="pill"
         id="supportPill"
         role="status">
+
         <span class="pill-dot"></span>
+
         <span id="supportText">
           Speech ready
         </span>
@@ -616,13 +612,15 @@
         </div>
       </div>
 
-      <!-- Action buttons ke paas ads nahi hain -->
+      <!-- Action buttons ke paas koi ad nahi hai -->
       <div class="btn-row">
         <button
           id="startBtn"
           class="btn btn-primary"
           type="button">
+
           <span id="startIcon">▶</span>
+
           <span id="startLabel">
             Start Listening
           </span>
@@ -651,7 +649,9 @@
         aria-live="polite">
       </div>
 
-      <label class="field-label" for="transcriptBox">
+      <label
+        class="field-label"
+        for="transcriptBox">
         Latest suna hua text
       </label>
 
@@ -659,6 +659,7 @@
         class="transcript-box"
         id="transcriptBox"
         aria-live="polite">
+
         <span class="transcript-placeholder">
           Yaha last suna hua sentence dikhega…
         </span>
@@ -687,17 +688,20 @@
         </h3>
 
         <p>
-          Sabse pehle input box mein mantra likhein. Agar aap multiple
-          names count karna chahte hain, toh unhe comma se separate
-          karein. Uske baad correct language select karke
-          <strong>Start Listening</strong> button press karein.
+          Sabse pehle input box mein mantra likhein. Multiple names
+          count karne ke liye unhe comma se separate karein. Uske baad
+          correct language select karke
+          <strong>Start Listening</strong>
+          button press karein.
         </p>
 
         <p>
-          Jap complete hone ke baad <strong>Stop</strong> button press
-          karein. Aapka count browser mein save rahega. Count ko
-          dobara zero karne ke liye <strong>Reset</strong> button ka
-          use karein.
+          Jap complete hone ke baad
+          <strong>Stop</strong>
+          button press karein. Aapka count browser mein save rahega.
+          Count ko dobara zero karne ke liye
+          <strong>Reset</strong>
+          button ka use karein.
         </p>
 
         <h3>
@@ -737,34 +741,13 @@
           </p>
         </div>
       </article>
-
-      <!-- Optional Ad Placement 2 -->
-      <div class="ad-label">
-        Advertisement
-      </div>
-
-      <div class="ad-container">
-        <!--
-        AdSense approval ke baad example:
-
-        <ins
-          class="adsbygoogle"
-          style="display:block"
-          data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
-          data-ad-slot="1234567890"
-          data-ad-format="auto"
-          data-full-width-responsive="true">
-        </ins>
-
-        <script>
-          (adsbygoogle = window.adsbygoogle || []).push({});
-        </script>
-        -->
-      </div>
     </section>
 
-    <!-- About -->
-    <section id="page-about" class="page-content static-page">
+    <!-- About Us -->
+    <section
+      id="page-about"
+      class="page-content static-page">
+
       <h2>
         About Us
       </h2>
@@ -798,8 +781,11 @@
       </p>
     </section>
 
-    <!-- Privacy -->
-    <section id="page-privacy" class="page-content static-page">
+    <!-- Privacy Policy -->
+    <section
+      id="page-privacy"
+      class="page-content static-page">
+
       <h2>
         Privacy Policy
       </h2>
@@ -845,33 +831,31 @@
       </p>
 
       <p>
-        <strong>Advertising Cookies:</strong>
-        Agar Google AdSense ya koi other advertising service enable ki
-        jaati hai, toh advertising partners cookies, web beacons, IP
-        addresses ya similar technologies ka use ads serve karne,
-        ad performance measure karne aur invalid activity prevent
-        karne ke liye kar sakte hain.
+        <strong>Future Advertising Notice:</strong>
+        Abhi is website par Google AdSense ya koi third-party
+        advertising service active nahi hai.
       </p>
 
       <p>
-        Third parties users ke browser par cookies place aur read kar
-        sakti hain ya ads serve karne ke result mein web beacons ka
-        use kar sakti hain.
+        Future mein agar advertising service add ki jaati hai, toh
+        users ko ads enable karne se pehle clear notice diya jayega.
+        Privacy Policy ko bhi advertising cookies, third-party vendors,
+        data usage aur available user choices ki information ke saath
+        update kiya jayega.
       </p>
 
       <p>
-        Google advertising cookies ka use relevant advertisements
-        serve karne ke liye kar sakta hai. Users Google Ads Settings
-        ke through personalized advertising choices manage kar sakte
-        hain.
+        Users ko advertising enable hone ke baad updated Privacy
+        Policy accept ya review karne ka clear opportunity diya jayega,
+        jahan applicable law ke according consent required hoga.
       </p>
 
       <p>
         <strong>Third-Party Services:</strong>
-        Website future mein Google AdSense, analytics, hosting, ya
-        browser speech recognition services ka use kar sakti hai.
-        Third-party services apni respective privacy policies ke
-        according information process kar sakti hain.
+        Website future mein hosting, analytics ya browser speech
+        recognition services ka use kar sakti hai. Third-party
+        services apni respective privacy policies ke according
+        information process kar sakti hain.
       </p>
 
       <p>
@@ -893,7 +877,10 @@
     </section>
 
     <!-- Terms -->
-    <section id="page-terms" class="page-content static-page">
+    <section
+      id="page-terms"
+      class="page-content static-page">
+
       <h2>
         Terms &amp; Conditions
       </h2>
@@ -946,8 +933,23 @@
         </li>
 
         <li>
-          Users ko advertisements par accidental ya invalid clicks
-          generate nahi karne chahiye.
+          Abhi website par koi third-party advertisement active nahi
+          hai.
+        </li>
+
+        <li>
+          Future mein agar advertisements add kiye jaate hain, toh
+          users ko ads enable karne se pehle clear notice diya jayega.
+        </li>
+
+        <li>
+          Advertising start hone se pehle applicable Privacy Policy,
+          cookie information aur user choices ko update kiya jayega.
+        </li>
+
+        <li>
+          Users ko future advertisements par invalid, misleading ya
+          accidental clicks generate nahi karne chahiye.
         </li>
       </ul>
 
@@ -958,7 +960,10 @@
     </section>
 
     <!-- Contact -->
-    <section id="page-contact" class="page-content static-page">
+    <section
+      id="page-contact"
+      class="page-content static-page">
+
       <h2>
         Contact Us
       </h2>
@@ -987,9 +992,13 @@
 
     <p>
       Use of this website is subject to our
-      <a href="#privacy">Privacy Policy</a>
+      <a href="#privacy">
+        Privacy Policy
+      </a>
       and
-      <a href="#terms">Terms &amp; Conditions</a>.
+      <a href="#terms">
+        Terms &amp; Conditions
+      </a>.
     </p>
   </footer>
 
@@ -998,23 +1007,29 @@
     // Hash Navigation
     // --------------------------------
 
-    const navLinks = document.querySelectorAll(".nav-link");
-    const pageContents = document.querySelectorAll(".page-content");
+    const navLinks =
+      document.querySelectorAll(".nav-link");
+
+    const pageContents =
+      document.querySelectorAll(".page-content");
 
     function showPageFromHash() {
-      let pageId = window.location.hash.replace("#", "");
+      let pageId =
+        window.location.hash.replace("#", "");
 
       if (!pageId) {
         pageId = "home";
       }
 
-      const selectedPage = document.getElementById(
-        "page-" + pageId
-      );
+      const selectedPage =
+        document.getElementById(
+          "page-" + pageId
+        );
 
-      const selectedLink = document.querySelector(
-        `.nav-link[data-page="${pageId}"]`
-      );
+      const selectedLink =
+        document.querySelector(
+          `.nav-link[data-page="${pageId}"]`
+        );
 
       pageContents.forEach((page) => {
         page.classList.remove("active");
@@ -1033,7 +1048,9 @@
           .classList.add("active");
 
         document
-          .querySelector('.nav-link[data-page="home"]')
+          .querySelector(
+            '.nav-link[data-page="home"]'
+          )
           .classList.add("active");
       }
 
@@ -1043,13 +1060,18 @@
       });
     }
 
-    window.addEventListener("hashchange", showPageFromHash);
+    window.addEventListener(
+      "hashchange",
+      showPageFromHash
+    );
 
     // --------------------------------
     // DOM Elements
     // --------------------------------
 
-    const mantraInput = document.getElementById("mantraInput");
+    const mantraInput =
+      document.getElementById("mantraInput");
+
     const languageSelect =
       document.getElementById("languageSelect");
 
@@ -1105,13 +1127,13 @@
 
     /*
       Har Start par unique session ID banega.
-      Stop ke baad old result event ignore ho jayega.
+      Stop ke baad old result event ignore hoga.
     */
     let sessionCounter = 0;
     let activeSessionId = 0;
 
     // --------------------------------
-    // Load Local Data
+    // Load Saved Data
     // --------------------------------
 
     const savedCount =
@@ -1126,6 +1148,7 @@
         parsedCount >= 0
       ) {
         totalCount = parsedCount;
+
         countDisplay.textContent =
           String(totalCount);
       }
@@ -1135,7 +1158,8 @@
       localStorage.getItem("japLanguage");
 
     if (savedLanguage) {
-      languageSelect.value = savedLanguage;
+      languageSelect.value =
+        savedLanguage;
     }
 
     if (
@@ -1149,49 +1173,58 @@
     // Theme Toggle
     // --------------------------------
 
-    themeToggle.addEventListener("click", () => {
-      const isDark =
-        document.body.classList.toggle("dark");
+    themeToggle.addEventListener(
+      "click",
+      () => {
+        const isDark =
+          document.body.classList.toggle(
+            "dark"
+          );
 
-      localStorage.setItem(
-        "japTheme",
-        isDark ? "dark" : "light"
-      );
+        localStorage.setItem(
+          "japTheme",
+          isDark ? "dark" : "light"
+        );
 
-      themeToggle.textContent = isDark
-        ? "☀️ Light"
-        : "🌙 Dark";
-    });
+        themeToggle.textContent = isDark
+          ? "☀️ Light"
+          : "🌙 Dark";
+      }
+    );
 
     // --------------------------------
     // Language Change
     // --------------------------------
 
-    languageSelect.addEventListener("change", () => {
-      localStorage.setItem(
-        "japLanguage",
-        languageSelect.value
-      );
+    languageSelect.addEventListener(
+      "change",
+      () => {
+        localStorage.setItem(
+          "japLanguage",
+          languageSelect.value
+        );
 
-      if (recognition && !listening) {
-        recognition.lang =
-          languageSelect.value;
+        if (recognition && !listening) {
+          recognition.lang =
+            languageSelect.value;
+        }
+
+        statusText.classList.remove(
+          "status-error"
+        );
+
+        statusText.textContent =
+          "Language update ho gayi.";
       }
-
-      statusText.classList.remove(
-        "status-error"
-      );
-
-      statusText.textContent =
-        "Language update ho gayi.";
-    });
+    );
 
     // --------------------------------
     // Helper Functions
     // --------------------------------
 
     function updateTargetWords() {
-      const raw = mantraInput.value || "";
+      const raw =
+        mantraInput.value || "";
 
       targetWords = raw
         .split(",")
@@ -1246,6 +1279,7 @@
 
     function showTranscript(text) {
       transcriptBox.textContent = text;
+
       transcriptBox.scrollTop =
         transcriptBox.scrollHeight;
     }
@@ -1280,9 +1314,10 @@
       text,
       targetList
     ) {
-      const tokens = normalizeText(text)
-        .split(" ")
-        .filter(Boolean);
+      const tokens =
+        normalizeText(text)
+          .split(" ")
+          .filter(Boolean);
 
       return tokens.filter((token) => {
         return targetList.includes(token);
@@ -1359,7 +1394,7 @@
       currentRecognition.onresult =
         (event) => {
           /*
-            Old session ke result ko ignore karo.
+            Purane session ke result ko ignore karo.
           */
           if (
             currentSessionId !==
@@ -1523,123 +1558,131 @@
     // Start Button
     // --------------------------------
 
-    startBtn.addEventListener("click", () => {
-      updateTargetWords();
+    startBtn.addEventListener(
+      "click",
+      () => {
+        updateTargetWords();
 
-      if (targetWords.length === 0) {
-        statusText.classList.add(
-          "status-error"
-        );
+        if (targetWords.length === 0) {
+          statusText.classList.add(
+            "status-error"
+          );
 
-        statusText.textContent =
-          "Pehle mantra likho.";
+          statusText.textContent =
+            "Pehle mantra likho.";
 
-        return;
-      }
+          return;
+        }
 
-      if (listening) {
-        statusText.textContent =
-          "Recognition already running hai.";
-
-        return;
-      }
-
-      finalTranscript = "";
-      resetTranscriptPlaceholder();
-
-      recognition =
-        createRecognition();
-
-      if (!recognition) {
-        return;
-      }
-
-      try {
-        recognition.start();
-      } catch (error) {
-        console.error(
-          "Start error:",
-          error
-        );
-
-        if (
-          error.name ===
-          "InvalidStateError"
-        ) {
+        if (listening) {
           statusText.textContent =
             "Recognition already running hai.";
-        } else {
-          statusText.textContent =
-            "Recognition start nahi ho saka.";
+
+          return;
+        }
+
+        finalTranscript = "";
+        resetTranscriptPlaceholder();
+
+        recognition =
+          createRecognition();
+
+        if (!recognition) {
+          return;
+        }
+
+        try {
+          recognition.start();
+        } catch (error) {
+          console.error(
+            "Start error:",
+            error
+          );
+
+          if (
+            error.name ===
+            "InvalidStateError"
+          ) {
+            statusText.textContent =
+              "Recognition already running hai.";
+          } else {
+            statusText.textContent =
+              "Recognition start nahi ho saka.";
+          }
         }
       }
-    });
+    );
 
     // --------------------------------
     // Stop Button
     // --------------------------------
 
-    stopBtn.addEventListener("click", () => {
-      if (!recognition || !listening) {
-        return;
-      }
+    stopBtn.addEventListener(
+      "click",
+      () => {
+        if (!recognition || !listening) {
+          return;
+        }
 
-      /*
-        Session ko immediately invalid karo.
-        Iske baad old recognition ka late
-        result count nahi hoga.
-      */
-      activeSessionId =
-        ++sessionCounter;
+        /*
+          Session ko immediately invalid karo.
+          Stop ke baad old result count nahi hoga.
+        */
+        activeSessionId =
+          ++sessionCounter;
 
-      listening = false;
+        listening = false;
 
-      const recognitionToStop =
-        recognition;
+        const recognitionToStop =
+          recognition;
 
-      recognition = null;
+        recognition = null;
 
-      setListeningState(false);
+        setListeningState(false);
 
-      statusText.classList.remove(
-        "status-error"
-      );
-
-      statusText.textContent =
-        "Listening stopped. Pending speech count nahi hui.";
-
-      try {
-        recognitionToStop.stop();
-      } catch (error) {
-        console.warn(
-          "Stop error:",
-          error
+        statusText.classList.remove(
+          "status-error"
         );
+
+        statusText.textContent =
+          "Listening stopped. Pending speech count nahi hui.";
+
+        try {
+          recognitionToStop.stop();
+        } catch (error) {
+          console.warn(
+            "Stop error:",
+            error
+          );
+        }
       }
-    });
+    );
 
     // --------------------------------
     // Reset Button
     // --------------------------------
 
-    resetBtn.addEventListener("click", () => {
-      totalCount = 0;
+    resetBtn.addEventListener(
+      "click",
+      () => {
+        totalCount = 0;
 
-      countDisplay.textContent = "0";
+        countDisplay.textContent = "0";
 
-      localStorage.removeItem(
-        "japCount"
-      );
+        localStorage.removeItem(
+          "japCount"
+        );
 
-      resetTranscriptPlaceholder();
+        resetTranscriptPlaceholder();
 
-      statusText.classList.remove(
-        "status-error"
-      );
+        statusText.classList.remove(
+          "status-error"
+        );
 
-      statusText.textContent =
-        "Reset kar diya. Naya jap shuru kar sakte ho.";
-    });
+        statusText.textContent =
+          "Reset kar diya. Naya jap shuru kar sakte ho.";
+      }
+    );
 
     // --------------------------------
     // Mantra Input
