@@ -4,7 +4,6 @@
   <meta charset="UTF-8" />
   <title>Naam Jap Voice Counter</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-
   <meta name="theme-color" content="#020617">
 
   <style>
@@ -303,22 +302,15 @@
     <div class="subtitle">Mic se jap bolo, yeh automatically count karega 📿 (auto-save on)</div>
 
     <div class="row">
-      <div>
+      <div style="flex: 1 1 100%;">
         <div class="field-label">Jap / Naam (comma se alag-alag)</div>
         <input
           id="mantraInput"
           class="input"
           type="text"
           value="ram, raam"
-          placeholder="jaise: ram, raam, allah, waheguru"
+          placeholder="jaise: om, ram, allah, waheguru"
         />
-      </div>
-      <div>
-        <div class="field-label">Language</div>
-        <select id="langSelect" class="input">
-          <option value="hi-IN">Hindi / Indian</option>
-          <option value="en-US">English</option>
-        </select>
       </div>
     </div>
 
@@ -355,7 +347,6 @@
   <script>
   // --- DOM elements ---
   const mantraInput   = document.getElementById("mantraInput");
-  const langSelect    = document.getElementById("langSelect");
   const supportText   = document.getElementById("supportText");
   const supportPill   = document.getElementById("supportPill");
   const countDisplay  = document.getElementById("countDisplay");
@@ -388,7 +379,6 @@
     themeToggle.textContent = "☀️ Light";
   }
 
-  // --- Theme Toggle Event ---
   themeToggle.addEventListener("click", () => {
     document.body.classList.toggle("dark");
     if (document.body.classList.contains("dark")) {
@@ -400,17 +390,45 @@
     }
   });
 
+  // --- Smart Dictionary (Auto Match for Hindi/English) ---
+  const smartDictionary = {
+    "om": ["om", "ओम", "ॐ", "ohm"],
+    "ram": ["ram", "raam", "राम", "rama"],
+    "shiv": ["shiv", "shiva", "शिव", "siva"],
+    "hare": ["hare", "हरे"],
+    "krishna": ["krishna", "krishn", "कृष्ण", "कृष्णा"],
+    "radhe": ["radhe", "radha", "राधे", "राधा"],
+    "allah": ["allah", "अल्लाह"],
+    "waheguru": ["waheguru", "वाहेगुरु", "vaheguru"]
+  };
+
   function updateTargetWords() {
     const raw = mantraInput.value || "";
-    targetWords = raw
+    let baseWords = raw
       .split(",")
       .map(w => w.trim().toLowerCase())
       .filter(Boolean);
+
+    let expandedWords = new Set();
+    
+    baseWords.forEach(word => {
+      expandedWords.add(word); // Original word add karo
+      
+      // Dictionary check karo
+      for (const [key, variants] of Object.entries(smartDictionary)) {
+        if (variants.includes(word) || key === word) {
+          variants.forEach(v => expandedWords.add(v));
+        }
+      }
+    });
+
+    targetWords = Array.from(expandedWords);
+
     if (targetWords.length === 0) {
-      targetWords = [];
       mantraPreview.textContent = "No mantra set – please enter at least one.";
     } else {
-      mantraPreview.textContent = 'Counting: "' + targetWords.join('", "') + '"';
+      // User ko sirf uske wale words dikhao UI clean rakhne k liye
+      mantraPreview.textContent = 'Counting: "' + baseWords.join('", "') + '"';
     }
   }
 
@@ -473,7 +491,8 @@
     recognition = new SpeechRecognition();
     recognition.continuous = true;
     recognition.interimResults = false;
-    recognition.lang = langSelect.value;
+    // Hardcoded Hindi/Indian taki maximum accurate chale
+    recognition.lang = 'hi-IN';
 
     recognition.onstart = () => {
       setListeningState(true);
@@ -527,7 +546,7 @@
       if (added > 0) {
         totalCount += added;
         countDisplay.textContent = totalCount.toString();
-        localStorage.setItem("japCount", totalCount); // Count Auto-Save
+        localStorage.setItem("japCount", totalCount);
         statusText.textContent =
           `+${added} jap detect hua. Total: ${totalCount}`;
       } else {
@@ -537,25 +556,6 @@
   }
 
   mantraInput.addEventListener("input", updateTargetWords);
-
-  langSelect.addEventListener("change", () => {
-    if (recognition) {
-      const wasListening = listening;
-      if (wasListening) {
-        userStopped = true;
-        recognition.stop();
-      }
-      recognition.lang = langSelect.value;
-      if (wasListening) {
-        userStopped = false;
-        try {
-          recognition.start();
-        } catch (e) {
-          console.warn(e);
-        }
-      }
-    }
-  });
 
   startBtn.addEventListener("click", () => {
     if (!recognition) {
@@ -589,7 +589,7 @@
   resetBtn.addEventListener("click", () => {
     totalCount = 0;
     countDisplay.textContent = "0";
-    localStorage.removeItem("japCount"); // Reset hone par save memory se clear hoga
+    localStorage.removeItem("japCount");
     resetTranscriptPlaceholder();
     statusText.classList.remove("status-error");
     statusText.textContent = "Reset kar diya. Naya jap shuru kar sakte ho.";
