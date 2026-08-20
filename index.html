@@ -37,7 +37,6 @@
   <style>
     :root {
       --navy: #102a43;
-      --navy-dark: #071b2f;
       --blue: #2878c8;
       --blue-soft: #eaf4ff;
       --gold: #c68b2c;
@@ -130,9 +129,6 @@
     }
 
     .brand {
-      display: flex;
-      align-items: center;
-      gap: 11px;
       color: var(--navy);
       text-decoration: none;
     }
@@ -152,12 +148,6 @@
       display: block;
       color: var(--muted);
       font-size: 0.73rem;
-    }
-
-    .header-actions {
-      display: flex;
-      align-items: center;
-      gap: 10px;
     }
 
     .theme-btn {
@@ -194,81 +184,11 @@
       color: var(--blue);
     }
 
-    .hero {
-      width: 100%;
-      max-width: 1060px;
-      margin: 0 auto 22px;
-      padding: 32px 26px;
-      border-radius: 26px;
-      background:
-        linear-gradient(
-          120deg,
-          rgba(16, 42, 67, 0.98),
-          rgba(31, 91, 137, 0.96)
-        );
-      color: #ffffff;
-      overflow: hidden;
-      position: relative;
-      box-shadow: var(--shadow);
-    }
-
-    .hero-content {
-      position: relative;
-      z-index: 1;
-      max-width: 660px;
-    }
-
-    .eyebrow {
-      display: inline-flex;
-      align-items: center;
-      gap: 7px;
-      margin-bottom: 12px;
-      padding: 6px 10px;
-      border: 1px solid rgba(255, 216, 138, 0.35);
-      border-radius: 999px;
-      background: rgba(255, 216, 138, 0.12);
-      color: #ffe4a8;
-      font-size: 0.75rem;
-      font-weight: 700;
-    }
-
-    .eyebrow-dot {
-      width: 7px;
-      height: 7px;
-      border-radius: 50%;
-      background: #ffd88a;
-    }
-
-    .hero h1 {
-      max-width: 620px;
-      margin-bottom: 10px;
-      font-size: clamp(1.65rem, 4vw, 2.5rem);
-      line-height: 1.08;
-      letter-spacing: -0.045em;
-    }
-
-    .hero p {
-      max-width: 590px;
-      color: #dceaf5;
-      font-size: 0.88rem;
-      line-height: 1.55;
-    }
-
-    .hero-note {
-      display: inline-block;
-      margin-top: 14px;
-      color: #ffe4a8;
-      font-size: 0.82rem;
-      font-weight: 700;
-    }
-
     .counter-card {
       width: 100%;
       max-width: 760px;
-      margin: 0 auto 24px;
+      margin: 0 auto 30px;
       padding: 25px;
-      position: relative;
-      z-index: 2;
       border: 1px solid var(--border);
       border-radius: 24px;
       background: var(--white);
@@ -453,7 +373,6 @@
       font-weight: 800;
       transition:
         transform 0.15s ease,
-        box-shadow 0.15s ease,
         opacity 0.15s ease;
     }
 
@@ -523,6 +442,70 @@
 
     .placeholder {
       font-style: italic;
+    }
+
+    .hero {
+      width: 100%;
+      max-width: 1060px;
+      margin: 0 auto 30px;
+      padding: 32px 26px;
+      border-radius: 26px;
+      background:
+        linear-gradient(
+          120deg,
+          rgba(16, 42, 67, 0.98),
+          rgba(31, 91, 137, 0.96)
+        );
+      color: #ffffff;
+      box-shadow: var(--shadow);
+    }
+
+    .hero-content {
+      max-width: 660px;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      margin-bottom: 12px;
+      padding: 6px 10px;
+      border: 1px solid rgba(255, 216, 138, 0.35);
+      border-radius: 999px;
+      background: rgba(255, 216, 138, 0.12);
+      color: #ffe4a8;
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+
+    .eyebrow-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #ffd88a;
+    }
+
+    .hero h1 {
+      max-width: 620px;
+      margin-bottom: 10px;
+      font-size: clamp(1.65rem, 4vw, 2.5rem);
+      line-height: 1.08;
+      letter-spacing: -0.045em;
+    }
+
+    .hero p {
+      max-width: 590px;
+      color: #dceaf5;
+      font-size: 0.88rem;
+      line-height: 1.55;
+    }
+
+    .hero-note {
+      display: inline-block;
+      margin-top: 14px;
+      color: #ffe4a8;
+      font-size: 0.82rem;
+      font-weight: 700;
     }
 
     .content-wrap {
@@ -657,14 +640,14 @@
     }
 
     .privacy-section {
-      padding: 20px;
+      padding: 22px;
       border: 1px solid rgba(198, 139, 44, 0.28);
       border-radius: 18px;
       background: var(--gold-soft);
     }
 
     .privacy-section h2 {
-      margin-bottom: 7px;
+      margin-bottom: 14px;
       color: var(--navy);
       font-size: 1.1rem;
     }
@@ -673,9 +656,42 @@
       color: #ffffff;
     }
 
-    .privacy-section p {
+    .privacy-list {
+      display: grid;
+      gap: 12px;
+      list-style: none;
+    }
+
+    .privacy-item {
+      display: grid;
+      grid-template-columns: 28px 1fr;
+      gap: 10px;
+      align-items: start;
+    }
+
+    .privacy-icon {
+      display: grid;
+      place-items: center;
+      width: 28px;
+      height: 28px;
+      border-radius: 9px;
+      background: var(--white);
+      color: var(--gold);
+      font-size: 0.84rem;
+      font-weight: 800;
+    }
+
+    .privacy-item strong {
+      display: block;
+      margin-bottom: 2px;
+      color: var(--text);
+      font-size: 0.83rem;
+    }
+
+    .privacy-item p {
       color: var(--muted);
-      font-size: 0.82rem;
+      font-size: 0.8rem;
+      line-height: 1.55;
     }
 
     .site-footer {
@@ -755,7 +771,6 @@
       }
 
       .counter-card {
-        margin-top: 0;
         padding: 19px;
         border-radius: 20px;
       }
@@ -772,6 +787,10 @@
       .features-grid,
       .guides-grid {
         grid-template-columns: 1fr;
+      }
+
+      .privacy-section {
+        padding: 18px;
       }
     }
 
@@ -801,6 +820,11 @@
       .btn-primary {
         grid-column: auto;
       }
+
+      .privacy-item {
+        grid-template-columns: 26px 1fr;
+        gap: 8px;
+      }
     }
   </style>
 </head>
@@ -823,15 +847,13 @@
         </span>
       </a>
 
-      <div class="header-actions">
-        <button
-          id="themeToggle"
-          class="theme-btn"
-          type="button"
-          aria-label="Toggle color theme">
-          🌙 Dark
-        </button>
-      </div>
+      <button
+        id="themeToggle"
+        class="theme-btn"
+        type="button"
+        aria-label="Toggle color theme">
+        🌙 Dark
+      </button>
     </div>
   </header>
 
@@ -859,29 +881,6 @@
   </nav>
 
   <main>
-    <section class="hero">
-      <div class="hero-content">
-        <div class="eyebrow">
-          <span class="eyebrow-dot"></span>
-          Voice-powered mantra practice
-        </div>
-
-        <h1>
-          Count your mantra with your voice.
-        </h1>
-
-        <p>
-          A calm, simple tool for Naam Jap, mantra repetition and daily
-          spiritual practice. Speak your selected phrase and let your
-          voice do the counting.
-        </p>
-
-        <span class="hero-note">
-          Focus less on tapping. Stay present with your practice.
-        </span>
-      </div>
-    </section>
-
     <section
       id="counter"
       class="counter-card"
@@ -1031,6 +1030,29 @@
 
         <span class="placeholder">
           Your latest recognized speech will appear here.
+        </span>
+      </div>
+    </section>
+
+    <section class="hero">
+      <div class="hero-content">
+        <div class="eyebrow">
+          <span class="eyebrow-dot"></span>
+          Voice-powered mantra practice
+        </div>
+
+        <h1>
+          Count your mantra with your voice.
+        </h1>
+
+        <p>
+          A calm, simple tool for Naam Jap, mantra repetition and daily
+          spiritual practice. Speak your selected phrase and let your
+          voice do the counting.
+        </p>
+
+        <span class="hero-note">
+          Focus less on tapping. Stay present with your practice.
         </span>
       </div>
     </section>
@@ -1239,23 +1261,75 @@
           About voice recognition
         </h2>
 
-        <p>
-          Your browser uses speech recognition to turn spoken words
-          into text. The counter compares that recognized text with the
-          phrase you entered.
-        </p>
+        <ul class="privacy-list">
+          <li class="privacy-item">
+            <span class="privacy-icon">
+              1
+            </span>
 
-        <p>
-          Recognition can vary by browser, device, language and
-          surroundings. For best results, use a modern Chrome or Edge
-          browser, select the matching language and speak clearly in a
-          quiet room.
-        </p>
+            <div>
+              <strong>
+                How it works
+              </strong>
 
-        <p>
-          Microphone access is required only while listening. You can
-          stop recognition at any time using the Stop button.
-        </p>
+              <p>
+                Your browser turns spoken words into text, and the
+                counter compares that text with your selected phrase.
+              </p>
+            </div>
+          </li>
+
+          <li class="privacy-item">
+            <span class="privacy-icon">
+              2
+            </span>
+
+            <div>
+              <strong>
+                Recognition may vary
+              </strong>
+
+              <p>
+                Results can vary by browser, device, language and
+                surrounding noise.
+              </p>
+            </div>
+          </li>
+
+          <li class="privacy-item">
+            <span class="privacy-icon">
+              3
+            </span>
+
+            <div>
+              <strong>
+                For better results
+              </strong>
+
+              <p>
+                Use a modern Chrome or Edge browser, select the matching
+                language and speak clearly in a quiet room.
+              </p>
+            </div>
+          </li>
+
+          <li class="privacy-item">
+            <span class="privacy-icon">
+              4
+            </span>
+
+            <div>
+              <strong>
+                Microphone permission
+              </strong>
+
+              <p>
+                Microphone access is required only while listening. You
+                can stop recognition at any time using the Stop button.
+              </p>
+            </div>
+          </li>
+        </ul>
       </section>
     </div>
   </main>
