@@ -9,12 +9,12 @@
 
   <meta
     name="description"
-    content="Naam Jap Voice Counter is a free online mantra and naam simran counter using browser speech recognition."
+    content="Naam Jap Voice Counter is a free online mantra, naam simran and meditation counter with browser voice recognition."
   />
 
   <meta
     name="keywords"
-    content="naam jap counter, mantra counter, voice jap counter, naam simran counter, online mantra counter"
+    content="naam jap counter, mantra counter, voice jap counter, naam simran counter, meditation counter"
   />
 
   <meta name="robots" content="index, follow" />
@@ -46,6 +46,7 @@
       --reset-text: #b91c1c;
       --stop-bg: #ffedd5;
       --stop-text: #c2410c;
+      --link: #2563eb;
       --shadow-main: 0 18px 40px rgba(0, 0, 0, 0.08);
       --shadow-outline: 0 0 0 1px rgba(0, 0, 0, 0.03);
     }
@@ -65,6 +66,7 @@
       --reset-text: #fecaca;
       --stop-bg: #431407;
       --stop-text: #fed7aa;
+      --link: #60a5fa;
       --shadow-main: 0 18px 40px rgba(15, 23, 42, 0.8);
       --shadow-outline: 0 0 0 1px rgba(148, 163, 184, 0.5);
     }
@@ -86,19 +88,22 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: space-between;
       background: radial-gradient(circle at top, var(--bg1), var(--bg2));
       padding: 20px;
       color: var(--text);
     }
 
+    a {
+      color: var(--link);
+    }
+
     .card {
       width: 100%;
-      max-width: 720px;
+      max-width: 760px;
       background: var(--card-bg);
       border-radius: 24px;
       box-shadow: var(--shadow-main), var(--shadow-outline);
-      padding: 24px 22px 20px;
+      padding: 24px 22px 22px;
       margin-bottom: 20px;
     }
 
@@ -106,7 +111,7 @@
       display: flex;
       justify-content: center;
       gap: 8px;
-      margin-bottom: 22px;
+      margin-bottom: 23px;
       flex-wrap: wrap;
     }
 
@@ -141,7 +146,7 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 8px;
+      gap: 10px;
       margin-bottom: 4px;
     }
 
@@ -168,6 +173,7 @@
     }
 
     .field-label {
+      display: block;
       font-size: 0.82rem;
       margin-bottom: 5px;
       color: var(--text);
@@ -377,7 +383,7 @@
 
     .seo-content h2 {
       font-size: 1.15rem;
-      color: #2563eb;
+      color: var(--link);
     }
 
     .seo-content h3 {
@@ -397,12 +403,18 @@
     .static-page h2 {
       font-size: 1.25rem;
       margin-bottom: 13px;
-      color: #2563eb;
+      color: var(--link);
     }
 
-    .static-page ul {
+    .static-page h3 {
+      font-size: 1rem;
+      margin: 20px 0 8px;
+    }
+
+    .static-page ul,
+    .static-page ol {
       padding-left: 20px;
-      margin-bottom: 12px;
+      margin-bottom: 14px;
     }
 
     .static-page strong,
@@ -422,16 +434,144 @@
       margin-bottom: 0;
     }
 
+    .guide-list {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .guide-card {
+      display: block;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px;
+      color: var(--text);
+      text-decoration: none;
+      background: var(--pill-bg);
+      transition: transform 0.15s ease, border-color 0.15s ease;
+    }
+
+    .guide-card:hover {
+      transform: translateY(-2px);
+      border-color: #2563eb;
+    }
+
+    .guide-card h3 {
+      font-size: 0.92rem;
+      line-height: 1.35;
+      margin-bottom: 7px;
+    }
+
+    .guide-card p {
+      font-size: 0.78rem;
+      line-height: 1.5;
+      color: var(--subtext);
+      margin-bottom: 10px;
+    }
+
+    .guide-card span {
+      color: var(--link);
+      font-size: 0.78rem;
+      font-weight: 650;
+    }
+
+    .article-header {
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 15px;
+      margin-bottom: 18px;
+    }
+
+    .article-header h2 {
+      margin-bottom: 8px;
+    }
+
+    .article-meta {
+      color: var(--subtext);
+      font-size: 0.75rem;
+    }
+
+    .back-link {
+      display: inline-block;
+      margin-bottom: 16px;
+      color: var(--link);
+      text-decoration: none;
+      font-size: 0.82rem;
+      font-weight: 650;
+    }
+
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .guide-article {
+      margin-top: 20px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
+    }
+
+    .guide-article h2 {
+      color: var(--link);
+      font-size: 1.2rem;
+      margin-bottom: 10px;
+    }
+
+    .guide-article h3 {
+      font-size: 1rem;
+      margin: 20px 0 8px;
+    }
+
+    .guide-article p,
+    .guide-article li {
+      color: var(--subtext);
+      font-size: 0.83rem;
+      line-height: 1.65;
+      margin-bottom: 10px;
+    }
+
+    .guide-article ul,
+    .guide-article ol {
+      padding-left: 20px;
+      margin-bottom: 15px;
+    }
+
+    .comparison-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 15px 0;
+      font-size: 0.78rem;
+    }
+
+    .comparison-table th,
+    .comparison-table td {
+      border: 1px solid var(--border);
+      padding: 9px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    .comparison-table th {
+      background: var(--pill-bg);
+      color: var(--text);
+    }
+
+    .comparison-table td {
+      color: var(--subtext);
+    }
+
     footer {
+      width: 100%;
+      max-width: 760px;
       font-size: 0.75rem;
       color: var(--subtext);
       text-align: center;
-      margin-top: 10px;
+      margin-top: auto;
       line-height: 1.5;
+      padding: 0 10px 12px;
     }
 
     footer a {
-      color: #2563eb;
+      color: var(--link);
       text-decoration: none;
     }
 
@@ -439,7 +579,7 @@
       text-decoration: underline;
     }
 
-    @media (max-width: 480px) {
+    @media (max-width: 600px) {
       body {
         padding: 12px;
       }
@@ -469,6 +609,15 @@
       .btn-secondary {
         flex: 1;
       }
+
+      .guide-list {
+        grid-template-columns: 1fr;
+      }
+
+      .comparison-table {
+        display: block;
+        overflow-x: auto;
+      }
     }
   </style>
 </head>
@@ -488,6 +637,13 @@
       </a>
 
       <a
+        href="#guides"
+        class="nav-link"
+        data-page="guides">
+        Guides
+      </a>
+
+      <a
         href="#about"
         class="nav-link"
         data-page="about">
@@ -498,7 +654,7 @@
         href="#privacy"
         class="nav-link"
         data-page="privacy">
-        Privacy Policy
+        Privacy
       </a>
 
       <a
@@ -516,7 +672,7 @@
       </a>
     </nav>
 
-    <!-- Home Page -->
+    <!-- HOME -->
     <section
       id="page-home"
       class="page-content active">
@@ -612,7 +768,6 @@
         </div>
       </div>
 
-      <!-- Action buttons ke paas koi ad nahi hai -->
       <div class="btn-row">
         <button
           id="startBtn"
@@ -688,20 +843,15 @@
         </h3>
 
         <p>
-          Sabse pehle input box mein mantra likhein. Multiple names
-          count karne ke liye unhe comma se separate karein. Uske baad
-          correct language select karke
-          <strong>Start Listening</strong>
-          button press karein.
+          Input box mein mantra likhein. Multiple names count karne ke
+          liye unhe comma se separate karein. Correct language select
+          karke <strong>Start Listening</strong> button press karein.
         </p>
 
         <p>
-          Jap complete hone ke baad
-          <strong>Stop</strong>
-          button press karein. Aapka count browser mein save rahega.
-          Count ko dobara zero karne ke liye
-          <strong>Reset</strong>
-          button ka use karein.
+          Jap complete hone ke baad <strong>Stop</strong> button press
+          karein. Count browser mein save rahega. Count ko zero karne
+          ke liye <strong>Reset</strong> button ka use karein.
         </p>
 
         <h3>
@@ -715,7 +865,7 @@
         </p>
 
         <p>
-          Kabhi-kabhi browser kisi word ko galat samajh sakta hai.
+          Browser kisi word ko kabhi-kabhi galat samajh sakta hai.
           Isliye transcript aur displayed count ko check karna
           important hai.
         </p>
@@ -727,9 +877,7 @@
         <p>
           Naam jap aur mantra repetition kai logon ke liye daily
           meditation aur spiritual routine ka hissa hota hai. Digital
-          counter ek simple tracking aid provide karta hai, jisse
-          manual counting ke bina practice ka record maintain kiya ja
-          sakta hai.
+          counter ek simple tracking aid provide karta hai.
         </p>
 
         <div class="notice-box">
@@ -743,7 +891,569 @@
       </article>
     </section>
 
-    <!-- About Us -->
+    <!-- GUIDES -->
+    <section
+      id="page-guides"
+      class="page-content static-page">
+
+      <div class="article-header">
+        <h2>
+          Naam Jap &amp; Meditation Guides
+        </h2>
+
+        <p class="article-meta">
+          Practical guides for naam jap, mantra practice and voice
+          counting.
+        </p>
+      </div>
+
+      <p>
+        In guides ka purpose users ko naam jap aur is voice counter ko
+        simple, responsible aur practical tareeke se samajhne mein
+        help karna hai.
+      </p>
+
+      <div class="guide-list">
+        <a
+          class="guide-card"
+          href="#guide-naam-jap">
+
+          <h3>
+            1. Naam Jap Kya Hai Aur Kaise Karein?
+          </h3>
+
+          <p>
+            Beginners ke liye naam jap ka simple meaning aur daily
+            practice method.
+          </p>
+
+          <span>
+            Guide padhein →
+          </span>
+        </a>
+
+        <a
+          class="guide-card"
+          href="#guide-mantra">
+
+          <h3>
+            2. Mantra Repetition Beginner Guide
+          </h3>
+
+          <p>
+            Mantra routine, consistency aur concentration ke practical
+            suggestions.
+          </p>
+
+          <span>
+            Guide padhein →
+          </span>
+        </a>
+
+        <a
+          class="guide-card"
+          href="#guide-voice">
+
+          <h3>
+            3. Voice Counter Ko Kaise Use Karein?
+          </h3>
+
+          <p>
+            Input, language, microphone aur Start/Stop buttons ka use.
+          </p>
+
+          <span>
+            Guide padhein →
+          </span>
+        </a>
+
+        <a
+          class="guide-card"
+          href="#guide-accuracy">
+
+          <h3>
+            4. Speech Accuracy Kaise Improve Karein?
+          </h3>
+
+          <p>
+            Clear speech, quiet room aur correct language ke useful tips.
+          </p>
+
+          <span>
+            Guide padhein →
+          </span>
+        </a>
+
+        <a
+          class="guide-card"
+          href="#guide-mala">
+
+          <h3>
+            5. Digital Counter Aur Traditional Mala
+          </h3>
+
+          <p>
+            Dono methods ke differences aur practical use cases.
+          </p>
+
+          <span>
+            Guide padhein →
+          </span>
+        </a>
+
+        <a
+          class="guide-card"
+          href="#guide-privacy">
+
+          <h3>
+            6. Meditation Mein Mic Aur Privacy Tips
+          </h3>
+
+          <p>
+            Microphone permission, local storage aur privacy ke basic
+            tips.
+          </p>
+
+          <span>
+            Guide padhein →
+          </span>
+        </a>
+      </div>
+
+      <!-- Guide 1 -->
+      <article
+        id="guide-naam-jap"
+        class="guide-article">
+
+        <h2>
+          Naam Jap Kya Hai Aur Kaise Karein?
+        </h2>
+
+        <p>
+          Naam jap ka simple meaning hai kisi pavitra naam ya mantra ko
+          dhyan aur shraddha ke saath baar-baar repeat karna. Bahut se
+          log ise meditation, prayer aur daily spiritual routine ka
+          hissa banate hain.
+        </p>
+
+        <p>
+          Naam jap ka purpose sirf number complete karna nahi hota.
+          Practice ke dauraan vyakti apne attention ko ek naam, sound
+          ya phrase par rakhne ki koshish karta hai.
+        </p>
+
+        <h3>
+          Beginners Kaise Shuru Karein?
+        </h3>
+
+        <ol>
+          <li>
+            Ek aisa naam ya mantra choose karein jisse aap comfortable
+            feel karte hain.
+          </li>
+
+          <li>
+            Practice ke liye daily ek fixed time choose karein.
+          </li>
+
+          <li>
+            Shuruat mein 5 se 10 minutes ka small session rakhein.
+          </li>
+
+          <li>
+            Comfortable position mein baithkar normal breathing rakhein.
+          </li>
+
+          <li>
+            Naam ko dheere aur clearly repeat karein.
+          </li>
+        </ol>
+
+        <h3>
+          Count Se Zyada Consistency
+        </h3>
+
+        <p>
+          Beginners ko pehle din se bahut bada target rakhne ki zarurat
+          nahi hoti. Daily short practice ko maintain karna ek long
+          session se zyada practical ho sakta hai.
+        </p>
+
+        <p>
+          Har person ka spiritual routine alag hota hai. Apni comfort,
+          belief aur schedule ke according practice karein.
+        </p>
+      </article>
+
+      <!-- Guide 2 -->
+      <article
+        id="guide-mantra"
+        class="guide-article">
+
+        <h2>
+          Mantra Repetition Beginner Guide
+        </h2>
+
+        <p>
+          Mantra repetition mein ek selected word, naam ya phrase ko
+          regularly repeat kiya jaata hai. Beginners ke liye sabse
+          important cheez ek manageable routine banana hai.
+        </p>
+
+        <h3>
+          Simple 5-Minute Routine
+        </h3>
+
+        <ol>
+          <li>
+            Phone ko silent mode par rakhein.
+          </li>
+
+          <li>
+            Comfortable jagah par baithhein.
+          </li>
+
+          <li>
+            Kuch normal breaths lein.
+          </li>
+
+          <li>
+            Apne selected naam ko slow aur clear voice mein repeat
+            karein.
+          </li>
+
+          <li>
+            Session complete hone ke baad count aur experience note
+            karein.
+          </li>
+        </ol>
+
+        <h3>
+          Common Distractions
+        </h3>
+
+        <p>
+          Practice ke dauraan thoughts, notifications ya background
+          sounds se attention break ho sakta hai. Is situation mein
+          frustration ke bajay calmly apna attention wapas naam par
+          laana useful hota hai.
+        </p>
+
+        <p>
+          Mantra repetition ko competition na banayein. Quality,
+          comfort aur regularity ko apne routine ke according balance
+          karein.
+        </p>
+      </article>
+
+      <!-- Guide 3 -->
+      <article
+        id="guide-voice"
+        class="guide-article">
+
+        <h2>
+          Voice Counter Ko Kaise Use Karein?
+        </h2>
+
+        <p>
+          Is voice counter ko use karne ke liye pehle input box mein
+          woh naam ya mantra likhein jise aap count karna chahte hain.
+        </p>
+
+        <h3>
+          Step-by-Step Method
+        </h3>
+
+        <ol>
+          <li>
+            Jap ya naam input box mein likhein.
+          </li>
+
+          <li>
+            Multiple names ko comma se separate karein, jaise:
+            <strong>ram, raam</strong>.
+          </li>
+
+          <li>
+            Apni speech ke according Hindi ya English language select
+            karein.
+          </li>
+
+          <li>
+            <strong>Start Listening</strong> button press karein.
+          </li>
+
+          <li>
+            Microphone permission aaye toh browser mein permission
+            allow karein.
+          </li>
+
+          <li>
+            Naam ko clear voice mein bolna shuru karein.
+          </li>
+
+          <li>
+            Practice complete hone par <strong>Stop</strong> press karein.
+          </li>
+        </ol>
+
+        <h3>
+          Reset Kaise Karein?
+        </h3>
+
+        <p>
+          Agar aap count ko zero se start karna chahte hain, toh Reset
+          button press karein. Reset karne se saved count remove ho
+          jaata hai.
+        </p>
+
+        <p>
+          Speech recognition browser aur device ke according different
+          behave kar sakta hai. Agar feature work na kare, updated
+          Chrome ya Edge browser try karein.
+        </p>
+      </article>
+
+      <!-- Guide 4 -->
+      <article
+        id="guide-accuracy"
+        class="guide-article">
+
+        <h2>
+          Speech Recognition Accuracy Kaise Improve Karein?
+        </h2>
+
+        <p>
+          Voice recognition ka result microphone, pronunciation,
+          language selection, background noise aur browser support par
+          depend karta hai.
+        </p>
+
+        <h3>
+          Useful Tips
+        </h3>
+
+        <ul>
+          <li>
+            Quiet room mein practice karein.
+          </li>
+
+          <li>
+            Microphone se bahut door ya bahut paas na bolhein.
+          </li>
+
+          <li>
+            Naam ko clear aur normal speed par pronounce karein.
+          </li>
+
+          <li>
+            Recognition language speech ke according select karein.
+          </li>
+
+          <li>
+            Ek hi session mein bahut zyada different words add na
+            karein.
+          </li>
+
+          <li>
+            Transcript box mein recognized text check karte rahein.
+          </li>
+
+          <li>
+            Background music aur TV noise ko temporarily band karein.
+          </li>
+        </ul>
+
+        <h3>
+          Recognition Perfect Kyun Nahi Hota?
+        </h3>
+
+        <p>
+          Human speech mein accent, speed aur pronunciation ka
+          difference hota hai. Similar-sounding words ko browser kabhi
+          galat recognize kar sakta hai. Isliye is tool ka count
+          approximate digital assistance samjhein.
+        </p>
+      </article>
+
+      <!-- Guide 5 -->
+      <article
+        id="guide-mala"
+        class="guide-article">
+
+        <h2>
+          Digital Counter Aur Traditional Mala
+        </h2>
+
+        <p>
+          Traditional mala aur digital voice counter dono repetition
+          track karne ke alag methods hain. Kaunsa method suitable hai,
+          yeh user ki personal preference aur situation par depend
+          karta hai.
+        </p>
+
+        <table class="comparison-table">
+          <thead>
+            <tr>
+              <th>
+                Feature
+              </th>
+
+              <th>
+                Digital Voice Counter
+              </th>
+
+              <th>
+                Traditional Mala
+              </th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr>
+              <td>
+                Counting method
+              </td>
+
+              <td>
+                Recognized voice ke through
+              </td>
+
+              <td>
+                Beads move karke
+              </td>
+            </tr>
+
+            <tr>
+              <td>
+                Technology
+              </td>
+
+              <td>
+                Browser aur microphone ki zarurat
+              </td>
+
+              <td>
+                Technology ki zarurat nahi
+              </td>
+            </tr>
+
+            <tr>
+              <td>
+                Portability
+              </td>
+
+              <td>
+                Phone ya device required
+              </td>
+
+              <td>
+                Physical mala carry karni hoti hai
+              </td>
+            </tr>
+
+            <tr>
+              <td>
+                Accuracy
+              </td>
+
+              <td>
+                Speech recognition par depend
+              </td>
+
+              <td>
+                Manual counting par depend
+              </td>
+            </tr>
+
+            <tr>
+              <td>
+                Personal choice
+              </td>
+
+              <td>
+                Hands-free experience useful ho sakta hai
+              </td>
+
+              <td>
+                Traditional tactile practice useful ho sakti hai
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <p>
+          Digital tool convenience de sakta hai, jabki traditional mala
+          kuch users ke liye tactile aur familiar practice provide
+          karti hai. Aap apni comfort aur routine ke according method
+          choose kar sakte hain.
+        </p>
+      </article>
+
+      <!-- Guide 6 -->
+      <article
+        id="guide-privacy"
+        class="guide-article">
+
+        <h2>
+          Meditation Mein Microphone Aur Privacy Tips
+        </h2>
+
+        <p>
+          Voice counter ko microphone access ki zarurat tab padti hai
+          jab aap Start Listening button press karte hain. Browser
+          permission ko carefully review karna achhi privacy practice
+          hai.
+        </p>
+
+        <h3>
+          Basic Privacy Tips
+        </h3>
+
+        <ul>
+          <li>
+            Shared ya public computer par microphone permission na dein.
+          </li>
+
+          <li>
+            Practice complete hone ke baad Stop button press karein.
+          </li>
+
+          <li>
+            Browser settings se microphone permission kabhi bhi revoke
+            kar sakte hain.
+          </li>
+
+          <li>
+            Input box mein personal, private ya sensitive information
+            na likhein.
+          </li>
+
+          <li>
+            Local storage mein count, language aur theme preference
+            save ho sakte hain.
+          </li>
+
+          <li>
+            Device kisi aur ko dene se pehle browser data clear karein,
+            agar zarurat ho.
+          </li>
+        </ul>
+
+        <h3>
+          Future Advertising Notice
+        </h3>
+
+        <p>
+          Abhi is website par Google AdSense ya koi third-party
+          advertising service active nahi hai. Future mein agar ads
+          add kiye jaate hain, toh users ko ads enable karne se pehle
+          clear notice diya jayega.
+        </p>
+      </article>
+    </section>
+
+    <!-- ABOUT -->
     <section
       id="page-about"
       class="page-content static-page">
@@ -781,7 +1491,7 @@
       </p>
     </section>
 
-    <!-- Privacy Policy -->
+    <!-- PRIVACY -->
     <section
       id="page-privacy"
       class="page-content static-page">
@@ -831,23 +1541,26 @@
       </p>
 
       <p>
-        <strong>Future Advertising Notice:</strong>
-        Abhi is website par Google AdSense ya koi third-party
-        advertising service active nahi hai.
+        <strong>Current Advertising Status:</strong>
+        Abhi is website par Google AdSense, display advertising,
+        advertising cookies ya koi third-party advertising service
+        active nahi hai.
       </p>
 
       <p>
+        <strong>Future Advertising Notice:</strong>
         Future mein agar advertising service add ki jaati hai, toh
         users ko ads enable karne se pehle clear notice diya jayega.
-        Privacy Policy ko bhi advertising cookies, third-party vendors,
+        Privacy Policy ko advertising cookies, third-party vendors,
         data usage aur available user choices ki information ke saath
         update kiya jayega.
       </p>
 
       <p>
-        Users ko advertising enable hone ke baad updated Privacy
-        Policy accept ya review karne ka clear opportunity diya jayega,
-        jahan applicable law ke according consent required hoga.
+        Advertising start hone se pehle applicable Privacy Policy,
+        cookie information aur user choices ko clearly provide kiya
+        jayega. Jahan law ke according consent required hoga, wahan
+        applicable consent process use kiya jayega.
       </p>
 
       <p>
@@ -876,7 +1589,7 @@
       </p>
     </section>
 
-    <!-- Terms -->
+    <!-- TERMS -->
     <section
       id="page-terms"
       class="page-content static-page">
@@ -943,13 +1656,14 @@
         </li>
 
         <li>
-          Advertising start hone se pehle applicable Privacy Policy,
-          cookie information aur user choices ko update kiya jayega.
+          Advertising start hone se pehle applicable privacy, cookie
+          information aur user choices update ki jayengi.
         </li>
 
         <li>
-          Users ko future advertisements par invalid, misleading ya
-          accidental clicks generate nahi karne chahiye.
+          Future advertisements active hone ke baad users ko invalid,
+          misleading ya accidental ad clicks generate nahi karne
+          chahiye.
         </li>
       </ul>
 
@@ -959,7 +1673,7 @@
       </p>
     </section>
 
-    <!-- Contact -->
+    <!-- CONTACT -->
     <section
       id="page-contact"
       class="page-content static-page">
@@ -991,21 +1705,24 @@
     </p>
 
     <p>
-      Use of this website is subject to our
       <a href="#privacy">
         Privacy Policy
       </a>
-      and
+      |
       <a href="#terms">
         Terms &amp; Conditions
-      </a>.
+      </a>
+      |
+      <a href="#contact">
+        Contact
+      </a>
     </p>
   </footer>
 
   <script>
-    // --------------------------------
-    // Hash Navigation
-    // --------------------------------
+    // -------------------------------
+    // Navigation
+    // -------------------------------
 
     const navLinks =
       document.querySelectorAll(".nav-link");
@@ -1065,9 +1782,9 @@
       showPageFromHash
     );
 
-    // --------------------------------
+    // -------------------------------
     // DOM Elements
-    // --------------------------------
+    // -------------------------------
 
     const mantraInput =
       document.getElementById("mantraInput");
@@ -1111,9 +1828,9 @@
     const themeToggle =
       document.getElementById("themeToggle");
 
-    // --------------------------------
+    // -------------------------------
     // Speech Recognition
-    // --------------------------------
+    // -------------------------------
 
     const SpeechRecognition =
       window.SpeechRecognition ||
@@ -1125,16 +1842,12 @@
     let targetWords = [];
     let finalTranscript = "";
 
-    /*
-      Har Start par unique session ID banega.
-      Stop ke baad old result event ignore hoga.
-    */
     let sessionCounter = 0;
     let activeSessionId = 0;
 
-    // --------------------------------
-    // Load Saved Data
-    // --------------------------------
+    // -------------------------------
+    // Local Storage
+    // -------------------------------
 
     const savedCount =
       localStorage.getItem("japCount");
@@ -1169,9 +1882,9 @@
       themeToggle.textContent = "☀️ Light";
     }
 
-    // --------------------------------
-    // Theme Toggle
-    // --------------------------------
+    // -------------------------------
+    // Theme
+    // -------------------------------
 
     themeToggle.addEventListener(
       "click",
@@ -1192,9 +1905,9 @@
       }
     );
 
-    // --------------------------------
-    // Language Change
-    // --------------------------------
+    // -------------------------------
+    // Language
+    // -------------------------------
 
     languageSelect.addEventListener(
       "change",
@@ -1218,9 +1931,9 @@
       }
     );
 
-    // --------------------------------
-    // Helper Functions
-    // --------------------------------
+    // -------------------------------
+    // Helpers
+    // -------------------------------
 
     function updateTargetWords() {
       const raw =
@@ -1250,7 +1963,6 @@
       if (isOn) {
         startBtn.disabled = true;
         startBtn.classList.add("disabled");
-
         stopBtn.disabled = false;
 
         startIcon.textContent = "●";
@@ -1265,7 +1977,6 @@
       } else {
         startBtn.disabled = false;
         startBtn.classList.remove("disabled");
-
         stopBtn.disabled = true;
 
         startIcon.textContent = "▶";
@@ -1344,9 +2055,9 @@
       stopBtn.disabled = true;
     }
 
-    // --------------------------------
-    // Create Recognition Session
-    // --------------------------------
+    // -------------------------------
+    // Recognition Setup
+    // -------------------------------
 
     function createRecognition() {
       if (!SpeechRecognition) {
@@ -1393,9 +2104,6 @@
 
       currentRecognition.onresult =
         (event) => {
-          /*
-            Purane session ke result ko ignore karo.
-          */
           if (
             currentSessionId !==
             activeSessionId
@@ -1554,9 +2262,9 @@
       return currentRecognition;
     }
 
-    // --------------------------------
-    // Start Button
-    // --------------------------------
+    // -------------------------------
+    // Start
+    // -------------------------------
 
     startBtn.addEventListener(
       "click",
@@ -1599,23 +2307,15 @@
             error
           );
 
-          if (
-            error.name ===
-            "InvalidStateError"
-          ) {
-            statusText.textContent =
-              "Recognition already running hai.";
-          } else {
-            statusText.textContent =
-              "Recognition start nahi ho saka.";
-          }
+          statusText.textContent =
+            "Recognition start nahi ho saka.";
         }
       }
     );
 
-    // --------------------------------
-    // Stop Button
-    // --------------------------------
+    // -------------------------------
+    // Stop
+    // -------------------------------
 
     stopBtn.addEventListener(
       "click",
@@ -1625,8 +2325,8 @@
         }
 
         /*
-          Session ko immediately invalid karo.
-          Stop ke baad old result count nahi hoga.
+          Session ko immediately invalidate karo.
+          Stop ke baad late result count nahi hoga.
         */
         activeSessionId =
           ++sessionCounter;
@@ -1658,9 +2358,9 @@
       }
     );
 
-    // --------------------------------
-    // Reset Button
-    // --------------------------------
+    // -------------------------------
+    // Reset
+    // -------------------------------
 
     resetBtn.addEventListener(
       "click",
@@ -1684,9 +2384,9 @@
       }
     );
 
-    // --------------------------------
-    // Mantra Input
-    // --------------------------------
+    // -------------------------------
+    // Input
+    // -------------------------------
 
     mantraInput.addEventListener(
       "input",
@@ -1700,9 +2400,9 @@
       }
     );
 
-    // --------------------------------
+    // -------------------------------
     // Initial Setup
-    // --------------------------------
+    // -------------------------------
 
     showPageFromHash();
     updateTargetWords();
