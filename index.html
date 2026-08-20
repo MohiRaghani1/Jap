@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+
   <meta
     name="viewport"
     content="width=device-width, initial-scale=1"
@@ -9,18 +10,21 @@
 
   <meta
     name="description"
-    content="Naam Jap Voice Counter is a free online mantra, naam simran and meditation counter with browser voice recognition."
+    content="Naam Jap Voice Counter is a free online tool for mantra repetition, naam simran and meditation counting."
   />
 
   <meta
     name="keywords"
-    content="naam jap counter, mantra counter, voice jap counter, naam simran counter, meditation counter"
+    content="naam jap counter, voice mantra counter, Shri Radhe counter, naam simran counter, meditation counter"
   />
 
   <meta name="robots" content="index, follow" />
-  <meta name="theme-color" content="#020617" />
 
-  <!-- अपना domain डालें -->
+  <meta
+    name="theme-color"
+    content="#020617"
+  />
+
   <link
     rel="canonical"
     href="https://mohiraghani1.github.io/Jap/"
@@ -78,7 +82,11 @@
 
     body {
       min-height: 100vh;
-      background: radial-gradient(circle at top, var(--bg1), var(--bg2));
+      background: radial-gradient(
+        circle at top,
+        var(--bg1),
+        var(--bg2)
+      );
       color: var(--text);
       padding: 18px;
     }
@@ -240,6 +248,7 @@
     .count-note {
       color: var(--subtext);
       font-size: 0.75rem;
+      word-break: break-word;
     }
 
     .btn-row {
@@ -260,7 +269,11 @@
     .btn-primary {
       flex: 1;
       color: white;
-      background: linear-gradient(135deg, #2563eb, #4f46e5);
+      background: linear-gradient(
+        135deg,
+        #2563eb,
+        #4f46e5
+      );
     }
 
     .btn-stop {
@@ -300,6 +313,7 @@
       color: var(--pill-text);
       font-size: 0.8rem;
       margin-bottom: 20px;
+      word-break: break-word;
     }
 
     .placeholder {
@@ -315,7 +329,10 @@
 
     .guide-list {
       display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
+      grid-template-columns: repeat(
+        2,
+        minmax(0, 1fr)
+      );
       gap: 12px;
       margin-top: 16px;
     }
@@ -332,6 +349,11 @@
 
     .guide-card:hover {
       border-color: var(--link);
+    }
+
+    .guide-card h3 {
+      font-size: 0.92rem;
+      line-height: 1.35;
     }
 
     .guide-card p {
@@ -411,7 +433,9 @@
 <body>
   <main class="card">
     <nav class="nav-bar">
-      <a href="index.html" class="active">
+      <a
+        href="index.html"
+        class="active">
         Home
       </a>
 
@@ -451,22 +475,28 @@
       </div>
 
       <p class="subtitle">
-        Mic se jo naam bologe, wahi count hoga 📿
+        Mic se jo poora phrase bologe, wahi count hoga 📿
       </p>
 
       <label
         class="field-label"
         for="mantraInput">
-        Jap / Naam comma se alag-alag likhein
+        Jap / poora mantra yahan likhein
       </label>
 
       <input
         id="mantraInput"
         class="input"
         type="text"
-        value="ram, raam"
-        placeholder="Jaise: ram, raam, om"
+        value="Shri Radhe"
+        placeholder="Jaise: Shri Radhe Radhe"
         autocomplete="off" />
+
+      <p>
+        Example: Input mein
+        <strong>Shri Radhe</strong>
+        likho. Shri Radhe bolne par count 1 hoga.
+      </p>
 
       <label
         class="field-label"
@@ -514,7 +544,7 @@
         <div
           id="mantraPreview"
           class="count-note">
-          Counting: "ram", "raam"
+          Counting: "Shri Radhe"
         </div>
       </div>
 
@@ -548,8 +578,7 @@
         aria-live="polite">
       </div>
 
-      <label
-        class="field-label">
+      <label class="field-label">
         Latest suna hua text
       </label>
 
@@ -575,15 +604,18 @@
       </p>
 
       <p>
-        Input box mein apna naam ya mantra enter karein. Multiple words
-        ko comma se separate karein. Language choose karke microphone
-        start karein aur clear voice mein naam repeat karein.
+        Input box mein apna poora naam ya mantra enter karein. Phrase
+        mein kitne bhi words ho sakte hain. Language choose karke
+        microphone start karein aur wahi poora phrase clear voice mein
+        repeat karein.
       </p>
 
       <p>
-        Speech recognition browser aur device ke according different
-        result de sakta hai. Isliye transcript aur count ko check karna
-        useful hai.
+        Example: Agar input mein
+        <strong>Shri Radhe Radhe</strong>
+        likha hai, toh poora
+        <strong>Shri Radhe Radhe</strong>
+        bolne par ek count hoga.
       </p>
 
       <div class="notice">
@@ -714,17 +746,19 @@
   </main>
 
   <footer>
-    &copy; 2026 Naam Jap Voice Counter.
+    &copy; 2026 Naam Jap Voice Counter
     <br />
 
     <a href="privacy.html">
       Privacy Policy
     </a>
     |
+
     <a href="terms.html">
       Terms
     </a>
     |
+
     <a href="contact.html">
       Contact
     </a>
@@ -732,40 +766,64 @@
 
   <script>
     const mantraInput =
-      document.getElementById("mantraInput");
+      document.getElementById(
+        "mantraInput"
+      );
 
     const languageSelect =
-      document.getElementById("languageSelect");
+      document.getElementById(
+        "languageSelect"
+      );
 
     const countDisplay =
-      document.getElementById("countDisplay");
+      document.getElementById(
+        "countDisplay"
+      );
 
     const mantraPreview =
-      document.getElementById("mantraPreview");
+      document.getElementById(
+        "mantraPreview"
+      );
 
     const startBtn =
-      document.getElementById("startBtn");
+      document.getElementById(
+        "startBtn"
+      );
 
     const stopBtn =
-      document.getElementById("stopBtn");
+      document.getElementById(
+        "stopBtn"
+      );
 
     const resetBtn =
-      document.getElementById("resetBtn");
+      document.getElementById(
+        "resetBtn"
+      );
 
     const statusText =
-      document.getElementById("statusText");
+      document.getElementById(
+        "statusText"
+      );
 
     const transcriptBox =
-      document.getElementById("transcriptBox");
+      document.getElementById(
+        "transcriptBox"
+      );
 
     const supportText =
-      document.getElementById("supportText");
+      document.getElementById(
+        "supportText"
+      );
 
     const supportPill =
-      document.getElementById("supportPill");
+      document.getElementById(
+        "supportPill"
+      );
 
     const themeToggle =
-      document.getElementById("themeToggle");
+      document.getElementById(
+        "themeToggle"
+      );
 
     const SpeechRecognition =
       window.SpeechRecognition ||
@@ -774,22 +832,30 @@
     let recognition = null;
     let listening = false;
     let totalCount = 0;
-    let targetWords = [];
+    let targetPhrases = [];
+    let countedFinalText = "";
     let sessionId = 0;
 
     const savedCount =
-      localStorage.getItem("japCount");
+      localStorage.getItem(
+        "japCount"
+      );
 
     if (savedCount !== null) {
       totalCount =
-        parseInt(savedCount, 10) || 0;
+        parseInt(
+          savedCount,
+          10
+        ) || 0;
 
       countDisplay.textContent =
         String(totalCount);
     }
 
     const savedLanguage =
-      localStorage.getItem("japLanguage");
+      localStorage.getItem(
+        "japLanguage"
+      );
 
     if (savedLanguage) {
       languageSelect.value =
@@ -797,46 +863,111 @@
     }
 
     if (
-      localStorage.getItem("japTheme") === "dark"
+      localStorage.getItem(
+        "japTheme"
+      ) === "dark"
     ) {
-      document.body.classList.add("dark");
-      themeToggle.textContent = "☀️ Light";
+      document.body.classList.add(
+        "dark"
+      );
+
+      themeToggle.textContent =
+        "☀️ Light";
     }
 
-    function updateTargetWords() {
-      targetWords =
+    function normalize(text) {
+      return String(text)
+        .toLowerCase()
+        .replace(
+          /[।,.;:!?()[\]{}"'`]/g,
+          " "
+        )
+        .replace(
+          /\s+/g,
+          " "
+        )
+        .trim();
+    }
+
+    function escapeRegExp(text) {
+      return text.replace(
+        /[.*+?^${}()|[\]\\]/g,
+        "\\$&"
+      );
+    }
+
+    function updateTargetPhrases() {
+      targetPhrases =
         mantraInput.value
           .split(",")
-          .map((word) =>
-            word.trim().toLowerCase()
+          .map((phrase) =>
+            normalize(phrase)
           )
           .filter(Boolean);
 
       mantraPreview.textContent =
-        targetWords.length
-          ? 'Counting: "' +
-            targetWords.join('", "') +
+        targetPhrases.length
+          ? 'Counting full phrase: "' +
+            targetPhrases.join(
+              '", "'
+            ) +
             '"'
-          : "Pehle mantra enter karein.";
+          : "Pehle poora mantra enter karein.";
     }
 
-    function normalize(text) {
-      return text
-        .toLowerCase()
-        .replace(/[।,.;:!?()[\]{}"'`]/g, " ")
-        .replace(/\s+/g, " ")
-        .trim();
+    function countPhraseMatches(
+      spokenText,
+      targetPhrase
+    ) {
+      const spoken =
+        normalize(spokenText);
+
+      const target =
+        normalize(targetPhrase);
+
+      if (!spoken || !target) {
+        return 0;
+      }
+
+      const pattern =
+        escapeRegExp(target)
+          .replace(
+            /\\ +/g,
+            "\\s+"
+          );
+
+      const regex =
+        new RegExp(
+          "(^|\\s)" +
+          pattern +
+          "(?=\\s|$)",
+          "gi"
+        );
+
+      const matches =
+        spoken.match(regex);
+
+      return matches
+        ? matches.length
+        : 0;
     }
 
-    function countWords(text) {
-      const words =
-        normalize(text)
-          .split(" ")
-          .filter(Boolean);
+    function countAllPhrases(
+      spokenText
+    ) {
+      let total = 0;
 
-      return words.filter((word) =>
-        targetWords.includes(word)
-      ).length;
+      for (
+        const phrase of targetPhrases
+      ) {
+        total +=
+          countPhraseMatches(
+            spokenText,
+            phrase
+          );
+      }
+
+      return total;
     }
 
     function showPlaceholder() {
@@ -848,32 +979,45 @@
 
     function setListening(value) {
       listening = value;
-      startBtn.disabled = value;
-      stopBtn.disabled = !value;
+
+      startBtn.disabled =
+        value;
+
+      stopBtn.disabled =
+        !value;
 
       if (value) {
         startBtn.textContent =
           "● Listening...";
+
         supportText.textContent =
           "Mic active";
       } else {
         startBtn.textContent =
           "▶ Start Listening";
+
         supportText.textContent =
           "Speech ready";
       }
     }
 
     function unsupported() {
-      supportPill.classList.add("pill-error");
+      supportPill.classList.add(
+        "pill-error"
+      );
+
       supportText.textContent =
         "Speech support available nahi hai";
 
-      statusText.classList.add("status-error");
+      statusText.classList.add(
+        "status-error"
+      );
+
       statusText.textContent =
         "Chrome ya Edge browser use karein.";
 
-      startBtn.disabled = true;
+      startBtn.disabled =
+        true;
     }
 
     if (!SpeechRecognition) {
@@ -884,7 +1028,9 @@
       "click",
       () => {
         const dark =
-          document.body.classList.toggle("dark");
+          document.body.classList.toggle(
+            "dark"
+          );
 
         localStorage.setItem(
           "japTheme",
@@ -892,7 +1038,9 @@
         );
 
         themeToggle.textContent =
-          dark ? "☀️ Light" : "🌙 Dark";
+          dark
+            ? "☀️ Light"
+            : "🌙 Dark";
       }
     );
 
@@ -908,21 +1056,23 @@
 
     mantraInput.addEventListener(
       "input",
-      updateTargetWords
+      updateTargetPhrases
     );
 
     startBtn.addEventListener(
       "click",
       () => {
-        updateTargetWords();
+        updateTargetPhrases();
 
-        if (!targetWords.length) {
+        if (
+          !targetPhrases.length
+        ) {
           statusText.classList.add(
             "status-error"
           );
 
           statusText.textContent =
-            "Pehle mantra enter karein.";
+            "Pehle poora mantra enter karein.";
 
           return;
         }
@@ -934,75 +1084,137 @@
         const currentSession =
           ++sessionId;
 
-        let finalText = "";
+        countedFinalText =
+          "";
+
+        let finalText =
+          "";
 
         recognition =
           new SpeechRecognition();
 
-        recognition.continuous = true;
-        recognition.interimResults = true;
+        recognition.continuous =
+          true;
+
+        recognition.interimResults =
+          true;
+
         recognition.lang =
           languageSelect.value;
 
-        recognition.onstart = () => {
-          if (
-            currentSession !== sessionId
-          ) {
-            return;
-          }
+        recognition.maxAlternatives =
+          1;
 
-          setListening(true);
+        recognition.onstart =
+          () => {
+            if (
+              currentSession !==
+              sessionId
+            ) {
+              return;
+            }
 
-          statusText.classList.remove(
-            "status-error"
-          );
+            setListening(true);
 
-          statusText.textContent =
-            "Sunn raha hoon… naam bolo.";
-        };
+            statusText.classList.remove(
+              "status-error"
+            );
+
+            statusText.textContent =
+              "Sunn raha hoon… poora phrase bolo.";
+          };
 
         recognition.onresult =
           (event) => {
             if (
-              currentSession !== sessionId ||
+              currentSession !==
+                sessionId ||
               !listening
             ) {
               return;
             }
 
-            let interim = "";
-            let added = 0;
+            let interimText =
+              "";
 
             for (
-              let i = event.resultIndex;
-              i < event.results.length;
+              let i =
+                event.resultIndex;
+              i <
+                event.results.length;
               i++
             ) {
+              const result =
+                event.results[i];
+
               const text =
-                event.results[i][0]
+                result[0]
                   .transcript
                   .trim();
 
               if (
-                event.results[i].isFinal
+                result.isFinal
               ) {
-                added += countWords(text);
-                finalText += text + " ";
+                finalText +=
+                  " " + text;
               } else {
-                interim += text + " ";
+                interimText +=
+                  " " + text;
               }
             }
 
-            const visible =
-              (finalText + interim).trim();
+            const visibleText =
+              (
+                finalText +
+                " " +
+                interimText
+              ).trim();
 
-            if (visible) {
+            if (visibleText) {
               transcriptBox.textContent =
-                visible;
+                visibleText;
             }
 
+            const allFinalText =
+              normalize(finalText);
+
+            const oldFinalText =
+              normalize(
+                countedFinalText
+              );
+
+            if (
+              allFinalText.length <=
+              oldFinalText.length
+            ) {
+              return;
+            }
+
+            const newFinalText =
+              allFinalText
+                .slice(
+                  oldFinalText.length
+                )
+                .trim();
+
+            if (!newFinalText) {
+              countedFinalText =
+                allFinalText;
+
+              return;
+            }
+
+            const added =
+              countAllPhrases(
+                newFinalText
+              );
+
+            countedFinalText =
+              allFinalText;
+
             if (added > 0) {
-              totalCount += added;
+              totalCount +=
+                added;
 
               countDisplay.textContent =
                 String(totalCount);
@@ -1013,14 +1225,15 @@
               );
 
               statusText.textContent =
-                `+${added} jap detect hua. Total: ${totalCount}`;
+                `+${added} phrase count hua. Total: ${totalCount}`;
             }
           };
 
         recognition.onerror =
           (event) => {
             if (
-              currentSession !== sessionId
+              currentSession !==
+              sessionId
             ) {
               return;
             }
@@ -1030,12 +1243,14 @@
             );
 
             if (
-              event.error === "not-allowed"
+              event.error ===
+              "not-allowed"
             ) {
               statusText.textContent =
                 "Microphone permission allow karein.";
             } else if (
-              event.error === "no-speech"
+              event.error ===
+              "no-speech"
             ) {
               statusText.textContent =
                 "Koi speech detect nahi hui.";
@@ -1046,18 +1261,20 @@
             }
           };
 
-        recognition.onend = () => {
-          if (
-            currentSession !== sessionId
-          ) {
-            return;
-          }
+        recognition.onend =
+          () => {
+            if (
+              currentSession !==
+              sessionId
+            ) {
+              return;
+            }
 
-          setListening(false);
+            setListening(false);
 
-          statusText.textContent =
-            "Listening stopped.";
-        };
+            statusText.textContent =
+              "Listening stopped.";
+          };
 
         try {
           recognition.start();
@@ -1075,22 +1292,28 @@
     stopBtn.addEventListener(
       "click",
       () => {
-        if (!recognition || !listening) {
+        if (
+          !recognition ||
+          !listening
+        ) {
           return;
         }
 
         sessionId++;
-        listening = false;
+
+        listening =
+          false;
 
         const oldRecognition =
           recognition;
 
-        recognition = null;
+        recognition =
+          null;
 
         setListening(false);
 
         statusText.textContent =
-          "Stopped. Pending speech count nahi hui.";
+          "Stopped.";
 
         try {
           oldRecognition.stop();
@@ -1103,13 +1326,18 @@
     resetBtn.addEventListener(
       "click",
       () => {
-        totalCount = 0;
+        totalCount =
+          0;
 
-        countDisplay.textContent = "0";
+        countDisplay.textContent =
+          "0";
 
         localStorage.removeItem(
           "japCount"
         );
+
+        countedFinalText =
+          "";
 
         showPlaceholder();
 
@@ -1122,7 +1350,7 @@
       }
     );
 
-    updateTargetWords();
+    updateTargetPhrases();
   </script>
 </body>
 </html>
