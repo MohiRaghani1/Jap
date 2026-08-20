@@ -13,21 +13,18 @@
     content="Naam Jap Voice Counter is a voice-powered mantra and naam simran counter for daily spiritual practice."
   />
 
-  <meta
-    name="keywords"
-    content="naam jap counter, voice jap counter, mantra voice counter, Shri Radhe counter, naam simran counter"
-  />
-
   <meta name="robots" content="index, follow" />
 
-  <meta
-    name="theme-color"
-    content="#102a43"
-  />
+  <meta name="theme-color" content="#102a43" />
 
   <link
     rel="canonical"
     href="https://mohiraghani1.github.io/Jap/"
+  />
+
+  <link
+    rel="manifest"
+    href="manifest.json"
   />
 
   <title>
@@ -80,17 +77,8 @@
 
     body {
       min-height: 100vh;
-      background:
-        radial-gradient(
-          circle at 12% 4%,
-          rgba(198, 139, 44, 0.13),
-          transparent 26rem
-        ),
-        linear-gradient(
-          180deg,
-          var(--cream),
-          var(--cream)
-        );
+      padding: 0 16px 28px;
+      background: var(--cream);
       color: var(--text);
       font-family:
         Inter,
@@ -101,7 +89,6 @@
         "Segoe UI",
         sans-serif;
       line-height: 1.6;
-      padding: 0 16px 28px;
     }
 
     a {
@@ -239,7 +226,8 @@
 
     .phrase-input,
     .language-select,
-    .target-input {
+    .target-input,
+    .reminder-time {
       width: 100%;
       min-height: 48px;
       padding: 12px 14px;
@@ -258,7 +246,8 @@
 
     .phrase-input:focus,
     .language-select:focus,
-    .target-input:focus {
+    .target-input:focus,
+    .reminder-time:focus {
       border-color: var(--blue);
       box-shadow: 0 0 0 3px rgba(40, 120, 200, 0.15);
     }
@@ -335,12 +324,7 @@
       padding: 20px;
       border: 1px solid var(--border);
       border-radius: 18px;
-      background:
-        linear-gradient(
-          145deg,
-          var(--blue-soft),
-          var(--white)
-        );
+      background: linear-gradient(145deg, var(--blue-soft), var(--white));
       text-align: center;
     }
 
@@ -565,13 +549,17 @@
       color: var(--text);
     }
 
-    .feedback-settings {
+    .feedback-settings,
+    .reminder-settings,
+    .install-area,
+    .session-summary {
       margin-top: 14px;
-      padding-top: 14px;
       border-top: 1px solid var(--border);
+      padding-top: 14px;
     }
 
-    .feedback-settings summary {
+    .feedback-settings summary,
+    .reminder-settings summary {
       color: var(--blue);
       cursor: pointer;
       font-size: 0.8rem;
@@ -592,6 +580,99 @@
       align-items: center;
       gap: 6px;
       cursor: pointer;
+    }
+
+    .session-panel,
+    .weekly-report,
+    .reminder-panel {
+      padding: 14px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: var(--cream);
+    }
+
+    .session-row,
+    .report-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 0.78rem;
+    }
+
+    .session-row strong,
+    .report-row strong {
+      color: var(--text);
+    }
+
+    .session-timer {
+      margin-top: 7px;
+      color: var(--navy);
+      font-size: 1.5rem;
+      font-weight: 850;
+      text-align: center;
+    }
+
+    body.dark .session-timer {
+      color: #ffffff;
+    }
+
+    .summary-card {
+      display: grid;
+      gap: 7px;
+      margin-top: 10px;
+      padding: 12px;
+      border-radius: 11px;
+      background: var(--blue-soft);
+      color: var(--muted);
+      font-size: 0.78rem;
+    }
+
+    .summary-card strong {
+      color: var(--text);
+    }
+
+    .reminder-panel {
+      display: grid;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .reminder-time {
+      min-height: 40px;
+      padding: 8px 10px;
+      font-size: 0.82rem;
+    }
+
+    .reminder-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .reminder-status {
+      color: var(--muted);
+      font-size: 0.74rem;
+    }
+
+    .install-area {
+      display: none;
+    }
+
+    .install-area.visible {
+      display: block;
+    }
+
+    .install-btn {
+      width: 100%;
+      min-height: 43px;
+      border: 0;
+      border-radius: 10px;
+      background: var(--gold);
+      color: #ffffff;
+      cursor: pointer;
+      font-size: 0.8rem;
+      font-weight: 800;
     }
 
     .tap-fallback {
@@ -637,12 +718,7 @@
       margin: 0 auto 30px;
       padding: 32px 26px;
       border-radius: 26px;
-      background:
-        linear-gradient(
-          120deg,
-          rgba(16, 42, 67, 0.98),
-          rgba(31, 91, 137, 0.96)
-        );
+      background: linear-gradient(120deg, #102a43, #1f5b89);
       color: #ffffff;
       box-shadow: var(--shadow);
     }
@@ -730,10 +806,7 @@
     .features-grid,
     .guides-grid {
       display: grid;
-      grid-template-columns: repeat(
-        3,
-        minmax(0, 1fr)
-      );
+      grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 14px;
     }
 
@@ -1029,14 +1102,12 @@
         class="brand"
         href="index.html">
 
-        <span>
-          <span class="brand-name">
-            Naam Jap Voice Counter
-          </span>
+        <span class="brand-name">
+          Naam Jap Voice Counter
+        </span>
 
-          <span class="brand-tagline">
-            Speak your mantra. Count your practice.
-          </span>
+        <span class="brand-tagline">
+          Speak your mantra. Count your practice.
         </span>
       </a>
 
@@ -1088,8 +1159,7 @@
       </h2>
 
       <p class="counter-intro">
-        Enter the complete phrase you want to repeat. It may contain
-        one word or many words.
+        Enter the complete phrase you want to repeat.
       </p>
 
       <label
@@ -1276,7 +1346,9 @@
             0 days
           </div>
 
-          <span class="tool-note">
+          <span
+            id="bestStreakNote"
+            class="tool-note">
             Your best: 0 days
           </span>
         </section>
@@ -1319,6 +1391,38 @@
             id="historyList"
             class="history-list">
           </ul>
+
+          <div
+            id="weeklyReport"
+            class="weekly-report"
+            style="margin-top: 10px;">
+          </div>
+        </div>
+      </div>
+
+      <div class="session-summary">
+        <div class="session-panel">
+          <div class="session-row">
+            <span>
+              Current session
+            </span>
+
+            <strong id="sessionJap">
+              0 jap
+            </strong>
+          </div>
+
+          <div
+            id="sessionTimer"
+            class="session-timer">
+            00:00
+          </div>
+
+          <div
+            id="sessionSummaryCard"
+            class="summary-card"
+            hidden>
+          </div>
         </div>
       </div>
 
@@ -1345,6 +1449,65 @@
           </label>
         </div>
       </details>
+
+      <details class="reminder-settings">
+        <summary>
+          Daily reminder
+        </summary>
+
+        <div class="reminder-panel">
+          <label
+            class="field-label"
+            for="reminderTime">
+            Reminder time
+          </label>
+
+          <input
+            id="reminderTime"
+            class="reminder-time"
+            type="time"
+            value="06:00" />
+
+          <div class="reminder-actions">
+            <button
+              id="enableReminderBtn"
+              class="small-btn"
+              type="button">
+              Enable reminder
+            </button>
+
+            <button
+              id="disableReminderBtn"
+              class="small-btn"
+              type="button">
+              Disable
+            </button>
+          </div>
+
+          <div
+            id="reminderStatus"
+            class="reminder-status">
+            Reminder is off.
+          </div>
+
+          <small class="tool-note">
+            Keep this app installed or open for the best reminder
+            experience. Browser notification permission is required.
+          </small>
+        </div>
+      </details>
+
+      <div
+        id="installArea"
+        class="install-area">
+
+        <button
+          id="installBtn"
+          class="install-btn"
+          type="button">
+          Install Naam Jap Counter
+        </button>
+      </div>
 
       <div
         id="tapFallback"
@@ -1677,29 +1840,12 @@
     </div>
 
     <div class="footer-links">
-      <a href="index.html">
-        Home
-      </a>
-
-      <a href="guides.html">
-        Guides
-      </a>
-
-      <a href="about.html">
-        About
-      </a>
-
-      <a href="privacy.html">
-        Privacy
-      </a>
-
-      <a href="terms.html">
-        Terms
-      </a>
-
-      <a href="contact.html">
-        Contact
-      </a>
+      <a href="index.html">Home</a>
+      <a href="guides.html">Guides</a>
+      <a href="about.html">About</a>
+      <a href="privacy.html">Privacy</a>
+      <a href="terms.html">Terms</a>
+      <a href="contact.html">Contact</a>
     </div>
 
     <div class="footer-text">
@@ -1708,142 +1854,9 @@
   </footer>
 
   <script>
-    const mantraInput =
-      document.getElementById(
-        "mantraInput"
-      );
-
-    const languageSelect =
-      document.getElementById(
-        "languageSelect"
-      );
-
-    const countDisplay =
-      document.getElementById(
-        "countDisplay"
-      );
-
-    const mantraPreview =
-      document.getElementById(
-        "mantraPreview"
-      );
-
-    const speakInstruction =
-      document.getElementById(
-        "speakInstruction"
-      );
-
-    const startBtn =
-      document.getElementById(
-        "startBtn"
-      );
-
-    const stopBtn =
-      document.getElementById(
-        "stopBtn"
-      );
-
-    const resetBtn =
-      document.getElementById(
-        "resetBtn"
-      );
-
-    const statusText =
-      document.getElementById(
-        "statusText"
-      );
-
-    const transcriptBox =
-      document.getElementById(
-        "transcriptBox"
-      );
-
-    const supportText =
-      document.getElementById(
-        "supportText"
-      );
-
-    const supportPill =
-      document.getElementById(
-        "supportPill"
-      );
-
-    const themeToggle =
-      document.getElementById(
-        "themeToggle"
-      );
-
-    const targetInput =
-      document.getElementById(
-        "targetInput"
-      );
-
-    const saveTargetBtn =
-      document.getElementById(
-        "saveTargetBtn"
-      );
-
-    const targetStatus =
-      document.getElementById(
-        "targetStatus"
-      );
-
-    const streakValue =
-      document.getElementById(
-        "streakValue"
-      );
-
-    const todayValue =
-      document.getElementById(
-        "todayValue"
-      );
-
-    const historyToggle =
-      document.getElementById(
-        "historyToggle"
-      );
-
-    const historyContent =
-      document.getElementById(
-        "historyContent"
-      );
-
-    const historyList =
-      document.getElementById(
-        "historyList"
-      );
-
-    const soundToggle =
-      document.getElementById(
-        "soundToggle"
-      );
-
-    const vibrationToggle =
-      document.getElementById(
-        "vibrationToggle"
-      );
-
-    const tapFallback =
-      document.getElementById(
-        "tapFallback"
-      );
-
-    const tapBtn =
-      document.getElementById(
-        "tapBtn"
-      );
-
     const SpeechRecognition =
       window.SpeechRecognition ||
       window.webkitSpeechRecognition;
-
-    let recognition = null;
-    let listening = false;
-    let totalCount = 0;
-    let targetPhrase = "";
-    let countedFinalText = "";
-    let sessionId = 0;
-    let audioContext = null;
 
     const STORAGE_KEYS = {
       total: "japCount",
@@ -1852,31 +1865,155 @@
       sound: "japSound",
       vibration: "japVibration",
       language: "japLanguage",
-      theme: "japTheme"
+      theme: "japTheme",
+      reminderEnabled: "japReminderEnabled",
+      reminderTime: "japReminderTime"
     };
 
+    const mantraInput =
+      document.getElementById("mantraInput");
+
+    const languageSelect =
+      document.getElementById("languageSelect");
+
+    const countDisplay =
+      document.getElementById("countDisplay");
+
+    const mantraPreview =
+      document.getElementById("mantraPreview");
+
+    const speakInstruction =
+      document.getElementById("speakInstruction");
+
+    const startBtn =
+      document.getElementById("startBtn");
+
+    const stopBtn =
+      document.getElementById("stopBtn");
+
+    const resetBtn =
+      document.getElementById("resetBtn");
+
+    const statusText =
+      document.getElementById("statusText");
+
+    const transcriptBox =
+      document.getElementById("transcriptBox");
+
+    const supportText =
+      document.getElementById("supportText");
+
+    const supportPill =
+      document.getElementById("supportPill");
+
+    const themeToggle =
+      document.getElementById("themeToggle");
+
+    const targetInput =
+      document.getElementById("targetInput");
+
+    const saveTargetBtn =
+      document.getElementById("saveTargetBtn");
+
+    const targetStatus =
+      document.getElementById("targetStatus");
+
+    const streakValue =
+      document.getElementById("streakValue");
+
+    const bestStreakNote =
+      document.getElementById("bestStreakNote");
+
+    const todayValue =
+      document.getElementById("todayValue");
+
+    const historyToggle =
+      document.getElementById("historyToggle");
+
+    const historyContent =
+      document.getElementById("historyContent");
+
+    const historyList =
+      document.getElementById("historyList");
+
+    const weeklyReport =
+      document.getElementById("weeklyReport");
+
+    const soundToggle =
+      document.getElementById("soundToggle");
+
+    const vibrationToggle =
+      document.getElementById("vibrationToggle");
+
+    const tapFallback =
+      document.getElementById("tapFallback");
+
+    const tapBtn =
+      document.getElementById("tapBtn");
+
+    const sessionTimer =
+      document.getElementById("sessionTimer");
+
+    const sessionJap =
+      document.getElementById("sessionJap");
+
+    const sessionSummaryCard =
+      document.getElementById("sessionSummaryCard");
+
+    const reminderTime =
+      document.getElementById("reminderTime");
+
+    const enableReminderBtn =
+      document.getElementById(
+        "enableReminderBtn"
+      );
+
+    const disableReminderBtn =
+      document.getElementById(
+        "disableReminderBtn"
+      );
+
+    const reminderStatus =
+      document.getElementById(
+        "reminderStatus"
+      );
+
+    const installArea =
+      document.getElementById(
+        "installArea"
+      );
+
+    const installBtn =
+      document.getElementById(
+        "installBtn"
+      );
+
+    let recognition = null;
+    let listening = false;
+    let totalCount = 0;
+    let targetPhrase = "";
+    let countedFinalText = "";
+    let sessionId = 0;
+    let audioContext = null;
+    let sessionStartedAt = null;
+    let sessionElapsedSeconds = 0;
+    let sessionCount = 0;
+    let sessionInterval = null;
+    let deferredInstallPrompt = null;
+
     function getTodayKey() {
-      const date =
-        new Date();
+      const date = new Date();
 
       const year =
         date.getFullYear();
 
       const month =
-        String(
-          date.getMonth() + 1
-        ).padStart(
-          2,
-          "0"
-        );
+        String(date.getMonth() + 1)
+          .padStart(2, "0");
 
       const day =
-        String(
-          date.getDate()
-        ).padStart(
-          2,
-          "0"
-        );
+        String(date.getDate())
+          .padStart(2, "0");
 
       return (
         year +
@@ -1889,14 +2026,9 @@
 
     function formatDate(dateKey) {
       const parts =
-        dateKey.split(
-          "-"
-        );
+        dateKey.split("-");
 
-      if (
-        parts.length !==
-        3
-      ) {
+      if (parts.length !== 3) {
         return dateKey;
       }
 
@@ -1922,8 +2054,7 @@
             : {};
 
         return parsed &&
-          typeof parsed ===
-            "object"
+          typeof parsed === "object"
           ? parsed
           : {};
       } catch (error) {
@@ -1958,9 +2089,7 @@
 
       history[today] =
         (
-          Number(
-            history[today]
-          ) || 0
+          Number(history[today]) || 0
         ) + amount;
 
       saveHistory(history);
@@ -1969,53 +2098,31 @@
     }
 
     function getSortedHistory() {
-      const history =
-        readHistory();
-
-      return Object.entries(
-        history
-      )
-        .sort(
-          (a, b) =>
-            b[0].localeCompare(
-              a[0]
-            )
+      return Object.entries(readHistory())
+        .sort((a, b) =>
+          b[0].localeCompare(a[0])
         )
-        .slice(
-          0,
-          14
-        );
+        .slice(0, 14);
     }
 
     function calculateStreak() {
       const history =
         readHistory();
 
-      let streak =
-        0;
-
-      const date =
-        new Date();
+      let streak = 0;
+      const date = new Date();
 
       while (true) {
         const year =
           date.getFullYear();
 
         const month =
-          String(
-            date.getMonth() + 1
-          ).padStart(
-            2,
-            "0"
-          );
+          String(date.getMonth() + 1)
+            .padStart(2, "0");
 
         const day =
-          String(
-            date.getDate()
-          ).padStart(
-            2,
-            "0"
-          );
+          String(date.getDate())
+            .padStart(2, "0");
 
         const key =
           year +
@@ -2024,11 +2131,7 @@
           "-" +
           day;
 
-        if (
-          Number(
-            history[key]
-          ) > 0
-        ) {
+        if (Number(history[key]) > 0) {
           streak++;
           date.setDate(
             date.getDate() - 1
@@ -2046,60 +2149,93 @@
         readHistory();
 
       const days =
-        Object.keys(
-          history
-        )
-          .filter(
-            (key) =>
-              Number(
-                history[key]
-              ) > 0
+        Object.keys(history)
+          .filter(key =>
+            Number(history[key]) > 0
           )
           .sort();
 
-      let best =
-        0;
+      let best = 0;
+      let current = 0;
+      let previousDate = null;
 
-      let current =
-        0;
+      days.forEach(key => {
+        const currentDate =
+          new Date(key + "T00:00:00");
 
-      let previousDate =
-        null;
-
-      days.forEach(
-        (key) => {
-          const currentDate =
-            new Date(
-              key +
-              "T00:00:00"
-            );
-
-          if (
-            previousDate &&
-            (
-              currentDate -
-                previousDate
-            ) ===
-              86400000
-          ) {
-            current++;
-          } else {
-            current =
-              1;
-          }
-
-          best =
-            Math.max(
-              best,
-              current
-            );
-
-          previousDate =
-            currentDate;
+        if (
+          previousDate &&
+          currentDate - previousDate ===
+            86400000
+        ) {
+          current++;
+        } else {
+          current = 1;
         }
-      );
+
+        best =
+          Math.max(best, current);
+
+        previousDate = currentDate;
+      });
 
       return best;
+    }
+
+    function getWeekData() {
+      const history =
+        readHistory();
+
+      const today =
+        new Date();
+
+      let total = 0;
+      let practiceDays = 0;
+      let bestDay = 0;
+
+      for (let i = 0; i < 7; i++) {
+        const date = new Date(today);
+
+        date.setDate(
+          today.getDate() - i
+        );
+
+        const year =
+          date.getFullYear();
+
+        const month =
+          String(date.getMonth() + 1)
+            .padStart(2, "0");
+
+        const day =
+          String(date.getDate())
+            .padStart(2, "0");
+
+        const key =
+          year +
+          "-" +
+          month +
+          "-" +
+          day;
+
+        const count =
+          Number(history[key]) || 0;
+
+        total += count;
+
+        if (count > 0) {
+          practiceDays++;
+        }
+
+        bestDay =
+          Math.max(bestDay, count);
+      }
+
+      return {
+        total,
+        practiceDays,
+        bestDay
+      };
     }
 
     function updateDailyTools() {
@@ -2109,9 +2245,7 @@
       const target =
         Math.max(
           1,
-          Number(
-            targetInput.value
-          ) || 108
+          Number(targetInput.value) || 108
         );
 
       todayValue.textContent =
@@ -2131,71 +2265,38 @@
 
       streakValue.textContent =
         streak +
-        (
-          streak === 1
-            ? " day"
-            : " days"
-        );
+        (streak === 1 ? " day" : " days");
 
-      const bestNote =
-        document.querySelector(
-          ".streak-value + .tool-note"
-        );
-
-      if (bestNote) {
-        bestNote.textContent =
-          "Your best: " +
-          best +
-          (
-            best === 1
-              ? " day"
-              : " days"
-          );
-      }
+      bestStreakNote.textContent =
+        "Your best: " +
+        best +
+        (best === 1 ? " day" : " days");
     }
 
     function renderHistory() {
       const items =
         getSortedHistory();
 
-      historyList.innerHTML =
-        "";
+      historyList.innerHTML = "";
 
-      if (
-        items.length ===
-        0
-      ) {
+      if (items.length === 0) {
         const empty =
-          document.createElement(
-            "li"
-          );
+          document.createElement("li");
 
         empty.textContent =
           "No jap history yet.";
 
-        historyList.appendChild(
-          empty
-        );
-
-        return;
-      }
-
-      items.forEach(
-        ([date, count]) => {
+        historyList.appendChild(empty);
+      } else {
+        items.forEach(([date, count]) => {
           const item =
-            document.createElement(
-              "li"
-            );
+            document.createElement("li");
 
           const dateText =
-            document.createElement(
-              "span"
-            );
+            document.createElement("span");
 
           const countText =
-            document.createElement(
-              "strong"
-            );
+            document.createElement("strong");
 
           dateText.textContent =
             formatDate(date);
@@ -2208,46 +2309,61 @@
             countText
           );
 
-          historyList.appendChild(
-            item
-          );
-        }
-      );
+          historyList.appendChild(item);
+        });
+      }
+
+      const week =
+        getWeekData();
+
+      weeklyReport.innerHTML =
+        "<div class='report-row'>" +
+        "<span>This week</span>" +
+        "<strong>" +
+        week.total +
+        " jap</strong>" +
+        "</div>" +
+        "<div class='report-row'>" +
+        "<span>Practice days</span>" +
+        "<strong>" +
+        week.practiceDays +
+        " / 7</strong>" +
+        "</div>" +
+        "<div class='report-row'>" +
+        "<span>Best day</span>" +
+        "<strong>" +
+        week.bestDay +
+        " jap</strong>" +
+        "</div>";
     }
 
     function registerCount(amount) {
-      totalCount +=
-        amount;
+      totalCount += amount;
+      sessionCount += amount;
 
       countDisplay.textContent =
         String(totalCount);
+
+      sessionJap.textContent =
+        sessionCount +
+        (sessionCount === 1 ? " jap" : " jap");
 
       localStorage.setItem(
         STORAGE_KEYS.total,
         String(totalCount)
       );
 
-      addToToday(
-        amount
-      );
-
+      addToToday(amount);
       updateDailyTools();
-
       playFeedback();
-    }
-
-    function getTarget() {
-      return Math.max(
-        1,
-        Number(
-          targetInput.value
-        ) || 108
-      );
     }
 
     function saveTarget() {
       const target =
-        getTarget();
+        Math.max(
+          1,
+          Number(targetInput.value) || 108
+        );
 
       targetInput.value =
         String(target);
@@ -2258,108 +2374,9 @@
       );
 
       updateDailyTools();
-
       setStatus(
         "Daily target saved.",
         "success"
-      );
-    }
-
-    function playSoftSound() {
-      try {
-        const AudioCtx =
-          window.AudioContext ||
-          window.webkitAudioContext;
-
-        if (!AudioCtx) {
-          return;
-        }
-
-        audioContext =
-          audioContext ||
-          new AudioCtx();
-
-        const oscillator =
-          audioContext.createOscillator();
-
-        const gain =
-          audioContext.createGain();
-
-        oscillator.type =
-          "sine";
-
-        oscillator.frequency.value =
-          660;
-
-        gain.gain.setValueAtTime(
-          0.0001,
-          audioContext.currentTime
-        );
-
-        gain.gain.exponentialRampToValueAtTime(
-          0.06,
-          audioContext.currentTime +
-            0.01
-        );
-
-        gain.gain.exponentialRampToValueAtTime(
-          0.0001,
-          audioContext.currentTime +
-            0.16
-        );
-
-        oscillator.connect(
-          gain
-        );
-
-        gain.connect(
-          audioContext.destination
-        );
-
-        oscillator.start();
-
-        oscillator.stop(
-          audioContext.currentTime +
-            0.17
-        );
-      } catch (error) {
-        return;
-      }
-    }
-
-    function playFeedback() {
-      if (
-        soundToggle.checked
-      ) {
-        playSoftSound();
-      }
-
-      if (
-        vibrationToggle.checked &&
-        "vibrate" in navigator
-      ) {
-        navigator.vibrate(
-          120
-        );
-      }
-    }
-
-    function showTapFallback(message) {
-      tapFallback.classList.add(
-        "visible"
-      );
-
-      if (message) {
-        setStatus(
-          message,
-          "error"
-        );
-      }
-    }
-
-    function hideTapFallback() {
-      tapFallback.classList.remove(
-        "visible"
       );
     }
 
@@ -2370,10 +2387,7 @@
           /[।,.;:!?()[\]{}"'`]/g,
           " "
         )
-        .replace(
-          /\s+/g,
-          " "
-        )
+        .replace(/\s+/g, " ")
         .trim();
     }
 
@@ -2384,11 +2398,41 @@
       );
     }
 
+    function countPhraseMatches(
+      spokenText,
+      phrase
+    ) {
+      const spoken =
+        normalize(spokenText);
+
+      const target =
+        normalize(phrase);
+
+      if (!spoken || !target) {
+        return 0;
+      }
+
+      const pattern =
+        escapeRegExp(target)
+          .replace(/\\ +/g, "\\s+");
+
+      const regex =
+        new RegExp(
+          "(^|\\s)" +
+          pattern +
+          "(?=\\s|$)",
+          "gi"
+        );
+
+      const matches =
+        spoken.match(regex);
+
+      return matches ? matches.length : 0;
+    }
+
     function updatePhrase() {
       targetPhrase =
-        normalize(
-          mantraInput.value
-        );
+        normalize(mantraInput.value);
 
       if (targetPhrase) {
         mantraPreview.textContent =
@@ -2409,53 +2453,6 @@
       }
     }
 
-    function countPhraseMatches(
-      spokenText,
-      phrase
-    ) {
-      const spoken =
-        normalize(
-          spokenText
-        );
-
-      const target =
-        normalize(
-          phrase
-        );
-
-      if (
-        !spoken ||
-        !target
-      ) {
-        return 0;
-      }
-
-      const pattern =
-        escapeRegExp(
-          target
-        ).replace(
-          /\\ +/g,
-          "\\s+"
-        );
-
-      const regex =
-        new RegExp(
-          "(^|\\s)" +
-          pattern +
-          "(?=\\s|$)",
-          "gi"
-        );
-
-      const matches =
-        spoken.match(
-          regex
-        );
-
-      return matches
-        ? matches.length
-        : 0;
-    }
-
     function setStatus(
       message,
       type = ""
@@ -2467,21 +2464,15 @@
         "status-message";
 
       if (type) {
-        statusText.classList.add(
-          type
-        );
+        statusText.classList.add(type);
       }
     }
 
     function setListening(value) {
-      listening =
-        value;
+      listening = value;
 
-      startBtn.disabled =
-        value;
-
-      stopBtn.disabled =
-        !value;
+      startBtn.disabled = value;
+      stopBtn.disabled = !value;
 
       if (value) {
         startBtn.textContent =
@@ -2489,12 +2480,180 @@
 
         supportText.textContent =
           "Microphone active";
+
+        startSessionTimer();
       } else {
         startBtn.textContent =
           "🎙 Start Listening";
 
         supportText.textContent =
           "Microphone ready";
+
+        stopSessionTimer();
+      }
+    }
+
+    function formatTime(totalSeconds) {
+      const minutes =
+        Math.floor(totalSeconds / 60)
+          .toString()
+          .padStart(2, "0");
+
+      const seconds =
+        (totalSeconds % 60)
+          .toString()
+          .padStart(2, "0");
+
+      return minutes + ":" + seconds;
+    }
+
+    function startSessionTimer() {
+      if (!sessionStartedAt) {
+        sessionStartedAt =
+          Date.now();
+      }
+
+      clearInterval(sessionInterval);
+
+      sessionInterval =
+        setInterval(() => {
+          sessionElapsedSeconds =
+            Math.floor(
+              (Date.now() -
+                sessionStartedAt) /
+                1000
+            );
+
+          sessionTimer.textContent =
+            formatTime(
+              sessionElapsedSeconds
+            );
+        }, 1000);
+    }
+
+    function stopSessionTimer() {
+      if (!sessionStartedAt) {
+        return;
+      }
+
+      sessionElapsedSeconds =
+        Math.floor(
+          (Date.now() -
+            sessionStartedAt) /
+            1000
+        );
+
+      sessionTimer.textContent =
+        formatTime(
+          sessionElapsedSeconds
+        );
+
+      clearInterval(sessionInterval);
+      sessionInterval = null;
+
+      sessionSummaryCard.hidden =
+        false;
+
+      sessionSummaryCard.innerHTML =
+        "<strong>Session complete</strong>" +
+        "<span>Jap counted: " +
+        sessionCount +
+        "</span>" +
+        "<span>Time practiced: " +
+        formatTime(sessionElapsedSeconds) +
+        "</span>";
+
+      sessionStartedAt = null;
+    }
+
+    function resetSession() {
+      sessionCount = 0;
+      sessionElapsedSeconds = 0;
+      sessionStartedAt = null;
+
+      clearInterval(sessionInterval);
+
+      sessionTimer.textContent =
+        "00:00";
+
+      sessionJap.textContent =
+        "0 jap";
+
+      sessionSummaryCard.hidden =
+        true;
+    }
+
+    function playSoftSound() {
+      try {
+        const AudioCtx =
+          window.AudioContext ||
+          window.webkitAudioContext;
+
+        if (!AudioCtx) {
+          return;
+        }
+
+        audioContext =
+          audioContext || new AudioCtx();
+
+        const oscillator =
+          audioContext.createOscillator();
+
+        const gain =
+          audioContext.createGain();
+
+        oscillator.type =
+          "sine";
+
+        oscillator.frequency.value =
+          660;
+
+        gain.gain.setValueAtTime(
+          0.0001,
+          audioContext.currentTime
+        );
+
+        gain.gain.exponentialRampToValueAtTime(
+          0.06,
+          audioContext.currentTime + 0.01
+        );
+
+        gain.gain.exponentialRampToValueAtTime(
+          0.0001,
+          audioContext.currentTime + 0.16
+        );
+
+        oscillator.connect(gain);
+        gain.connect(audioContext.destination);
+
+        oscillator.start();
+
+        oscillator.stop(
+          audioContext.currentTime + 0.17
+        );
+      } catch (error) {
+        return;
+      }
+    }
+
+    function playFeedback() {
+      if (soundToggle.checked) {
+        playSoftSound();
+      }
+
+      if (
+        vibrationToggle.checked &&
+        "vibrate" in navigator
+      ) {
+        navigator.vibrate(120);
+      }
+    }
+
+    function showTapFallback(message) {
+      tapFallback.classList.add("visible");
+
+      if (message) {
+        setStatus(message, "error");
       }
     }
 
@@ -2506,126 +2665,211 @@
     }
 
     function showUnsupported() {
-      supportPill.classList.add(
-        "error"
-      );
+      supportPill.classList.add("error");
 
       supportText.textContent =
         "Speech recognition unavailable";
 
       showTapFallback(
-        "Try the manual tap counter instead."
+        "Voice recognition is unavailable."
       );
 
-      startBtn.disabled =
-        true;
+      startBtn.disabled = true;
     }
 
-    const savedCount =
-      localStorage.getItem(
+    function resetDailyCount() {
+      totalCount = 0;
+
+      countDisplay.textContent =
+        "0";
+
+      localStorage.removeItem(
         STORAGE_KEYS.total
       );
 
-    if (
-      savedCount !==
-      null
-    ) {
-      totalCount =
-        parseInt(
-          savedCount,
-          10
-        ) || 0;
+      const history =
+        readHistory();
 
-      countDisplay.textContent =
-        String(
-          totalCount
-        );
+      history[getTodayKey()] =
+        0;
+
+      saveHistory(history);
+
+      updateDailyTools();
+      showPlaceholder();
+      resetSession();
+
+      setStatus("Count reset.");
     }
 
-    const savedTarget =
-      localStorage.getItem(
-        STORAGE_KEYS.target
-      );
+    async function enableReminder() {
+      if (!("Notification" in window)) {
+        reminderStatus.textContent =
+          "Notifications are not supported in this browser.";
 
-    if (savedTarget) {
-      targetInput.value =
-        savedTarget;
-    }
+        return;
+      }
 
-    const savedLanguage =
-      localStorage.getItem(
-        STORAGE_KEYS.language
-      );
+      try {
+        const permission =
+          await Notification.requestPermission();
 
-    if (savedLanguage) {
-      languageSelect.value =
-        savedLanguage;
-    }
+        if (permission !== "granted") {
+          reminderStatus.textContent =
+            "Notification permission was not granted.";
 
-    const savedSound =
-      localStorage.getItem(
-        STORAGE_KEYS.sound
-      );
-
-    if (
-      savedSound ===
-      "true"
-    ) {
-      soundToggle.checked =
-        true;
-    }
-
-    const savedVibration =
-      localStorage.getItem(
-        STORAGE_KEYS.vibration
-      );
-
-    if (
-      savedVibration ===
-      "true"
-    ) {
-      vibrationToggle.checked =
-        true;
-    }
-
-    if (
-      localStorage.getItem(
-        STORAGE_KEYS.theme
-      ) === "dark"
-    ) {
-      document.body.classList.add(
-        "dark"
-      );
-
-      themeToggle.textContent =
-        "☀️ Light";
-    }
-
-    if (
-      !SpeechRecognition
-    ) {
-      showUnsupported();
-    }
-
-    themeToggle.addEventListener(
-      "click",
-      () => {
-        const dark =
-          document.body.classList.toggle(
-            "dark"
-          );
+          return;
+        }
 
         localStorage.setItem(
-          STORAGE_KEYS.theme,
-          dark
-            ? "dark"
-            : "light"
+          STORAGE_KEYS.reminderEnabled,
+          "true"
         );
 
-        themeToggle.textContent =
-          dark
-            ? "☀️ Light"
-            : "🌙 Dark";
+        localStorage.setItem(
+          STORAGE_KEYS.reminderTime,
+          reminderTime.value
+        );
+
+        reminderStatus.textContent =
+          "Reminder enabled for " +
+          reminderTime.value +
+          ". Keep the app installed or open.";
+      } catch (error) {
+        reminderStatus.textContent =
+          "Reminder could not be enabled.";
+      }
+    }
+
+    function disableReminder() {
+      localStorage.setItem(
+        STORAGE_KEYS.reminderEnabled,
+        "false"
+      );
+
+      reminderStatus.textContent =
+        "Reminder is off.";
+    }
+
+    function getReminderState() {
+      const enabled =
+        localStorage.getItem(
+          STORAGE_KEYS.reminderEnabled
+        ) === "true";
+
+      const time =
+        localStorage.getItem(
+          STORAGE_KEYS.reminderTime
+        ) || "06:00";
+
+      reminderTime.value = time;
+
+      if (enabled) {
+        reminderStatus.textContent =
+          "Reminder enabled for " +
+          time +
+          ".";
+      }
+    }
+
+    async function showReminderIfDue() {
+      const enabled =
+        localStorage.getItem(
+          STORAGE_KEYS.reminderEnabled
+        ) === "true";
+
+      if (!enabled) {
+        return;
+      }
+
+      const savedTime =
+        localStorage.getItem(
+          STORAGE_KEYS.reminderTime
+        ) || reminderTime.value;
+
+      const now =
+        new Date();
+
+      const currentTime =
+        String(now.getHours()).padStart(2, "0") +
+        ":" +
+        String(now.getMinutes()).padStart(2, "0");
+
+      const today =
+        getTodayKey();
+
+      const lastShown =
+        localStorage.getItem(
+          "japReminderLastShown"
+        );
+
+      if (
+        currentTime === savedTime &&
+        lastShown !== today
+      ) {
+        if (
+          "serviceWorker" in navigator
+        ) {
+          const registration =
+            await navigator.serviceWorker.ready;
+
+          await registration.showNotification(
+            "Naam Jap Reminder",
+            {
+              body:
+                "It is time for your Naam Jap practice.",
+              icon: "icon-192.png",
+              badge: "icon-192.png",
+              tag: "naam-jap-reminder"
+            }
+          );
+        } else if (
+          "Notification" in window &&
+          Notification.permission ===
+            "granted"
+        ) {
+          new Notification(
+            "Naam Jap Reminder",
+            {
+              body:
+                "It is time for your Naam Jap practice."
+            }
+          );
+        }
+
+        localStorage.setItem(
+          "japReminderLastShown",
+          today
+        );
+      }
+    }
+
+    window.addEventListener(
+      "beforeinstallprompt",
+      event => {
+        event.preventDefault();
+        deferredInstallPrompt = event;
+        installArea.classList.add("visible");
+      }
+    );
+
+    installBtn.addEventListener(
+      "click",
+      async () => {
+        if (!deferredInstallPrompt) {
+          setStatus(
+            "Use your browser menu and choose Add to Home screen."
+          );
+
+          return;
+        }
+
+        deferredInstallPrompt.prompt();
+
+        await deferredInstallPrompt.userChoice;
+
+        deferredInstallPrompt = null;
+        installArea.classList.remove("visible");
       }
     );
 
@@ -2651,11 +2895,8 @@
 
     targetInput.addEventListener(
       "keydown",
-      (event) => {
-        if (
-          event.key ===
-          "Enter"
-        ) {
+      event => {
+        if (event.key === "Enter") {
           saveTarget();
         }
       }
@@ -2691,9 +2932,7 @@
       () => {
         localStorage.setItem(
           STORAGE_KEYS.sound,
-          String(
-            soundToggle.checked
-          )
+          String(soundToggle.checked)
         );
       }
     );
@@ -2703,9 +2942,7 @@
       () => {
         localStorage.setItem(
           STORAGE_KEYS.vibration,
-          String(
-            vibrationToggle.checked
-          )
+          String(vibrationToggle.checked)
         );
       }
     );
@@ -2713,14 +2950,44 @@
     tapBtn.addEventListener(
       "click",
       () => {
-        registerCount(
-          1
-        );
+        registerCount(1);
 
         setStatus(
           "Tap counted. +1",
           "success"
         );
+      }
+    );
+
+    enableReminderBtn.addEventListener(
+      "click",
+      enableReminder
+    );
+
+    disableReminderBtn.addEventListener(
+      "click",
+      disableReminder
+    );
+
+    reminderTime.addEventListener(
+      "change",
+      () => {
+        localStorage.setItem(
+          STORAGE_KEYS.reminderTime,
+          reminderTime.value
+        );
+
+        const enabled =
+          localStorage.getItem(
+            STORAGE_KEYS.reminderEnabled
+          ) === "true";
+
+        if (enabled) {
+          reminderStatus.textContent =
+            "Reminder time updated to " +
+            reminderTime.value +
+            ".";
+        }
       }
     );
 
@@ -2743,8 +3010,6 @@
         if (listening) {
           return;
         }
-
-        hideTapFallback();
 
         const currentSession =
           ++sessionId;
@@ -2779,9 +3044,7 @@
               return;
             }
 
-            setListening(
-              true
-            );
+            setListening(true);
 
             setStatus(
               "Listening for: “" +
@@ -2791,41 +3054,31 @@
           };
 
         recognition.onresult =
-          (event) => {
+          event => {
             if (
-              currentSession !==
-                sessionId ||
+              currentSession !== sessionId ||
               !listening
             ) {
               return;
             }
 
-            let interimText =
-              "";
+            let interimText = "";
 
             for (
-              let i =
-                event.resultIndex;
-              i <
-                event.results.length;
+              let i = event.resultIndex;
+              i < event.results.length;
               i++
             ) {
               const result =
                 event.results[i];
 
               const text =
-                result[0]
-                  .transcript
-                  .trim();
+                result[0].transcript.trim();
 
-              if (
-                result.isFinal
-              ) {
-                finalText +=
-                  " " + text;
+              if (result.isFinal) {
+                finalText += " " + text;
               } else {
-                interimText +=
-                  " " + text;
+                interimText += " " + text;
               }
             }
 
@@ -2836,22 +3089,16 @@
                 interimText
               ).trim();
 
-            if (
-              visibleText
-            ) {
+            if (visibleText) {
               transcriptBox.textContent =
                 visibleText;
             }
 
             const allFinalText =
-              normalize(
-                finalText
-              );
+              normalize(finalText);
 
             const oldFinalText =
-              normalize(
-                countedFinalText
-              );
+              normalize(countedFinalText);
 
             if (
               allFinalText.length <=
@@ -2862,17 +3109,13 @@
 
             const newFinalText =
               allFinalText
-                .slice(
-                  oldFinalText.length
-                )
+                .slice(oldFinalText.length)
                 .trim();
 
             countedFinalText =
               allFinalText;
 
-            if (
-              !newFinalText
-            ) {
+            if (!newFinalText) {
               return;
             }
 
@@ -2882,12 +3125,8 @@
                 targetPhrase
               );
 
-            if (
-              added > 0
-            ) {
-              registerCount(
-                added
-              );
+            if (added > 0) {
+              registerCount(added);
 
               setStatus(
                 "Phrase detected. +" +
@@ -2904,7 +3143,7 @@
           };
 
         recognition.onerror =
-          (event) => {
+          event => {
             if (
               currentSession !==
               sessionId
@@ -2943,9 +3182,7 @@
               return;
             }
 
-            setListening(
-              false
-            );
+            setListening(false);
           };
 
         try {
@@ -2969,23 +3206,15 @@
         }
 
         sessionId++;
-
-        listening =
-          false;
+        listening = false;
 
         const activeRecognition =
           recognition;
 
-        recognition =
-          null;
+        recognition = null;
 
-        setListening(
-          false
-        );
-
-        setStatus(
-          "Listening stopped."
-        );
+        setListening(false);
+        setStatus("Listening stopped.");
 
         try {
           activeRecognition.stop();
@@ -2997,42 +3226,103 @@
 
     resetBtn.addEventListener(
       "click",
+      resetDailyCount
+    );
+
+    if (!SpeechRecognition) {
+      showUnsupported();
+    }
+
+    const savedCount =
+      localStorage.getItem(
+        STORAGE_KEYS.total
+      );
+
+    if (savedCount !== null) {
+      totalCount =
+        parseInt(savedCount, 10) || 0;
+
+      countDisplay.textContent =
+        String(totalCount);
+    }
+
+    const savedTarget =
+      localStorage.getItem(
+        STORAGE_KEYS.target
+      );
+
+    if (savedTarget) {
+      targetInput.value =
+        savedTarget;
+    }
+
+    const savedLanguage =
+      localStorage.getItem(
+        STORAGE_KEYS.language
+      );
+
+    if (savedLanguage) {
+      languageSelect.value =
+        savedLanguage;
+    }
+
+    soundToggle.checked =
+      localStorage.getItem(
+        STORAGE_KEYS.sound
+      ) === "true";
+
+    vibrationToggle.checked =
+      localStorage.getItem(
+        STORAGE_KEYS.vibration
+      ) === "true";
+
+    if (
+      localStorage.getItem(
+        STORAGE_KEYS.theme
+      ) === "dark"
+    ) {
+      document.body.classList.add("dark");
+      themeToggle.textContent =
+        "☀️ Light";
+    }
+
+    themeToggle.addEventListener(
+      "click",
       () => {
-        totalCount =
-          0;
+        const dark =
+          document.body.classList.toggle("dark");
 
-        countDisplay.textContent =
-          "0";
-
-        localStorage.removeItem(
-          STORAGE_KEYS.total
+        localStorage.setItem(
+          STORAGE_KEYS.theme,
+          dark ? "dark" : "light"
         );
 
-        const history =
-          readHistory();
-
-        history[getTodayKey()] =
-          0;
-
-        saveHistory(
-          history
-        );
-
-        countedFinalText =
-          "";
-
-        showPlaceholder();
-
-        updateDailyTools();
-
-        setStatus(
-          "Count reset."
-        );
+        themeToggle.textContent =
+          dark ? "☀️ Light" : "🌙 Dark";
       }
     );
 
     updatePhrase();
     updateDailyTools();
+    getReminderState();
+
+    if ("serviceWorker" in navigator) {
+      window.addEventListener(
+        "load",
+        () => {
+          navigator.serviceWorker.register(
+            "sw.js"
+          );
+        }
+      );
+    }
+
+    setInterval(
+      showReminderIfDue,
+      30000
+    );
+
+    showReminderIfDue();
   </script>
 </body>
 </html>
