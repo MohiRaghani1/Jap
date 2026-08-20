@@ -18,6 +18,8 @@
       --pill-text: #4b5563;
       --transcript-bg: #f9fafb;
       --transcript-border: rgba(148, 163, 184, 0.85);
+      --btn-ghost-bg: #f3f4f6;
+      --btn-ghost-text: #374151;
       --reset-bg: #fee2e2;
       --reset-text: #b91c1c;
       --stop-bg: #ffedd5;
@@ -37,6 +39,8 @@
       --pill-text: #e5e7eb;
       --transcript-bg: #020617;
       --transcript-border: rgba(75, 85, 99, 0.9);
+      --btn-ghost-bg: #020617;
+      --btn-ghost-text: #e5e7eb;
       --reset-bg: #451a1a;
       --reset-text: #fecaca;
       --stop-bg: #431407;
@@ -70,6 +74,7 @@
       border-radius: 24px;
       box-shadow: var(--shadow-main), var(--shadow-outline);
       padding: 24px 22px 20px;
+      position: relative;
     }
 
     .title-row {
@@ -92,11 +97,15 @@
       font-size: 0.78rem;
       padding: 5px 10px;
       cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
       color: var(--subtext);
     }
 
     .subtitle {
       font-size: 0.8rem;
+      text-align: left;
       color: var(--subtext);
       margin-bottom: 18px;
     }
@@ -118,6 +127,7 @@
       outline: none;
       background: transparent;
       color: var(--text);
+      transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
     }
 
     select option {
@@ -129,6 +139,7 @@
     select:focus {
       border-color: #2563eb;
       box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.3);
+      background: rgba(15, 23, 42, 0.02);
     }
 
     .row {
@@ -229,11 +240,13 @@
       align-items: center;
       justify-content: center;
       gap: 6px;
-      transition: transform 0.05s ease, opacity 0.15s ease;
+      transition: transform 0.05s ease, box-shadow 0.1s ease,
+        background 0.15s ease, opacity 0.15s ease;
     }
 
     .btn:active {
       transform: translateY(1px);
+      box-shadow: none;
     }
 
     .btn:disabled {
@@ -248,15 +261,8 @@
 
     .btn-primary.disabled {
       opacity: 0.5;
+      cursor: default;
       box-shadow: none;
-    }
-
-    .btn-stop {
-      flex: 0 0 auto;
-      padding-inline: 12px;
-      font-size: 0.8rem;
-      background: var(--stop-bg);
-      color: var(--stop-text);
     }
 
     .btn-secondary {
@@ -265,6 +271,14 @@
       font-size: 0.8rem;
       background: var(--reset-bg);
       color: var(--reset-text);
+    }
+
+    .btn-stop {
+      flex: 0 0 auto;
+      padding-inline: 12px;
+      font-size: 0.8rem;
+      background: var(--stop-bg);
+      color: var(--stop-text);
     }
 
     .status {
@@ -286,9 +300,9 @@
       font-size: 0.8rem;
       color: var(--pill-text);
       max-height: 90px;
-      min-height: 38px;
       overflow-y: auto;
       white-space: pre-wrap;
+      min-height: 38px;
     }
 
     .transcript-placeholder {
@@ -370,6 +384,7 @@
 
     <div class="count-box">
       <div class="count-label">Total Jap Count</div>
+
       <div class="count-value" id="countDisplay">0</div>
 
       <div class="count-note" id="mantraPreview">
@@ -408,6 +423,7 @@
   </div>
 
   <script>
+    // DOM elements
     const mantraInput = document.getElementById("mantraInput");
     const languageSelect = document.getElementById("languageSelect");
     const supportText = document.getElementById("supportText");
@@ -423,6 +439,7 @@
     const transcriptBox = document.getElementById("transcriptBox");
     const themeToggle = document.getElementById("themeToggle");
 
+    // Speech Recognition setup
     const SpeechRecognition =
       window.SpeechRecognition ||
       window.webkitSpeechRecognition;
@@ -435,7 +452,7 @@
     let finalTranscript = "";
     let countedResultIndexes = new Set();
 
-    // Saved count load
+    // Load saved count
     const savedCount = localStorage.getItem("japCount");
 
     if (savedCount !== null) {
@@ -447,25 +464,12 @@
       }
     }
 
-    // Saved language load
+    // Load saved language
     const savedLanguage = localStorage.getItem("japLanguage");
 
     if (savedLanguage) {
       languageSelect.value = savedLanguage;
     }
-
-    // Saved theme load
-    if (localStorage.getItem("japTheme") === "dark") {
-      document.body.classList.add("dark");
-      themeToggle.textContent = "☀️ Light";
-    }
-
-    themeToggle.addEventListener("click", () => {
-      const isDark = document.body.classList.toggle("dark");
-
-      localStorage.setItem("japTheme", isDark ? "dark" : "light");
-      themeToggle.textContent = isDark ? "☀️ Light" : "🌙 Dark";
-    });
 
     languageSelect.addEventListener("change", () => {
       localStorage.setItem("japLanguage", languageSelect.value);
@@ -476,9 +480,22 @@
 
       statusText.classList.remove("status-error");
       statusText.textContent =
-        `Language selected: ${
-          languageSelect.options[languageSelect.selectedIndex].text
-        }`;
+        `Language selected: ${languageSelect.options[
+          languageSelect.selectedIndex
+        ].text}`;
+    });
+
+    // Load theme
+    if (localStorage.getItem("japTheme") === "dark") {
+      document.body.classList.add("dark");
+      themeToggle.textContent = "☀️ Light";
+    }
+
+    themeToggle.addEventListener("click", () => {
+      const isDark = document.body.classList.toggle("dark");
+
+      localStorage.setItem("japTheme", isDark ? "dark" : "light");
+      themeToggle.textContent = isDark ? "☀️ Light" : "🌙 Dark";
     });
 
     function updateTargetWords() {
@@ -504,23 +521,17 @@
       if (isOn) {
         startBtn.disabled = true;
         startBtn.classList.add("disabled");
-
         stopBtn.disabled = false;
-
         startIcon.textContent = "●";
         startLabel.textContent = "Listening...";
-
         supportText.textContent = "Mic active";
         statusText.textContent = "Sunn raha hoon… jap bolo.";
       } else {
         startBtn.disabled = false;
         startBtn.classList.remove("disabled");
-
         stopBtn.disabled = true;
-
         startIcon.textContent = "▶";
         startLabel.textContent = "Start Listening";
-
         supportText.textContent = "Speech ready";
       }
     }
@@ -593,6 +604,65 @@
         statusText.classList.remove("status-error");
       };
 
+      recognition.onend = () => {
+        listening = false;
+
+        startBtn.disabled = false;
+        startBtn.classList.remove("disabled");
+        stopBtn.disabled = true;
+
+        startIcon.textContent = "▶";
+        startLabel.textContent = "Start Listening";
+
+        if (!userStopped) {
+          supportText.textContent = "Reconnecting...";
+
+          setTimeout(() => {
+            if (userStopped || listening) {
+              return;
+            }
+
+            try {
+              recognition.start();
+            } catch (error) {
+              if (error.name !== "InvalidStateError") {
+                console.error("Restart error:", error);
+              }
+            }
+          }, 300);
+        } else {
+          supportText.textContent = "Speech ready";
+        }
+      };
+
+      recognition.onerror = (event) => {
+        console.error("Speech error:", event.error);
+
+        statusText.classList.add("status-error");
+
+        if (
+          event.error === "not-allowed" ||
+          event.error === "service-not-allowed"
+        ) {
+          statusText.textContent =
+            "Mic permission allow karo, phir dobara Start dabao.";
+          userStopped = true;
+        } else if (event.error === "no-speech") {
+          statusText.textContent =
+            "Koi speech detect nahi hui. Dobara bolkar dekhein.";
+        } else if (event.error === "audio-capture") {
+          statusText.textContent =
+            "Microphone available nahi hai.";
+          userStopped = true;
+        } else if (event.error === "network") {
+          statusText.textContent =
+            "Speech service/network error.";
+        } else {
+          statusText.textContent =
+            "Speech error: " + event.error;
+        }
+      };
+
       recognition.onresult = (event) => {
         let interimTranscript = "";
         let added = 0;
@@ -628,7 +698,6 @@
           totalCount += added;
 
           countDisplay.textContent = String(totalCount);
-
           localStorage.setItem(
             "japCount",
             String(totalCount)
@@ -637,65 +706,6 @@
           statusText.classList.remove("status-error");
           statusText.textContent =
             `+${added} jap detect hua. Total: ${totalCount}`;
-        }
-      };
-
-      recognition.onerror = (event) => {
-        console.error("Speech error:", event.error);
-
-        statusText.classList.add("status-error");
-
-        if (
-          event.error === "not-allowed" ||
-          event.error === "service-not-allowed"
-        ) {
-          userStopped = true;
-          statusText.textContent =
-            "Mic permission allow karo, phir dobara Start dabao.";
-        } else if (event.error === "no-speech") {
-          statusText.textContent =
-            "Koi speech detect nahi hui. Dobara bolkar dekhein.";
-        } else if (event.error === "audio-capture") {
-          userStopped = true;
-          statusText.textContent =
-            "Microphone available nahi hai.";
-        } else if (event.error === "network") {
-          statusText.textContent =
-            "Speech service/network error.";
-        } else if (event.error !== "aborted") {
-          statusText.textContent =
-            "Speech error: " + event.error;
-        }
-      };
-
-      recognition.onend = () => {
-        listening = false;
-
-        startBtn.disabled = false;
-        startBtn.classList.remove("disabled");
-        stopBtn.disabled = true;
-
-        startIcon.textContent = "▶";
-        startLabel.textContent = "Start Listening";
-
-        if (!userStopped) {
-          supportText.textContent = "Reconnecting...";
-
-          setTimeout(() => {
-            if (userStopped || listening) {
-              return;
-            }
-
-            try {
-              recognition.start();
-            } catch (error) {
-              if (error.name !== "InvalidStateError") {
-                console.error("Restart error:", error);
-              }
-            }
-          }, 300);
-        } else {
-          supportText.textContent = "Speech ready";
         }
       };
     }
@@ -722,13 +732,13 @@
 
       if (targetWords.length === 0) {
         statusText.classList.add("status-error");
-        statusText.textContent = "Pehle mantra likho.";
+        statusText.textContent =
+          "Pehle mantra likho.";
         return;
       }
 
       recognition.lang = languageSelect.value;
       userStopped = false;
-
       finalTranscript = "";
       countedResultIndexes.clear();
 
@@ -753,18 +763,15 @@
 
       if (recognition && listening) {
         try {
-          // abort() pending speech ko final result nahi banata
-          recognition.abort();
+          recognition.stop();
         } catch (error) {
-          console.warn("Abort error:", error);
+          console.warn("Stop error:", error);
         }
       }
 
       setListeningState(false);
-
       statusText.classList.remove("status-error");
-      statusText.textContent =
-        "Listening stopped. Pending speech count nahi hui.";
+      statusText.textContent = "Listening stopped.";
     });
 
     resetBtn.addEventListener("click", () => {
@@ -782,6 +789,7 @@
         "Reset kar diya. Naya jap shuru kar sakte ho.";
     });
 
+    // Initial setup
     updateTargetWords();
     resetTranscriptPlaceholder();
     setupRecognition();
