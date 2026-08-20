@@ -225,16 +225,10 @@
       box-shadow: 0 10px 22px rgba(79, 70, 229, 0.45);
     }
 
-    .btn-primary.disabled,
-    .btn-ghost.disabled {
+    .btn-primary.disabled {
       opacity: 0.5;
       cursor: default;
       box-shadow: none;
-    }
-
-    .btn-ghost {
-      background: var(--btn-ghost-bg);
-      color: var(--btn-ghost-text);
     }
 
     .btn-secondary {
@@ -299,7 +293,7 @@
         🌙 Dark
       </button>
     </div>
-    <div class="subtitle">Mic se jap bolo, yeh automatically count karega 📿 (auto-save on)</div>
+    <div class="subtitle">Mic se jap bolo, saath-saath count hota jayega 📿 (auto-save on)</div>
 
     <div class="row">
       <div style="flex: 1 1 100%;">
@@ -330,7 +324,6 @@
         <span id="startIcon">▶</span>
         <span id="startLabel">Start Listening</span>
       </button>
-      <button id="stopBtn" class="btn btn-ghost disabled" disabled>⏹ Stop</button>
       <button id="resetBtn" class="btn btn-secondary">Reset</button>
     </div>
 
@@ -352,7 +345,6 @@
   const countDisplay  = document.getElementById("countDisplay");
   const mantraPreview = document.getElementById("mantraPreview");
   const startBtn      = document.getElementById("startBtn");
-  const stopBtn       = document.getElementById("stopBtn");
   const resetBtn      = document.getElementById("resetBtn");
   const statusText    = document.getElementById("statusText");
   const transcriptBox = document.getElementById("transcriptBox");
@@ -365,6 +357,7 @@
   let totalCount = 0;
   let targetWords = [];
   let userStopped = false;
+  let lastProcessedLength = 0;
 
   // --- Load Saved Count ---
   const savedCount = localStorage.getItem("japCount");
@@ -390,10 +383,10 @@
     }
   });
 
-  // --- Smart Dictionary (Auto Match for Hindi/English) ---
+  // --- Smart Dictionary ---
   const smartDictionary = {
-    "om": ["om", "ओम", "ॐ", "ohm"],
-    "ram": ["ram", "raam", "राम", "rama"],
+    "om": ["om", "ओम", "ॐ", "ohm", "home", "on"],
+    "ram": ["ram", "raam", "राम", "rama", "rum"],
     "shiv": ["shiv", "shiva", "शिव", "siva"],
     "hare": ["hare", "हरे"],
     "krishna": ["krishna", "krishn", "कृष्ण", "कृष्णा"],
@@ -412,9 +405,7 @@
     let expandedWords = new Set();
     
     baseWords.forEach(word => {
-      expandedWords.add(word); // Original word add karo
-      
-      // Dictionary check karo
+      expandedWords.add(word);
       for (const [key, variants] of Object.entries(smartDictionary)) {
         if (variants.includes(word) || key === word) {
           variants.forEach(v => expandedWords.add(v));
@@ -427,7 +418,6 @@
     if (targetWords.length === 0) {
       mantraPreview.textContent = "No mantra set – please enter at least one.";
     } else {
-      // User ko sirf uske wale words dikhao UI clean rakhne k liye
       mantraPreview.textContent = 'Counting: "' + baseWords.join('", "') + '"';
     }
   }
@@ -437,16 +427,12 @@
     if (isOn) {
       startBtn.classList.add("disabled");
       startBtn.disabled = true;
-      stopBtn.classList.remove("disabled");
-      stopBtn.disabled = false;
-      statusText.textContent = "Sunn raha hoon… jap bolo.";
+      statusText.textContent = "Sunn raha hoon… saath-saath count ho raha hai.";
     } else {
       startBtn.classList.remove("disabled");
       startBtn.disabled = false;
-      stopBtn.classList.add("disabled");
-      stopBtn.disabled = true;
       if (!statusText.classList.contains("status-error")) {
-        statusText.textContent = "Stopped.";
+        statusText.textContent = "Listening paused/restarting…";
       }
     }
   }
@@ -466,16 +452,23 @@
     transcriptBox.appendChild(span);
   }
 
-  function countOccurrences(text, word) {
-    const tokens = text
+  function countOccurrencesInNewText(fullText, targetList) {
+    const tokens = fullText
       .toLowerCase()
       .split(/[\s,.;:!?()"'`]+/)
       .filter(Boolean);
-    let c = 0;
-    for (const t of tokens) {
-      if (t === word) c++;
+    
+    let newTokens = tokens.slice(lastProcessedLength);
+    let added = 0;
+
+    for (const t of newTokens) {
+      if (targetList.includes(t)) {
+        added++;
+      }
     }
-    return c;
+    
+    lastProcessedLength = tokens.length;
+    return added;
   }
 
   function setupRecognition() {
@@ -490,8 +483,7 @@
 
     recognition = new SpeechRecognition();
     recognition.continuous = true;
-    recognition.interimResults = true;
-    // Hardcoded Hindi/Indian taki maximum accurate chale
+    recognition.interimResults = true; // Real-time matching ke liye true kiya hai
     recognition.lang = 'hi-IN';
 
     recognition.onstart = () => {
@@ -507,7 +499,7 @@
           } catch (e) {
             console.warn("Restart error:", e);
           }
-        }, 300);
+        }, 200);
       }
     };
 
@@ -516,41 +508,27 @@
       statusText.textContent = "Error: " + event.error;
       statusText.classList.add("status-error");
       if (event.error === "not-allowed" || event.error === "service-not-allowed") {
-        statusText.textContent =
-          "Mic permission allow karo (browser ke address bar se).";
-      } else if (event.error === "network") {
-        statusText.textContent =
-          "Network error: internet / VPN / adblock check karo.";
+        statusText.textContent = "Mic permission allow karo.";
       }
     };
 
     recognition.onresult = (event) => {
       let fullText = "";
-      for (let i = event.resultIndex; i < event.results.length; i++) {
-        const res = event.results[i];
-        if (res.isFinal) {
-          fullText += res[0].transcript + " ";
-        }
+      for (let i = 0; i < event.results.length; i++) {
+        fullText += event.results[i][0].transcript + " ";
       }
       fullText = fullText.trim();
       if (!fullText) return;
 
       showTranscript(fullText);
 
-      let added = 0;
-      const lower = fullText.toLowerCase();
-      for (const w of targetWords) {
-        added += countOccurrences(lower, w);
-      }
+      let added = countOccurrencesInNewText(fullText, targetWords);
 
       if (added > 0) {
         totalCount += added;
         countDisplay.textContent = totalCount.toString();
         localStorage.setItem("japCount", totalCount);
-        statusText.textContent =
-          `+${added} jap detect hua. Total: ${totalCount}`;
-      } else {
-        statusText.textContent = "Jap nahi mila, fir se bolo…";
+        statusText.textContent = `+${added} jap detect hua. Total: ${totalCount}`;
       }
     };
   }
@@ -572,6 +550,7 @@
     statusText.classList.remove("status-error");
 
     userStopped = false;
+    lastProcessedLength = 0;
     try {
       recognition.start();
     } catch (e) {
@@ -579,15 +558,9 @@
     }
   });
 
-  stopBtn.addEventListener("click", () => {
-    if (recognition && listening) {
-      userStopped = true;
-      recognition.stop();
-    }
-  });
-
   resetBtn.addEventListener("click", () => {
     totalCount = 0;
+    lastProcessedLength = 0;
     countDisplay.textContent = "0";
     localStorage.removeItem("japCount");
     resetTranscriptPlaceholder();
