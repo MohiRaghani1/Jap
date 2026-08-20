@@ -91,6 +91,7 @@
       border-radius: 999px;
       font-size: 0.8rem;
       cursor: pointer;
+      text-decoration: none;
       transition: background 0.15s, color 0.15s;
     }
 
@@ -411,25 +412,25 @@
   <div class="card">
     <!-- Navigation -->
     <div class="nav-bar">
-      <button class="nav-link active" data-page="home">
+      <a href="#home" class="nav-link active" data-page="home">
         Home
-      </button>
+      </a>
 
-      <button class="nav-link" data-page="about">
+      <a href="#about" class="nav-link" data-page="about">
         About Us
-      </button>
+      </a>
 
-      <button class="nav-link" data-page="privacy">
+      <a href="#privacy" class="nav-link" data-page="privacy">
         Privacy Policy
-      </button>
+      </a>
 
-      <button class="nav-link" data-page="terms">
+      <a href="#terms" class="nav-link" data-page="terms">
         Terms
-      </button>
+      </a>
 
-      <button class="nav-link" data-page="contact">
+      <a href="#contact" class="nav-link" data-page="contact">
         Contact
-      </button>
+      </a>
     </div>
 
     <!-- Home -->
@@ -643,45 +644,60 @@
   </footer>
 
   <script>
-    // -----------------------------
-    // Navigation
-    // -----------------------------
+    // --------------------------------
+    // Hash Navigation
+    // --------------------------------
 
     const navLinks = document.querySelectorAll(".nav-link");
     const pageContents = document.querySelectorAll(".page-content");
 
-    navLinks.forEach((link) => {
-      link.addEventListener("click", () => {
-        const pageId = link.dataset.page;
+    function showPageFromHash() {
+      let pageId = window.location.hash.replace("#", "");
 
-        pageContents.forEach((page) => {
-          page.classList.remove("active");
-        });
+      if (!pageId) {
+        pageId = "home";
+      }
 
-        navLinks.forEach((navLink) => {
-          navLink.classList.remove("active");
-        });
+      const selectedPage = document.getElementById(
+        "page-" + pageId
+      );
 
-        const selectedPage = document.getElementById(
-          "page-" + pageId
-        );
+      const selectedLink = document.querySelector(
+        `.nav-link[data-page="${pageId}"]`
+      );
 
-        if (selectedPage) {
-          selectedPage.classList.add("active");
-        }
-
-        link.classList.add("active");
-
-        window.scrollTo({
-          top: 0,
-          behavior: "smooth"
-        });
+      pageContents.forEach((page) => {
+        page.classList.remove("active");
       });
-    });
 
-    // -----------------------------
+      navLinks.forEach((link) => {
+        link.classList.remove("active");
+      });
+
+      if (selectedPage && selectedLink) {
+        selectedPage.classList.add("active");
+        selectedLink.classList.add("active");
+      } else {
+        document
+          .getElementById("page-home")
+          .classList.add("active");
+
+        document
+          .querySelector('.nav-link[data-page="home"]')
+          .classList.add("active");
+      }
+
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth"
+      });
+    }
+
+    window.addEventListener("hashchange", showPageFromHash);
+
+    // --------------------------------
     // DOM Elements
-    // -----------------------------
+    // --------------------------------
 
     const mantraInput = document.getElementById("mantraInput");
     const languageSelect = document.getElementById("languageSelect");
@@ -698,9 +714,9 @@
     const transcriptBox = document.getElementById("transcriptBox");
     const themeToggle = document.getElementById("themeToggle");
 
-    // -----------------------------
+    // --------------------------------
     // Speech Recognition
-    // -----------------------------
+    // --------------------------------
 
     const SpeechRecognition =
       window.SpeechRecognition ||
@@ -710,20 +726,18 @@
     let listening = false;
     let totalCount = 0;
     let targetWords = [];
-    let userStopped = true;
     let finalTranscript = "";
-    let countedResultIndexes = new Set();
 
     /*
-      Important:
-      Stop button ke baad jo result event aaye,
-      usko ignore karne ke liye yeh flag use hoga.
+      Every new Start gets a new session ID.
+      Stop ke baad purane session ka late result ignore hoga.
     */
-    let ignoreResults = false;
+    let sessionCounter = 0;
+    let activeSessionId = 0;
 
-    // -----------------------------
-    // Local Storage
-    // -----------------------------
+    // --------------------------------
+    // Load Saved Data
+    // --------------------------------
 
     const savedCount = localStorage.getItem("japCount");
 
@@ -747,9 +761,9 @@
       themeToggle.textContent = "☀️ Light";
     }
 
-    // -----------------------------
+    // --------------------------------
     // Theme
-    // -----------------------------
+    // --------------------------------
 
     themeToggle.addEventListener("click", () => {
       const isDark = document.body.classList.toggle("dark");
@@ -764,9 +778,9 @@
         : "🌙 Dark";
     });
 
-    // -----------------------------
+    // --------------------------------
     // Language
-    // -----------------------------
+    // --------------------------------
 
     languageSelect.addEventListener("change", () => {
       localStorage.setItem(
@@ -783,9 +797,9 @@
         "Language update ho gayi.";
     });
 
-    // -----------------------------
-    // Helper Functions
-    // -----------------------------
+    // --------------------------------
+    // Helpers
+    // --------------------------------
 
     function updateTargetWords() {
       const raw = mantraInput.value || "";
@@ -881,36 +895,50 @@
       stopBtn.disabled = true;
     }
 
-    // -----------------------------
-    // Setup Recognition
-    // -----------------------------
+    // --------------------------------
+    // Create Recognition
+    // --------------------------------
 
-    function setupRecognition() {
+    function createRecognition() {
       if (!SpeechRecognition) {
         showUnsupportedMessage();
-        return;
+        return null;
       }
 
-      recognition = new SpeechRecognition();
+      const currentSessionId = ++sessionCounter;
+      activeSessionId = currentSessionId;
 
-      recognition.continuous = true;
-      recognition.interimResults = true;
-      recognition.maxAlternatives = 1;
-      recognition.lang = languageSelect.value;
+      const currentRecognition = new SpeechRecognition();
 
-      recognition.onstart = () => {
+      currentRecognition.continuous = true;
+      currentRecognition.interimResults = true;
+      currentRecognition.maxAlternatives = 1;
+      currentRecognition.lang = languageSelect.value;
+
+      currentRecognition.processedFinalIndexes = new Set();
+
+      currentRecognition.onstart = () => {
+        if (currentSessionId !== activeSessionId) {
+          return;
+        }
+
         setListeningState(true);
 
         supportPill.classList.remove("pill-error");
         statusText.classList.remove("status-error");
       };
 
-      recognition.onresult = (event) => {
+      currentRecognition.onresult = (event) => {
         /*
-          Stop button press ke baad result ignore karo.
-          Isse stop() ka pending final result count nahi hoga.
+          Important:
+          Agar yeh purane recognition session ka event hai,
+          toh usko ignore karo.
         */
-        if (ignoreResults) {
+        if (currentSessionId !== activeSessionId) {
+          return;
+        }
+
+        if (!listening) {
           return;
         }
 
@@ -926,16 +954,17 @@
           const transcript = result[0].transcript.trim();
 
           if (result.isFinal) {
-            if (!countedResultIndexes.has(i)) {
+            if (
+              !currentRecognition.processedFinalIndexes.has(i)
+            ) {
               added += countOccurrences(
                 transcript,
                 targetWords
               );
 
-              countedResultIndexes.add(i);
+              currentRecognition.processedFinalIndexes.add(i);
+              finalTranscript += transcript + " ";
             }
-
-            finalTranscript += transcript + " ";
           } else {
             interimTranscript += transcript + " ";
           }
@@ -964,11 +993,11 @@
         }
       };
 
-      recognition.onerror = (event) => {
-        /*
-          stop() ke baad kuch browsers "aborted"
-          error bhej sakte hain. Usko ignore karo.
-        */
+      currentRecognition.onerror = (event) => {
+        if (currentSessionId !== activeSessionId) {
+          return;
+        }
+
         if (event.error === "aborted") {
           return;
         }
@@ -979,16 +1008,12 @@
           event.error === "not-allowed" ||
           event.error === "service-not-allowed"
         ) {
-          userStopped = true;
-
           statusText.textContent =
             "Mic permission allow karo, phir dobara Start dabao.";
         } else if (event.error === "no-speech") {
           statusText.textContent =
             "Koi speech detect nahi hui.";
         } else if (event.error === "audio-capture") {
-          userStopped = true;
-
           statusText.textContent =
             "Microphone available nahi hai.";
         } else if (event.error === "network") {
@@ -1000,7 +1025,11 @@
         }
       };
 
-      recognition.onend = () => {
+      currentRecognition.onend = () => {
+        if (currentSessionId !== activeSessionId) {
+          return;
+        }
+
         listening = false;
 
         startBtn.disabled = false;
@@ -1010,32 +1039,115 @@
 
         startIcon.textContent = "▶";
         startLabel.textContent = "Start Listening";
+        supportText.textContent = "Speech ready";
 
-        if (!userStopped) {
-          supportText.textContent = "Reconnecting...";
-
-          setTimeout(() => {
-            if (userStopped || listening) {
-              return;
-            }
-
-            try {
-              recognition.start();
-            } catch (error) {
-              if (error.name !== "InvalidStateError") {
-                console.error("Restart error:", error);
-              }
-            }
-          }, 300);
-        } else {
-          supportText.textContent = "Speech ready";
-        }
+        statusText.textContent =
+          "Listening stopped.";
       };
+
+      return currentRecognition;
     }
 
-    // -----------------------------
-    // Input Events
-    // -----------------------------
+    // --------------------------------
+    // Start Button
+    // --------------------------------
+
+    startBtn.addEventListener("click", () => {
+      updateTargetWords();
+
+      if (targetWords.length === 0) {
+        statusText.classList.add("status-error");
+        statusText.textContent =
+          "Pehle mantra likho.";
+        return;
+      }
+
+      if (listening) {
+        statusText.textContent =
+          "Recognition already running hai.";
+        return;
+      }
+
+      finalTranscript = "";
+      resetTranscriptPlaceholder();
+
+      /*
+        Har Start par new recognition object banta hai.
+      */
+      recognition = createRecognition();
+
+      if (!recognition) {
+        return;
+      }
+
+      try {
+        recognition.start();
+      } catch (error) {
+        console.error("Start error:", error);
+
+        if (error.name === "InvalidStateError") {
+          statusText.textContent =
+            "Recognition already running hai.";
+        } else {
+          statusText.textContent =
+            "Recognition start nahi ho saka.";
+        }
+      }
+    });
+
+    // --------------------------------
+    // Stop Button
+    // --------------------------------
+
+    stopBtn.addEventListener("click", () => {
+      if (!recognition || !listening) {
+        return;
+      }
+
+      /*
+        Session ID turant change kar do.
+        Stop ke baad old recognition ka koi bhi
+        late result ignore ho jayega.
+      */
+      activeSessionId = ++sessionCounter;
+      listening = false;
+
+      const recognitionToStop = recognition;
+      recognition = null;
+
+      setListeningState(false);
+
+      statusText.classList.remove("status-error");
+      statusText.textContent =
+        "Listening stopped. Pending speech count nahi hui.";
+
+      try {
+        recognitionToStop.stop();
+      } catch (error) {
+        console.warn("Stop error:", error);
+      }
+    });
+
+    // --------------------------------
+    // Reset Button
+    // --------------------------------
+
+    resetBtn.addEventListener("click", () => {
+      totalCount = 0;
+
+      countDisplay.textContent = "0";
+      localStorage.removeItem("japCount");
+
+      resetTranscriptPlaceholder();
+
+      statusText.classList.remove("status-error");
+      statusText.textContent =
+        "Reset kar diya. Naya jap shuru kar sakte ho.";
+    });
+
+    // --------------------------------
+    // Mantra Input
+    // --------------------------------
 
     mantraInput.addEventListener("input", () => {
       updateTargetWords();
@@ -1046,114 +1158,17 @@
       }
     });
 
-    // -----------------------------
-    // Start
-    // -----------------------------
-
-    startBtn.addEventListener("click", () => {
-      if (!recognition) {
-        setupRecognition();
-      }
-
-      if (!recognition) {
-        return;
-      }
-
-      updateTargetWords();
-
-      if (targetWords.length === 0) {
-        statusText.classList.add("status-error");
-        statusText.textContent =
-          "Pehle mantra likho.";
-        return;
-      }
-
-      recognition.lang = languageSelect.value;
-
-      /*
-        New session mein results allow karo.
-      */
-      userStopped = false;
-      ignoreResults = false;
-
-      finalTranscript = "";
-      countedResultIndexes.clear();
-
-      resetTranscriptPlaceholder();
-
-      try {
-        recognition.start();
-      } catch (error) {
-        if (error.name === "InvalidStateError") {
-          statusText.textContent =
-            "Recognition already running hai.";
-        } else {
-          console.error("Start error:", error);
-
-          statusText.textContent =
-            "Recognition start nahi ho saka.";
-        }
-      }
-    });
-
-    // -----------------------------
-    // Stop
-    // -----------------------------
-
-    stopBtn.addEventListener("click", () => {
-      if (!recognition || !listening) {
-        return;
-      }
-
-      /*
-        Pehle flag set karo.
-        Agar stop() ke baad result event aaye,
-        onresult turant return kar dega.
-      */
-      userStopped = true;
-      ignoreResults = true;
-
-      try {
-        recognition.stop();
-      } catch (error) {
-        console.warn("Stop error:", error);
-      }
-
-      setListeningState(false);
-
-      statusText.classList.remove("status-error");
-      statusText.textContent =
-        "Listening stopped. Pending speech count nahi hui.";
-    });
-
-    // -----------------------------
-    // Reset
-    // -----------------------------
-
-    resetBtn.addEventListener("click", () => {
-      totalCount = 0;
-
-      finalTranscript = "";
-      countedResultIndexes.clear();
-
-      countDisplay.textContent = "0";
-
-      localStorage.removeItem("japCount");
-
-      resetTranscriptPlaceholder();
-
-      statusText.classList.remove("status-error");
-      statusText.textContent =
-        "Reset kar diya. Naya jap shuru kar sakte ho.";
-    });
-
-    // -----------------------------
+    // --------------------------------
     // Initial Setup
-    // -----------------------------
+    // --------------------------------
 
+    showPageFromHash();
     updateTargetWords();
     resetTranscriptPlaceholder();
-    setupRecognition();
+
+    if (!SpeechRecognition) {
+      showUnsupportedMessage();
+    }
   </script>
 </body>
 </html>
