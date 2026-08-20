@@ -34,13 +34,13 @@
   </text>
 
   <circle
-    cx="256"
+    cx="219"
     cy="354"
     r="10"
     fill="#c68b2c"/>
 
   <circle
-    cx="219"
+    cx="256"
     cy="354"
     r="10"
     fill="#c68b2c"/>
