@@ -5,8 +5,6 @@
   <title>Naam Jap Voice Counter</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-  <!-- PWA important lines -->
-  <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#020617">
 
   <style>
@@ -367,6 +365,7 @@
   const resetBtn      = document.getElementById("resetBtn");
   const statusText    = document.getElementById("statusText");
   const transcriptBox = document.getElementById("transcriptBox");
+  const themeToggle   = document.getElementById("themeToggle");
 
   // --- SpeechRecognition setup ---
   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -375,6 +374,31 @@
   let totalCount = 0;
   let targetWords = [];
   let userStopped = false;
+
+  // --- Load Saved Count ---
+  const savedCount = localStorage.getItem("japCount");
+  if (savedCount) {
+    totalCount = parseInt(savedCount, 10);
+    countDisplay.textContent = totalCount.toString();
+  }
+
+  // --- Load Theme Settings ---
+  if (localStorage.getItem("japTheme") === "dark") {
+    document.body.classList.add("dark");
+    themeToggle.textContent = "☀️ Light";
+  }
+
+  // --- Theme Toggle Event ---
+  themeToggle.addEventListener("click", () => {
+    document.body.classList.toggle("dark");
+    if (document.body.classList.contains("dark")) {
+      localStorage.setItem("japTheme", "dark");
+      themeToggle.textContent = "☀️ Light";
+    } else {
+      localStorage.setItem("japTheme", "light");
+      themeToggle.textContent = "🌙 Dark";
+    }
+  });
 
   function updateTargetWords() {
     const raw = mantraInput.value || "";
@@ -503,6 +527,7 @@
       if (added > 0) {
         totalCount += added;
         countDisplay.textContent = totalCount.toString();
+        localStorage.setItem("japCount", totalCount); // Count Auto-Save
         statusText.textContent =
           `+${added} jap detect hua. Total: ${totalCount}`;
       } else {
@@ -564,6 +589,7 @@
   resetBtn.addEventListener("click", () => {
     totalCount = 0;
     countDisplay.textContent = "0";
+    localStorage.removeItem("japCount"); // Reset hone par save memory se clear hoga
     resetTranscriptPlaceholder();
     statusText.classList.remove("status-error");
     statusText.textContent = "Reset kar diya. Naya jap shuru kar sakte ho.";
@@ -572,17 +598,6 @@
   updateTargetWords();
   resetTranscriptPlaceholder();
   setupRecognition();
-</script>
-
-<!-- Service worker register -->
-<script>
-if ("serviceWorker" in navigator) {
-  window.addEventListener("load", () => {
-    navigator.serviceWorker.register("sw.js")
-      .catch(err => console.log("SW error", err));
-  });
-}
-</script>
-
+  </script>
 </body>
 </html>
