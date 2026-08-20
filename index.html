@@ -133,33 +133,23 @@
       display: flex;
       align-items: center;
       gap: 11px;
+      color: var(--navy);
       text-decoration: none;
     }
 
-    .brand-mark {
-      display: grid;
-      place-items: center;
-      width: 43px;
-      height: 43px;
-      border-radius: 14px;
-      background: var(--navy);
-      color: #ffd88a;
-      font-size: 1.45rem;
-      box-shadow: var(--shadow-soft);
+    body.dark .brand {
+      color: #ffffff;
     }
 
     .brand-name {
-      color: var(--navy);
+      display: block;
       font-size: 1.05rem;
       font-weight: 800;
       letter-spacing: -0.02em;
     }
 
-    body.dark .brand-name {
-      color: #ffffff;
-    }
-
     .brand-tagline {
+      display: block;
       color: var(--muted);
       font-size: 0.73rem;
     }
@@ -208,7 +198,7 @@
       width: 100%;
       max-width: 1060px;
       margin: 0 auto 22px;
-      padding: 54px 26px;
+      padding: 32px 26px;
       border-radius: 26px;
       background:
         linear-gradient(
@@ -222,17 +212,6 @@
       box-shadow: var(--shadow);
     }
 
-    .hero::after {
-      content: "ॐ";
-      position: absolute;
-      right: 7%;
-      top: 18%;
-      color: rgba(255, 216, 138, 0.17);
-      font-size: 9rem;
-      line-height: 1;
-      pointer-events: none;
-    }
-
     .hero-content {
       position: relative;
       z-index: 1;
@@ -243,7 +222,7 @@
       display: inline-flex;
       align-items: center;
       gap: 7px;
-      margin-bottom: 15px;
+      margin-bottom: 12px;
       padding: 6px 10px;
       border: 1px solid rgba(255, 216, 138, 0.35);
       border-radius: 999px;
@@ -262,8 +241,8 @@
 
     .hero h1 {
       max-width: 620px;
-      margin-bottom: 13px;
-      font-size: clamp(2rem, 5vw, 3.45rem);
+      margin-bottom: 10px;
+      font-size: clamp(1.65rem, 4vw, 2.5rem);
       line-height: 1.08;
       letter-spacing: -0.045em;
     }
@@ -271,13 +250,13 @@
     .hero p {
       max-width: 590px;
       color: #dceaf5;
-      font-size: 1rem;
-      line-height: 1.7;
+      font-size: 0.88rem;
+      line-height: 1.55;
     }
 
     .hero-note {
       display: inline-block;
-      margin-top: 22px;
+      margin-top: 14px;
       color: #ffe4a8;
       font-size: 0.82rem;
       font-weight: 700;
@@ -286,7 +265,7 @@
     .counter-card {
       width: 100%;
       max-width: 760px;
-      margin: -48px auto 24px;
+      margin: 0 auto 24px;
       padding: 25px;
       position: relative;
       z-index: 2;
@@ -482,14 +461,6 @@
       transform: translateY(-1px);
     }
 
-    .btn:focus-visible,
-    .theme-btn:focus-visible,
-    .main-nav a:focus-visible,
-    .guide-link:focus-visible {
-      outline: 3px solid rgba(198, 139, 44, 0.45);
-      outline-offset: 2px;
-    }
-
     .btn:disabled {
       cursor: not-allowed;
       opacity: 0.48;
@@ -653,17 +624,14 @@
       padding: 18px;
       flex-direction: column;
       text-decoration: none;
+      transition:
+        transform 0.15s ease,
+        border-color 0.15s ease;
     }
 
     .guide-card:hover {
       border-color: var(--blue);
       transform: translateY(-2px);
-    }
-
-    .guide-card {
-      transition:
-        transform 0.15s ease,
-        border-color 0.15s ease;
     }
 
     .guide-card .guide-link {
@@ -769,18 +737,25 @@
       }
 
       .hero {
-        padding: 40px 21px 105px;
+        padding: 28px 19px 32px;
         border-radius: 21px;
       }
 
-      .hero::after {
-        right: 7%;
-        top: 58%;
-        font-size: 7rem;
+      .hero h1 {
+        font-size: 1.85rem;
+      }
+
+      .hero p {
+        font-size: 0.84rem;
+      }
+
+      .hero-note {
+        margin-top: 13px;
+        font-size: 0.75rem;
       }
 
       .counter-card {
-        margin-top: -73px;
+        margin-top: 0;
         padding: 19px;
         border-radius: 20px;
       }
@@ -836,10 +811,6 @@
       <a
         class="brand"
         href="index.html">
-
-        <span class="brand-mark">
-          ॐ
-        </span>
 
         <span>
           <span class="brand-name">
