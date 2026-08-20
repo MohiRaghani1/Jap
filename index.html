@@ -180,7 +180,6 @@
       font-size: 3rem;
       font-weight: 800;
       line-height: 1;
-      transition: color 0.2s ease;
     }
 
     .count-note {
@@ -251,21 +250,16 @@
       background: var(--transcript-bg);
       border: 1px dashed var(--transcript-border);
       padding: 8px 9px;
-      font-size: 1rem;
-      font-weight: bold;
-      color: #2563eb;
-      height: 45px;
-      display: flex;
-      align-items: center;
-      overflow: hidden;
-      white-space: pre;
+      font-size: 0.8rem;
+      color: var(--pill-text);
+      max-height: 90px;
+      overflow-y: auto;
+      white-space: pre-wrap;
     }
 
     .transcript-placeholder {
       color: var(--subtext);
       font-style: italic;
-      font-size: 0.8rem;
-      font-weight: normal;
     }
 
     .tagline {
@@ -294,32 +288,30 @@
         🌙 Dark
       </button>
     </div>
-    <div class="subtitle">Mic mein aawaz aate hi yeh automatically count karega 📿</div>
+    <div class="subtitle">Mic se jo naam type karoge, wahi count hoga 📿</div>
 
     <div class="row">
       <div style="flex: 1 1 100%;">
-        <div class="field-label">Mic Sensitivity (Shor zyada ho toh ise badhayein)</div>
-        <input 
-          id="sensitivitySlider" 
-          class="input" 
-          type="range" 
-          min="5" 
-          max="80" 
-          value="15" 
-          style="padding: 0; cursor: pointer;"
+        <div class="field-label">Jap / Naam (comma se alag-alag)</div>
+        <input
+          id="mantraInput"
+          class="input"
+          type="text"
+          value="ram, raam"
+          placeholder="jaise: ram, raam, om, allah"
         />
       </div>
     </div>
 
     <div class="pill" id="supportPill">
       <span class="pill-dot"></span>
-      <span id="supportText">Sound detector ready</span>
+      <span id="supportText">Speech ready</span>
     </div>
 
     <div class="count-box">
       <div class="count-label">Total Jap Count</div>
       <div class="count-value" id="countDisplay">0</div>
-      <div class="count-note" id="mantraPreview">Counting every chant...</div>
+      <div class="count-note" id="mantraPreview">Counting: "ram", "raam"</div>
     </div>
 
     <div class="btn-row">
@@ -332,9 +324,9 @@
 
     <div class="status" id="statusText"></div>
 
-    <div class="field-label">Live Volume Meter</div>
-    <div class="transcript-box" id="volumeBox">
-      <span class="transcript-placeholder">Start dabane par yahan aawaz ka level dikhega…</span>
+    <div class="field-label">Latest suna hua text</div>
+    <div class="transcript-box" id="transcriptBox">
+      <span class="transcript-placeholder">Yaha last suna hua sentence dikhega…</span>
     </div>
 
     <div class="tagline">Tip: Page reload ke baad bhi count safe rahega ✨</div>
@@ -342,25 +334,25 @@
 
   <script>
   // --- DOM elements ---
-  const sensitivitySlider = document.getElementById("sensitivitySlider");
-  const countDisplay      = document.getElementById("countDisplay");
-  const startBtn          = document.getElementById("startBtn");
-  const resetBtn          = document.getElementById("resetBtn");
-  const statusText        = document.getElementById("statusText");
-  const volumeBox         = document.getElementById("volumeBox");
-  const themeToggle       = document.getElementById("themeToggle");
+  const mantraInput   = document.getElementById("mantraInput");
+  const supportText   = document.getElementById("supportText");
+  const supportPill   = document.getElementById("supportPill");
+  const countDisplay  = document.getElementById("countDisplay");
+  const mantraPreview = document.getElementById("mantraPreview");
+  const startBtn      = document.getElementById("startBtn");
+  const resetBtn      = document.getElementById("resetBtn");
+  const statusText    = document.getElementById("statusText");
+  const transcriptBox = document.getElementById("transcriptBox");
+  const themeToggle   = document.getElementById("themeToggle");
 
-  // --- State Variables ---
+  // --- SpeechRecognition setup ---
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  let recognition = null;
+  let listening = false;
   let totalCount = 0;
-  let isListening = false;
-  let cooldown = false;
-  
-  // --- Web Audio API Variables ---
-  let audioContext;
-  let analyser;
-  let microphone;
-  let dataArray;
-  let animationId;
+  let targetWords = [];
+  let userStopped = false;
+  let lastProcessedLength = 0;
 
   // --- Load Saved Count ---
   const savedCount = localStorage.getItem("japCount");
@@ -386,95 +378,167 @@
     }
   });
 
-  // --- Start Sound Detection ---
-  async function startAudioDetection() {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
-      
-      // Initialize Audio Context
-      audioContext = new (window.AudioContext || window.webkitAudioContext)();
-      analyser = audioContext.createAnalyser();
-      microphone = audioContext.createMediaStreamSource(stream);
-      
-      analyser.fftSize = 256;
-      const bufferLength = analyser.frequencyBinCount;
-      dataArray = new Uint8Array(bufferLength);
-      
-      microphone.connect(analyser);
-      
-      isListening = true;
+  function updateTargetWords() {
+    const raw = mantraInput.value || "";
+    targetWords = raw
+      .split(",")
+      .map(w => w.trim().toLowerCase())
+      .filter(Boolean);
+
+    if (targetWords.length === 0) {
+      mantraPreview.textContent = "No mantra set – please enter at least one.";
+    } else {
+      mantraPreview.textContent = 'Counting: "' + targetWords.join('", "') + '"';
+    }
+  }
+
+  function setListeningState(isOn) {
+    listening = isOn;
+    if (isOn) {
       startBtn.classList.add("disabled");
       startBtn.disabled = true;
-      statusText.textContent = "Mic on hai... Apna jaap shuru karein!";
-      statusText.classList.remove("status-error");
-      
-      detectSound();
-    } catch (err) {
-      console.error("Mic Error:", err);
-      statusText.textContent = "Error: Mic permission allow karein (Browser settings se).";
-      statusText.classList.add("status-error");
-    }
-  }
-
-  // --- Main Detection Logic ---
-  function detectSound() {
-    if (!isListening) return;
-    
-    animationId = requestAnimationFrame(detectSound);
-    analyser.getByteFrequencyData(dataArray);
-    
-    // Calculate average volume
-    let sum = 0;
-    for (let i = 0; i < dataArray.length; i++) {
-      sum += dataArray[i];
-    }
-    let averageVolume = sum / dataArray.length;
-
-    // Update Volume Meter UI (Live Visuals)
-    let threshold = parseInt(sensitivitySlider.value, 10);
-    let barCount = Math.min(Math.floor(averageVolume / 2), 40);
-    volumeBox.textContent = "|".repeat(barCount);
-
-    // Color feedback based on volume
-    if (averageVolume >= threshold) {
-      volumeBox.style.color = "#22c55e"; // Green when it counts
+      statusText.textContent = "Sunn raha hoon… jap bolo.";
     } else {
-      volumeBox.style.color = "#2563eb"; // Blue normally
-    }
-
-    // Count Logic with Cooldown
-    if (averageVolume >= threshold && !cooldown) {
-      totalCount++;
-      countDisplay.textContent = totalCount.toString();
-      localStorage.setItem("japCount", totalCount);
-      
-      // Visual pulse effect on counter
-      countDisplay.style.color = "#22c55e";
-      setTimeout(() => countDisplay.style.color = "var(--text)", 300);
-
-      // Start cooldown timer (600ms)
-      cooldown = true;
-      setTimeout(() => {
-        cooldown = false;
-      }, 600);
+      startBtn.classList.remove("disabled");
+      startBtn.disabled = false;
+      statusText.textContent = "Listening paused/restarting…";
     }
   }
 
-  // --- Button Events ---
+  function showTranscript(text) {
+    transcriptBox.innerHTML = "";
+    const span = document.createElement("span");
+    span.textContent = text;
+    transcriptBox.appendChild(span);
+  }
+
+  function resetTranscriptPlaceholder() {
+    transcriptBox.innerHTML = "";
+    const span = document.createElement("span");
+    span.className = "transcript-placeholder";
+    span.textContent = "Yaha last suna hua sentence dikhega…";
+    transcriptBox.appendChild(span);
+  }
+
+  function countOccurrencesInNewText(fullText, targetList) {
+    const tokens = fullText
+      .toLowerCase()
+      .split(/[\s,.;:!?()"'`]+/)
+      .filter(Boolean);
+    
+    let newTokens = tokens.slice(lastProcessedLength);
+    let added = 0;
+
+    for (const t of newTokens) {
+      if (targetList.includes(t)) {
+        added++;
+      }
+    }
+    
+    lastProcessedLength = tokens.length;
+    return added;
+  }
+
+  function setupRecognition() {
+    if (!SpeechRecognition) {
+      supportText.textContent = "⚠ Browser speech support nahi deta";
+      supportPill.style.background = "#fee2e2";
+      statusText.textContent = "SpeechRecognition support ke liye Chrome / Edge use karo.";
+      startBtn.disabled = true;
+      startBtn.classList.add("disabled");
+      return;
+    }
+
+    recognition = new SpeechRecognition();
+    recognition.continuous = true;
+    recognition.interimResults = true;
+    recognition.lang = 'hi-IN'; // Indian context ke liye
+
+    recognition.onstart = () => {
+      setListeningState(true);
+    };
+
+    recognition.onend = () => {
+      setListeningState(false);
+      if (!userStopped) {
+        setTimeout(() => {
+          try {
+            recognition.start();
+          } catch (e) {
+            console.warn("Restart error:", e);
+          }
+        }, 200);
+      }
+    };
+
+    recognition.onerror = (event) => {
+      console.error("Speech error:", event.error);
+      statusText.textContent = "Error: " + event.error;
+      statusText.classList.add("status-error");
+      if (event.error === "not-allowed" || event.error === "service-not-allowed") {
+        statusText.textContent = "Mic permission allow karo.";
+      }
+    };
+
+    recognition.onresult = (event) => {
+      let fullText = "";
+      for (let i = 0; i < event.results.length; i++) {
+        fullText += event.results[i][0].transcript + " ";
+      }
+      fullText = fullText.trim();
+      if (!fullText) return;
+
+      showTranscript(fullText);
+
+      let added = countOccurrencesInNewText(fullText, targetWords);
+
+      if (added > 0) {
+        totalCount += added;
+        countDisplay.textContent = totalCount.toString();
+        localStorage.setItem("japCount", totalCount);
+        statusText.textContent = `+${added} jap detect hua. Total: ${totalCount}`;
+      }
+    };
+  }
+
+  mantraInput.addEventListener("input", updateTargetWords);
+
   startBtn.addEventListener("click", () => {
-    if (!isListening) {
-      startAudioDetection();
+    if (!recognition) {
+      setupRecognition();
+    }
+    if (!recognition) return;
+
+    updateTargetWords();
+    if (targetWords.length === 0) {
+      statusText.textContent = "Pehle mantra likho.";
+      statusText.classList.add("status-error");
+      return;
+    }
+    statusText.classList.remove("status-error");
+
+    userStopped = false;
+    lastProcessedLength = 0;
+    try {
+      recognition.start();
+    } catch (e) {
+      console.warn(e);
     }
   });
 
   resetBtn.addEventListener("click", () => {
     totalCount = 0;
+    lastProcessedLength = 0;
     countDisplay.textContent = "0";
     localStorage.removeItem("japCount");
+    resetTranscriptPlaceholder();
     statusText.classList.remove("status-error");
-    statusText.textContent = "Count zero kar diya gaya hai.";
+    statusText.textContent = "Reset kar diya. Naya jap shuru kar sakte ho.";
   });
 
+  updateTargetWords();
+  resetTranscriptPlaceholder();
+  setupRecognition();
   </script>
 </body>
 </html>
