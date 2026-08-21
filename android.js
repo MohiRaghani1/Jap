@@ -1,55 +1,89 @@
-// android.js - Dedicated Android Speech Recognition Logic
+// android.js
 function handleAndroidRecognition(language, targetPhrase, callbacks) {
-  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  const SpeechRecognition =
+    window.SpeechRecognition ||
+    window.webkitSpeechRecognition;
+
   if (!SpeechRecognition) return null;
 
   const recognition = new SpeechRecognition();
+
   recognition.continuous = true;
   recognition.interimResults = true;
   recognition.lang = language;
   recognition.maxAlternatives = 1;
 
   let confirmedFinalText = "";
-  let lastProcessedIndex = 0;
+  let processedFinalTexts = new Set();
+
+  function normalizeLocal(text) {
+    return String(text)
+      .toLowerCase()
+      .replace(/[।,.;:!?()[\]{}"'`]/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+  }
+
+  function escapeLocal(text) {
+    return text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  }
+
+  function countMatches(spokenText, phrase) {
+    const spoken = normalizeLocal(spokenText);
+    const target = normalizeLocal(phrase);
+
+    if (!spoken || !target) return 0;
+
+    const pattern = escapeLocal(target).replace(/\\ +/g, "\\s+");
+
+    const regex = new RegExp(
+      "(^|\\s)" + pattern + "(?=\\s|$)",
+      "gi"
+    );
+
+    const matches = spoken.match(regex);
+    return matches ? matches.length : 0;
+  }
 
   recognition.onresult = event => {
     let interimText = "";
-    let newFinalText = "";
+    const newFinalParts = [];
 
     for (let i = event.resultIndex; i < event.results.length; i++) {
       const result = event.results[i];
       const text = result[0].transcript.trim();
 
+      if (!text) continue;
+
       if (result.isFinal) {
-        if (i >= lastProcessedIndex) {
-          newFinalText += " " + text;
-          lastProcessedIndex = i + 1;
+        const normalizedText = normalizeLocal(text);
+        const resultKey = i + "|" + normalizedText;
+
+        if (!processedFinalTexts.has(resultKey)) {
+          processedFinalTexts.add(resultKey);
+          newFinalParts.push(text);
         }
       } else {
         interimText += " " + text;
       }
     }
 
-    if (newFinalText.trim()) {
-      confirmedFinalText += " " + newFinalText.trim();
-      
-      // Local normalize & count match for Android stream
-      const chunkNormalized = String(newFinalText).toLowerCase().replace(/[।,.;:!?()[\]{}"'`]/g, " ").replace(/\s+/g, " ").trim();
-      const targetNorm = String(targetPhrase).toLowerCase().replace(/[।,.;:!?()[\]{}"'`]/g, " ").replace(/\s+/g, " ").trim();
-      
-      if (chunkNormalized && targetNorm) {
-        const pattern = targetNorm.replace(/[.*+?^${}()|[\]\\]/g, "\\$&").replace(/\\ +/g, "\\s+");
-        const regex = new RegExp("(^|\\s)" + pattern + "(?=\\s|$)", "gi");
-        const matches = chunkNormalized.match(regex);
-        const added = matches ? matches.length : 0;
+    if (newFinalParts.length > 0) {
+      const newFinalText = newFinalParts.join(" ");
 
-        if (added > 0 && callbacks.onMatch) {
-          callbacks.onMatch(added);
-        }
+      confirmedFinalText =
+        (confirmedFinalText + " " + newFinalText).trim();
+
+      const added = countMatches(newFinalText, targetPhrase);
+
+      if (added > 0 && callbacks.onMatch) {
+        callbacks.onMatch(added);
       }
     }
 
-    const visibleText = (confirmedFinalText + " " + interimText).trim();
+    const visibleText =
+      (confirmedFinalText + " " + interimText).trim();
+
     if (visibleText && callbacks.onTranscript) {
       callbacks.onTranscript(visibleText);
     }
