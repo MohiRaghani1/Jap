@@ -1178,8 +1178,8 @@
         id="mantraInput"
         class="phrase-input"
         type="text"
-        value="Shri Radhe"
-        placeholder="Example: Shri Radhe Radhe"
+        value=""
+        placeholder="Enter your mantra"
         autocomplete="off" />
 
       <p class="helper-text">
@@ -1192,7 +1192,7 @@
         <strong>
           Speak exactly:
         </strong>
-        “Shri Radhe”
+        Enter your phrase first.
       </div>
 
       <label
@@ -1252,7 +1252,7 @@
         <div
           id="mantraPreview"
           class="count-note">
-          Counting full phrase: “Shri Radhe”
+          Enter a phrase to begin.
         </div>
       </div>
 
@@ -1285,6 +1285,26 @@
         class="status-message"
         aria-live="polite">
         Ready when you are.
+      </div>
+
+      <div
+        id="tapFallback"
+        class="tap-fallback">
+
+        <div>
+          Voice recognition stopped.
+        </div>
+
+        <div>
+          You can use tap counting.
+        </div>
+
+        <button
+          id="tapBtn"
+          class="tap-btn"
+          type="button">
+          Tap to Count
+        </button>
       </div>
 
       <label
@@ -1515,25 +1535,6 @@
         </button>
       </div>
 
-      <div
-        id="tapFallback"
-        class="tap-fallback">
-
-        <h3>
-          Voice recognition is unavailable
-        </h3>
-
-        <p>
-          You can continue your practice with the manual tap counter.
-        </p>
-
-        <button
-          id="tapBtn"
-          class="tap-btn"
-          type="button">
-          Tap to Count
-        </button>
-      </div>
     </section>
 
     <section class="hero">
@@ -3001,6 +3002,8 @@
       "click",
       () => {
         updatePhrase();
+
+        tapFallback.classList.remove("visible");
 
         if (!targetPhrase) {
           setStatus(
