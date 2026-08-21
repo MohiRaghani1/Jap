@@ -3194,7 +3194,18 @@
               return;
             }
 
-            setListening(false);
+            if (listening) {
+              finalText = "";
+              countedFinalText = "";
+
+              try {
+                recognition.start();
+              } catch (error) {
+                setListening(false);
+              }
+            } else {
+              setListening(false);
+            }
           };
 
         try {
