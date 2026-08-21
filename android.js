@@ -30,10 +30,7 @@
       .length === 1;
   }
 
-  function countPhraseMatches(
-    text,
-    phrase
-  ) {
+  function countMatches(text, phrase) {
     const spoken = normalize(text);
     const target = normalize(phrase);
 
@@ -51,15 +48,12 @@
       "gi"
     );
 
-    const matches =
-      spoken.match(regex);
+    const matches = spoken.match(regex);
 
-    return matches
-      ? matches.length
-      : 0;
+    return matches ? matches.length : 0;
   }
 
-  function getNewTranscript(
+  function getNewText(
     currentText,
     previousText
   ) {
@@ -87,10 +81,6 @@
         .trim();
     }
 
-    /*
-      Android kabhi result ko shorter/revised form me bhejta hai.
-      Aise result ko duplicate count nahi karna.
-    */
     return "";
   }
 
@@ -121,16 +111,18 @@
       restartTimer: null,
 
       /*
-        Single-word ke liye separate state.
+        Single-word state.
       */
+      singleWordSeenText: "",
       singleWordCountedText: "",
-      singleWordDisplayText: "",
 
       /*
-        Multi-word ka existing state.
+        Multi-word state.
+        Isko previous working behavior ke
+        liye separate rakha gaya hai.
       */
+      multiWordSeenText: "",
       multiWordCountedText: "",
-      multiWordDisplayText: "",
 
       start: null,
       stop: null
@@ -149,35 +141,43 @@
     }
 
     /*
-      ONLY SINGLE-WORD LOGIC
+      SINGLE-WORD ONLY
     */
     function processSingleWord(
-      finalText,
-      confidence
+      currentText
     ) {
       const current =
-        normalize(finalText);
+        normalize(currentText);
 
       if (!current) {
         return;
       }
 
+      const previous =
+        controller.singleWordCountedText;
+
       /*
-        Single-word ke liye sirf final,
-        positive-confidence result count hoga.
+        Android result same ya shorter ho gaya
+        to duplicate/revision ignore.
       */
       if (
-        typeof confidence !== "number" ||
-        confidence <= 0
+        current === previous ||
+        (
+          previous &&
+          !current.startsWith(previous)
+        )
       ) {
         return;
       }
 
-      const newText =
-        getNewTranscript(
-          current,
-          controller.singleWordCountedText
-        );
+      let newText = current;
+
+      if (previous) {
+        newText =
+          current
+            .slice(previous.length)
+            .trim();
+      }
 
       if (!newText) {
         return;
@@ -185,13 +185,13 @@
 
       /*
         Example:
-        current = "radha radha radha"
-        previous = "radha"
-        newText = "radha radha"
-        added = 2
+        previous: "radha"
+        current:  "radha radha radha"
+        newText:  "radha radha"
+        result: +2
       */
       const added =
-        countPhraseMatches(
+        countMatches(
           newText,
           targetPhrase
         );
@@ -203,20 +203,19 @@
       controller.singleWordCountedText =
         current;
 
-      controller.singleWordDisplayText =
+      controller.singleWordSeenText =
         current;
     }
 
     /*
-      MULTI-WORD LOGIC
-      Isko intentionally previous working logic
-      ke jaise hi rakha gaya hai.
+      MULTI-WORD ONLY
+      Previous working logic preserved.
     */
     function processMultiWord(
-      finalText
+      currentText
     ) {
       const current =
-        normalize(finalText);
+        normalize(currentText);
 
       const previous =
         controller.multiWordCountedText;
@@ -229,18 +228,24 @@
         return;
       }
 
-      const newText =
-        getNewTranscript(
-          current,
-          previous
-        );
+      let newText = current;
+
+      if (
+        previous &&
+        current.startsWith(previous)
+      ) {
+        newText =
+          current
+            .slice(previous.length)
+            .trim();
+      }
 
       if (!newText) {
         return;
       }
 
       const added =
-        countPhraseMatches(
+        countMatches(
           newText,
           targetPhrase
         );
@@ -252,18 +257,18 @@
       controller.multiWordCountedText =
         current;
 
-      controller.multiWordDisplayText =
+      controller.multiWordSeenText =
         current;
     }
 
     function handleResult(event) {
-      let finalText = "";
-      let finalConfidence = 0;
+      let fullFinalText = "";
       let interimText = "";
 
       /*
-        Entire result list read kar rahe hain.
-        Sirf resultIndex par depend nahi kar rahe.
+        Android me resultIndex kabhi 0 se
+        poora result dobara de sakta hai,
+        isliye complete results list read karte hain.
       */
       for (
         let i = 0;
@@ -288,20 +293,12 @@
         }
 
         if (result.isFinal) {
-          finalText =
+          fullFinalText =
             (
-              finalText +
+              fullFinalText +
               " " +
               text
             ).trim();
-
-          finalConfidence =
-            Math.max(
-              finalConfidence,
-              Number(
-                alternative.confidence
-              ) || 0
-            );
         } else {
           interimText =
             (
@@ -313,43 +310,48 @@
       }
 
       /*
-        SINGLE-WORD CONDITION
+        SINGLE-WORD:
+        Final aur interim dono transcript ko
+        candidate maana jayega, taaki slow speech
+        miss na ho.
       */
       if (singleWord) {
-        if (finalText) {
-          processSingleWord(
-            finalText,
-            finalConfidence
-          );
-        }
+        const candidate =
+          (
+            fullFinalText +
+            " " +
+            interimText
+          ).trim();
 
-        const displayText =
-          finalText || interimText;
+        if (candidate) {
+          processSingleWord(candidate);
 
-        if (
-          displayText &&
-          typeof callbacks.onTranscript ===
-            "function"
-        ) {
-          callbacks.onTranscript(
-            normalize(displayText)
-          );
+          if (
+            typeof callbacks.onTranscript ===
+              "function"
+          ) {
+            callbacks.onTranscript(
+              normalize(candidate)
+            );
+          }
         }
 
         return;
       }
 
       /*
-        MULTI-WORD CONDITION
-        Is branch ko touch nahi kiya gaya.
+        MULTI-WORD:
+        Existing final-result behavior.
       */
-      if (finalText) {
-        processMultiWord(finalText);
+      if (fullFinalText) {
+        processMultiWord(
+          fullFinalText
+        );
       }
 
       const visibleText =
         (
-          controller.multiWordDisplayText +
+          controller.multiWordSeenText +
           " " +
           interimText
         ).trim();
@@ -365,13 +367,13 @@
       }
     }
 
-    function createRecognition() {
+    function makeRecognition() {
       const recognition =
         new SpeechRecognition();
 
       /*
         Android one-shot mode.
-        Android restart isi file ke andar hoga.
+        Android restart isi file me hoga.
       */
       recognition.continuous =
         !isAndroid;
@@ -386,18 +388,6 @@
         1;
 
       recognition.onstart = () => {
-        /*
-          Har new Android recognition session me
-          single-word ka duplicate state reset.
-        */
-        if (singleWord) {
-          controller.singleWordCountedText =
-            "";
-
-          controller.singleWordDisplayText =
-            "";
-        }
-
         if (
           typeof callbacks.onStart ===
             "function"
@@ -460,7 +450,7 @@
 
       if (!controller.recognition) {
         controller.recognition =
-          createRecognition();
+          makeRecognition();
       }
 
       try {
@@ -481,16 +471,16 @@
       controller.stopped =
         false;
 
+      controller.singleWordSeenText =
+        "";
+
       controller.singleWordCountedText =
         "";
 
-      controller.singleWordDisplayText =
+      controller.multiWordSeenText =
         "";
 
       controller.multiWordCountedText =
-        "";
-
-      controller.multiWordDisplayText =
         "";
 
       startRecognition();
