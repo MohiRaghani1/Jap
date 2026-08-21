@@ -3022,7 +3022,8 @@
         const currentSession =
           ++sessionId;
 
-        let indexMatchCounts = [];
+        let confirmedFinalText = "";
+        let sessionMatchCount = 0;
 
         recognition =
           new SpeechRecognition();
@@ -3048,8 +3049,6 @@
               return;
             }
 
-            indexMatchCounts = [];
-
             setListening(true);
 
             setStatus(
@@ -3068,10 +3067,11 @@
               return;
             }
 
-            let fullTranscript = "";
+            let interimText = "";
+            let latestFinalChunk = "";
 
             for (
-              let i = 0;
+              let i = event.resultIndex;
               i < event.results.length;
               i++
             ) {
@@ -3079,44 +3079,55 @@
                 event.results[i];
 
               const text =
-                result[0].transcript;
+                result[0].transcript.trim();
 
-              fullTranscript += " " + text;
-
-              if (typeof indexMatchCounts[i] === "undefined") {
-                indexMatchCounts[i] = 0;
-              }
-
-              const matchesInThisIndex =
-                countPhraseMatches(
-                  text,
-                  targetPhrase
-                );
-
-              if (matchesInThisIndex > indexMatchCounts[i]) {
-                const added =
-                  matchesInThisIndex - indexMatchCounts[i];
-
-                indexMatchCounts[i] =
-                  matchesInThisIndex;
-
-                registerCount(added);
-
-                setStatus(
-                  "Phrase detected. +" +
-                  added +
-                  " counted.",
-                  "success"
-                );
+              if (result.isFinal) {
+                latestFinalChunk += " " + text;
+              } else {
+                interimText += " " + text;
               }
             }
 
+            if (latestFinalChunk) {
+              confirmedFinalText += " " + latestFinalChunk;
+            }
+
             const visibleText =
-              fullTranscript.trim().replace(/\s+/g, " ");
+              (
+                confirmedFinalText +
+                " " +
+                interimText
+              ).trim();
 
             if (visibleText) {
               transcriptBox.textContent =
                 visibleText;
+            }
+
+            const allFinalNormalized =
+              normalize(confirmedFinalText);
+
+            const totalMatchesNow =
+              countPhraseMatches(
+                allFinalNormalized,
+                targetPhrase
+              );
+
+            if (totalMatchesNow > sessionMatchCount) {
+              const added =
+                totalMatchesNow - sessionMatchCount;
+
+              sessionMatchCount =
+                totalMatchesNow;
+
+              registerCount(added);
+
+              setStatus(
+                "Phrase detected. +" +
+                added +
+                " counted.",
+                "success"
+              );
             }
           };
 
