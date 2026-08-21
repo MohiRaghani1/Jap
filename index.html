@@ -3028,8 +3028,9 @@
         recognition =
           new SpeechRecognition();
 
-        recognition.continuous =
-          true;
+        // Android over-counting fix: false for Android (single phrase chunking), true for iOS/Desktop
+        const isAndroid = /android/i.test(navigator.userAgent);
+        recognition.continuous = !isAndroid;
 
         recognition.interimResults =
           true;
