@@ -3028,6 +3028,9 @@
 
         let finalText =
           "";
+          
+        let sessionMatchCount = 
+          0;
 
         recognition =
           new SpeechRecognition();
@@ -3035,13 +3038,8 @@
         recognition.continuous =
           true;
 
-        const isAndroid =
-          /Android/i.test(
-            navigator.userAgent
-          );
-
         recognition.interimResults =
-          !isAndroid;
+          true;
 
         recognition.lang =
           languageSelect.value;
@@ -3108,50 +3106,29 @@
                 visibleText;
             }
 
-            const allFinalText =
-              normalize(finalText);
+            const allVisibleText =
+              normalize(visibleText);
 
-            const oldFinalText =
-              normalize(countedFinalText);
-
-            if (
-              allFinalText.length <=
-              oldFinalText.length
-            ) {
-              return;
-            }
-
-            const newFinalText =
-              allFinalText
-                .slice(oldFinalText.length)
-                .trim();
-
-            countedFinalText =
-              allFinalText;
-
-            if (!newFinalText) {
-              return;
-            }
-
-            const added =
+            const totalMatchesNow =
               countPhraseMatches(
-                newFinalText,
+                allVisibleText,
                 targetPhrase
               );
 
-            if (added > 0) {
+            if (totalMatchesNow > sessionMatchCount) {
+              const added =
+                totalMatchesNow - sessionMatchCount;
+
               registerCount(added);
+
+              sessionMatchCount =
+                totalMatchesNow;
 
               setStatus(
                 "Phrase detected. +" +
                 added +
                 " counted.",
                 "success"
-              );
-            } else {
-              setStatus(
-                "Phrase not detected. Please repeat clearly.",
-                "error"
               );
             }
           };
