@@ -482,59 +482,80 @@ startBtn.addEventListener("click", () => {
   if (listening) return;
 
   const currentSession = ++sessionId;
-  let confirmedFinalText = "";
-  let sessionMatchCount = 0;
-  let lastProcessedIndex = 0;
+  const isAndroid = /android/i.test(navigator.userAgent);
 
-  recognition = new SpeechRecognition();
-  recognition.continuous = true;
-  recognition.interimResults = true;
-  recognition.lang = languageSelect.value;
-  recognition.maxAlternatives = 1;
+  if (isAndroid && typeof handleAndroidRecognition === "function") {
+    recognition = handleAndroidRecognition(languageSelect.value, targetPhrase, {
+      onMatch: (added) => {
+        if (currentSession === sessionId && listening) {
+          registerCount(added);
+          setStatus("Phrase detected. +" + added + " counted.", "success");
+        }
+      },
+      onTranscript: (visibleText) => {
+        if (currentSession === sessionId && listening) {
+          transcriptBox.textContent = visibleText;
+        }
+      }
+    });
+  } else {
+    // iPhone & Desktop original logic
+    let confirmedFinalText = "";
+    let sessionMatchCount = 0;
+    let lastProcessedIndex = 0;
+
+    recognition = new SpeechRecognition();
+    recognition.continuous = true;
+    recognition.interimResults = true;
+    recognition.lang = languageSelect.value;
+    recognition.maxAlternatives = 1;
+
+    recognition.onresult = event => {
+      if (currentSession !== sessionId || !listening) return;
+
+      let interimText = "";
+      let newFinalText = "";
+
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        const result = event.results[i];
+        const text = result[0].transcript.trim();
+        if (result.isFinal) {
+          if (i >= lastProcessedIndex) {
+            newFinalText += " " + text;
+            lastProcessedIndex = i + 1;
+          }
+        } else {
+          interimText += " " + text;
+        }
+      }
+
+      if (newFinalText.trim()) {
+        confirmedFinalText += " " + newFinalText.trim();
+        const chunkNormalized = normalize(newFinalText);
+        const added = countPhraseMatches(chunkNormalized, targetPhrase);
+
+        if (added > 0) {
+          registerCount(added);
+          setStatus("Phrase detected. +" + added + " counted.", "success");
+        }
+      }
+
+      const visibleText = (confirmedFinalText + " " + interimText).trim();
+      if (visibleText) {
+        transcriptBox.textContent = visibleText;
+      }
+    };
+  }
+
+  if (!recognition) {
+    showTapFallback("Recognition could not be started.");
+    return;
+  }
 
   recognition.onstart = () => {
     if (currentSession !== sessionId) return;
     setListening(true);
-    confirmedFinalText = "";
-    sessionMatchCount = 0;
-    lastProcessedIndex = 0;
     setStatus("Listening for: “" + mantraInput.value.trim() + "”");
-  };
-
-  recognition.onresult = event => {
-    if (currentSession !== sessionId || !listening) return;
-
-    let interimText = "";
-    let newFinalText = "";
-
-    for (let i = event.resultIndex; i < event.results.length; i++) {
-      const result = event.results[i];
-      const text = result[0].transcript.trim();
-      if (result.isFinal) {
-        if (i >= lastProcessedIndex) {
-          newFinalText += " " + text;
-          lastProcessedIndex = i + 1;
-        }
-      } else {
-        interimText += " " + text;
-      }
-    }
-
-    if (newFinalText.trim()) {
-      confirmedFinalText += " " + newFinalText.trim();
-      const chunkNormalized = normalize(newFinalText);
-      const added = countPhraseMatches(chunkNormalized, targetPhrase);
-
-      if (added > 0) {
-        registerCount(added);
-        setStatus("Phrase detected. +" + added + " counted.", "success");
-      }
-    }
-
-    const visibleText = (confirmedFinalText + " " + interimText).trim();
-    if (visibleText) {
-      transcriptBox.textContent = visibleText;
-    }
   };
 
   recognition.onerror = event => {
