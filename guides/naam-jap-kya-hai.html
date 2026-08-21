@@ -2,204 +2,325 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1"
-  />
-
-  <meta
-    name="description"
-    content="Naam jap kya hai, beginners kaise shuru karein aur daily naam simran routine kaise banayein."
-  />
-
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="Understanding Naam Jap, how beginners can start, and establishing a daily spiritual routine." />
   <meta name="robots" content="index, follow" />
-
-  <!-- अपना domain डालें -->
-  <link
-    rel="canonical"
-    href="https://mohiraghani1.github.io/guides/naam-jap-kya-hai.html"
-  />
-
-  <title>
-    Naam Jap Kya Hai Aur Kaise Karein?
-  </title>
+  <meta name="theme-color" content="#102a43" />
+  <link rel="canonical" href="https://mohiraghani1.github.io/guides/naam-jap-kya-hai.html" />
+  <link rel="manifest" href="../manifest.json" />
+  <link rel="icon" type="image/svg+xml" href="../icon-192.svg" />
+  <title>Understanding Naam Jap &amp; How to Begin - Naam Jap Voice Counter</title>
 
   <style>
     :root {
-      --bg: #f8fafc;
-      --card: #ffffff;
-      --text: #111827;
+      --navy: #102a43;
+      --blue: #2878c8;
+      --blue-soft: #eaf4ff;
+      --gold: #c68b2c;
+      --gold-soft: #fff6df;
+      --cream: #fbf8f1;
+      --white: #ffffff;
+      --text: #17202a;
       --muted: #64748b;
-      --border: #e2e8f0;
-      --primary: #2563eb;
+      --border: #e5e7eb;
+      --shadow: 0 18px 50px rgba(16, 42, 67, 0.12);
+      --shadow-soft: 0 8px 24px rgba(16, 42, 67, 0.08);
+    }
+
+    body.dark {
+      --cream: #071b2f;
+      --white: #0d243b;
+      --text: #f1f5f9;
+      --muted: #b5c1cd;
+      --border: #24435f;
+      --blue-soft: #123451;
+      --gold-soft: #3b2b13;
+      --shadow: 0 18px 50px rgba(0, 0, 0, 0.35);
+      --shadow-soft: 0 8px 24px rgba(0, 0, 0, 0.25);
     }
 
     * {
       box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
     }
 
     body {
-      margin: 0;
-      padding: 20px;
-      background: var(--bg);
+      min-height: 100vh;
+      padding: 0 16px 28px;
+      background: var(--cream);
       color: var(--text);
-      font-family: system-ui, sans-serif;
-      line-height: 1.7;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.6;
     }
 
-    main {
-      max-width: 760px;
-      margin: auto;
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 18px;
-      padding: 28px;
+    a {
+      color: inherit;
     }
 
-    .nav {
+    button {
+      font: inherit;
+    }
+
+    button:focus-visible, a:focus-visible {
+      outline: 3px solid rgba(198, 139, 44, 0.45);
+      outline-offset: 2px;
+    }
+
+    .site-header {
+      width: 100%;
+      max-width: 1060px;
+      margin: 0 auto;
+      padding: 22px 0 16px;
+    }
+
+    .header-inner {
       display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-bottom: 24px;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
     }
 
-    .nav a {
-      color: var(--primary);
-      border: 1px solid var(--border);
-      padding: 6px 10px;
-      border-radius: 999px;
+    .brand {
+      color: var(--navy);
       text-decoration: none;
+    }
+
+    body.dark .brand {
+      color: #ffffff;
+    }
+
+    .brand-name {
+      display: block;
+      font-size: 1.05rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+    }
+
+    .brand-tagline {
+      display: block;
+      color: var(--muted);
+      font-size: 0.73rem;
+    }
+
+    .theme-btn {
+      min-height: 40px;
+      padding: 8px 12px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: var(--white);
+      color: var(--text);
+      cursor: pointer;
       font-size: 0.8rem;
     }
 
-    .nav a:hover {
-      background: var(--primary);
-      color: white;
+    .main-nav {
+      display: flex;
+      justify-content: center;
+      gap: 7px;
+      flex-wrap: wrap;
+      max-width: 1060px;
+      margin: 5px auto 22px;
     }
 
-    h1,
-    h2 {
-      color: var(--primary);
-      line-height: 1.3;
-    }
-
-    h2 {
-      margin-top: 25px;
-    }
-
-    p,
-    li {
+    .main-nav a {
+      padding: 7px 12px;
+      border-radius: 999px;
       color: var(--muted);
-      font-size: 0.95rem;
+      font-size: 0.8rem;
+      text-decoration: none;
+    }
+
+    .main-nav a:hover,
+    .main-nav a.active {
+      background: var(--blue-soft);
+      color: var(--blue);
+    }
+
+    .content-card {
+      width: 100%;
+      max-width: 760px;
+      margin: 0 auto 30px;
+      padding: 30px;
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      background: var(--white);
+      box-shadow: var(--shadow);
+    }
+
+    h1, h2 {
+      color: var(--navy);
+      line-height: 1.3;
+      letter-spacing: -0.025em;
+    }
+
+    body.dark h1, body.dark h2 {
+      color: #ffffff;
+    }
+
+    h1 {
+      margin-bottom: 16px;
+      font-size: 1.6rem;
+    }
+
+    h2 {
+      margin-top: 24px;
+      margin-bottom: 8px;
+      font-size: 1.05rem;
+    }
+
+    p, li {
+      margin-bottom: 14px;
+      color: var(--muted);
+      font-size: 0.92rem;
+      line-height: 1.65;
+    }
+
+    ol {
+      margin-left: 20px;
+      margin-bottom: 14px;
     }
 
     .note {
-      padding: 14px;
-      background: #eff6ff;
-      border: 1px solid #bfdbfe;
+      padding: 16px;
+      background: var(--blue-soft);
+      border: 1px solid rgba(40, 120, 200, 0.25);
       border-radius: 12px;
+      color: var(--text);
+      font-size: 0.9rem;
+      margin-top: 18px;
     }
 
-    footer {
-      max-width: 760px;
-      margin: 18px auto 0;
+    .site-footer {
+      width: 100%;
+      max-width: 1060px;
+      margin: 42px auto 0;
+      padding-top: 22px;
+      border-top: 1px solid var(--border);
       text-align: center;
-      color: var(--muted);
-      font-size: 0.8rem;
     }
 
-    @media (max-width: 600px) {
-      body {
-        padding: 12px;
-      }
+    .footer-brand {
+      margin-bottom: 7px;
+      color: var(--navy);
+      font-weight: 800;
+    }
 
-      main {
-        padding: 20px;
-      }
+    body.dark .footer-brand {
+      color: #ffffff;
+    }
+
+    .footer-text,
+    .footer-links {
+      color: var(--muted);
+      font-size: 0.77rem;
+    }
+
+    .footer-links {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin: 10px 0;
+    }
+
+    .footer-links a {
+      text-decoration: none;
+    }
+
+    .footer-links a:hover {
+      color: var(--blue);
     }
   </style>
 </head>
 
 <body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a class="brand" href="../index.html">
+        <span class="brand-name">Naam Jap Voice Counter</span>
+        <span class="brand-tagline">Speak your mantra. Count your practice.</span>
+      </a>
+      <button id="themeToggle" class="theme-btn" type="button" aria-label="Toggle color theme">🌙 Dark</button>
+    </div>
+  </header>
+
+  <nav class="main-nav" aria-label="Main navigation">
+    <a href="../index.html">Home</a>
+    <a href="../guides.html">Guides</a>
+    <a href="../about.html">About</a>
+    <a href="../privacy.html">Privacy</a>
+    <a href="../terms.html">Terms</a>
+    <a href="../contact.html">Contact</a>
+  </nav>
+
   <main>
-    <nav class="nav">
-      <a href="../index.html">Home</a>
-      <a href="../about.html">About Us</a>
-      <a href="../guides.html">Guides</a>
-      <a href="../privacy.html">Privacy Policy</a>
-      <a href="../terms.html">Terms</a>
-      <a href="../contact.html">Contact</a>
-    </nav>
-
-    <article>
-      <h1>
-        Naam Jap Kya Hai Aur Kaise Karein?
-      </h1>
+    <article class="content-card">
+      <h1>Understanding Naam Jap &amp; How to Begin</h1>
 
       <p>
-        Naam jap ka simple meaning hai kisi pavitra naam ya mantra ko
-        dhyan aur shraddha ke saath baar-baar repeat karna. Bahut se
-        log ise meditation, prayer aur daily spiritual routine ka
-        hissa banate hain.
+        Naam Jap simply means the repetitive recitation of a sacred name or mantra with deep focus and devotion[cite: 11]. Many individuals incorporate it into their meditation, prayer, and daily spiritual routines[cite: 11].
       </p>
 
       <p>
-        Naam jap ka purpose sirf number complete karna nahi hota.
-        Practice ke dauraan vyakti apne attention ko ek naam, sound ya
-        phrase par rakhne ki koshish karta hai.
+        The true purpose of Naam Jap extends beyond merely completing a numerical target[cite: 11]. Throughout the practice, a practitioner strives to anchor their attention onto a single name, sound, or phrase[cite: 11].
       </p>
 
-      <h2>
-        Beginners Kaise Shuru Karein?
-      </h2>
+      <h2>How Beginners Can Start</h2>
 
       <ol>
-        <li>
-          Ek aisa naam ya mantra choose karein jisse aap comfortable
-          feel karte hain.
-        </li>
-
-        <li>
-          Practice ke liye daily ek fixed time choose karein.
-        </li>
-
-        <li>
-          Shuruat mein 5 se 10 minutes ka small session rakhein.
-        </li>
-
-        <li>
-          Comfortable position mein baithkar normal breathing rakhein.
-        </li>
-
-        <li>
-          Naam ko dheere aur clearly repeat karein.
-        </li>
+        <li>Choose a name or mantra that makes you feel comfortable and peaceful[cite: 11].</li>
+        <li>Select a fixed, dedicated time each day for your practice[cite: 11].</li>
+        <li>Begin with short sessions lasting around 5 to 10 minutes[cite: 11].</li>
+        <li>Sit in a comfortable posture while maintaining normal, steady breathing[cite: 11].</li>
+        <li>Repeat the name slowly and clearly[cite: 11].</li>
       </ol>
 
-      <h2>
-        Count Se Zyada Consistency
-      </h2>
+      <h2>Consistency Over Count</h2>
 
       <p>
-        Beginners ko pehle din se bahut bada target rakhne ki zarurat
-        nahi hoti. Daily short practice ko maintain karna ek long
-        session se zyada practical ho sakta hai.
+        Beginners do not need to set massive numerical targets from day one[cite: 11]. Maintaining a consistent daily short practice is often more practical than a single prolonged session[cite: 11].
       </p>
 
       <p>
-        Har person ka spiritual routine alag hota hai. Apni comfort,
-        belief aur schedule ke according practice karein.
+        Every individual's spiritual path is unique; tailor your practice according to your personal comfort, beliefs, and daily schedule[cite: 11].
       </p>
 
       <div class="note">
-        <strong>Practical tip:</strong>
-        Shuruat quiet room aur short session se karein.
+        <strong>Practical Tip:</strong> Start in a quiet room with a short session[cite: 11].
       </div>
     </article>
   </main>
 
-  <footer>
-    &copy; 2026 Naam Jap Voice Counter
+  <footer class="site-footer">
+    <div class="footer-brand">Naam Jap Voice Counter</div>
+    <div class="footer-text">A simple voice tool for mantra and Naam Jap practice.</div>
+    <div class="footer-links">
+      <a href="../index.html">Home</a>
+      <a href="../guides.html">Guides</a>
+      <a href="../about.html">About</a>
+      <a href="../privacy.html">Privacy</a>
+      <a href="../terms.html">Terms</a>
+      <a href="../contact.html">Contact</a>
+    </div>
+    <div class="footer-text">© 2026 Naam Jap Voice Counter</div>
   </footer>
+
+  <script>
+    const themeToggle = document.getElementById("themeToggle");
+    if (localStorage.getItem("japTheme") === "dark") {
+      document.body.classList.add("dark");
+      themeToggle.textContent = "☀️ Light";
+    }
+    themeToggle.addEventListener("click", () => {
+      const dark = document.body.classList.toggle("dark");
+      localStorage.setItem("japTheme", dark ? "dark" : "light");
+      themeToggle.textContent = dark ? "☀️ Light" : "🌙 Dark";
+    });
+  </script>
 </body>
 </html>
