@@ -66,10 +66,8 @@
       activeController.stop();
     }
 
-    const android =
-      /android/i.test(
-        navigator.userAgent
-      );
+    const isAndroid =
+      /android/i.test(navigator.userAgent);
 
     const singleWord =
       isSingleWord(targetPhrase);
@@ -78,9 +76,11 @@
       recognition: null,
       stopped: false,
       restartTimer: null,
+
       finalText: "",
       countedText: "",
-      countedThisCycle: false,
+      lastSingleWordText: "",
+
       start: null,
       stop: null
     };
@@ -97,7 +97,10 @@
       }
     }
 
-    function processSingleWord(text) {
+    function processSingleWord(
+      text,
+      confidence
+    ) {
       const spoken = normalize(text);
       const target = normalize(targetPhrase);
 
@@ -106,19 +109,39 @@
       }
 
       /*
-        Android single-word mode:
-        transcript me target word milte hi 1 count.
-        Ek recognition cycle me maximum 1 count.
+        Single-word rule:
+        1. Interim result ignore.
+        2. confidence 0 ignore.
+        3. Same final transcript ignore.
+        4. Ek final Android result me maximum 1 count.
       */
       if (
-        !controller.countedThisCycle &&
-        spoken
+        typeof confidence !== "number" ||
+        confidence <= 0
+      ) {
+        return;
+      }
+
+      if (
+        spoken !== target &&
+        !spoken
           .split(/\s+/)
           .includes(target)
       ) {
-        controller.countedThisCycle = true;
-        sendMatch(1);
+        return;
       }
+
+      if (
+        controller.lastSingleWordText ===
+        spoken
+      ) {
+        return;
+      }
+
+      controller.lastSingleWordText =
+        spoken;
+
+      sendMatch(1);
     }
 
     function processMultiWord(text) {
@@ -141,19 +164,21 @@
         previous &&
         current.startsWith(previous)
       ) {
-        newText = current
-          .slice(previous.length)
-          .trim();
+        newText =
+          current
+            .slice(previous.length)
+            .trim();
       }
 
       if (!newText) {
         return;
       }
 
-      const added = countPhraseMatches(
-        newText,
-        targetPhrase
-      );
+      const added =
+        countPhraseMatches(
+          newText,
+          targetPhrase
+        );
 
       sendMatch(added);
 
@@ -174,6 +199,7 @@
 
     function handleResult(event) {
       let finalText = "";
+      let finalConfidence = 0;
       let interimText = "";
 
       for (
@@ -195,6 +221,13 @@
           continue;
         }
 
+        const confidence =
+          Number(alternative.confidence) || 0;
+
+        /*
+          Single word ke liye ONLY final result.
+          Isse interim + final double count nahi hoga.
+        */
         if (result.isFinal) {
           finalText =
             (
@@ -202,6 +235,12 @@
               " " +
               text
             ).trim();
+
+          finalConfidence =
+            Math.max(
+              finalConfidence,
+              confidence
+            );
         } else {
           interimText =
             (
@@ -212,34 +251,43 @@
         }
       }
 
-      /*
-        Single-word aur multi-word ki conditions alag.
-      */
       if (singleWord) {
-        const candidate =
+        /*
+          Interim ko display kar sakte hain,
+          lekin count sirf confidence-positive
+          final result par hoga.
+        */
+        if (finalText) {
+          processSingleWord(
+            finalText,
+            finalConfidence
+          );
+        }
+
+        const displayText =
           finalText || interimText;
 
-        if (candidate) {
-          processSingleWord(candidate);
-
-          if (
-            typeof callbacks.onTranscript ===
-              "function"
-          ) {
-            callbacks.onTranscript(
-              normalize(candidate)
-            );
-          }
+        if (
+          displayText &&
+          typeof callbacks.onTranscript ===
+            "function"
+        ) {
+          callbacks.onTranscript(
+            normalize(displayText)
+          );
         }
 
         return;
       }
 
+      /*
+        Multi-word ka existing correct behavior.
+      */
       if (finalText) {
         processMultiWord(finalText);
       }
 
-      const visible =
+      const visibleText =
         (
           controller.finalText +
           " " +
@@ -247,11 +295,13 @@
         ).trim();
 
       if (
-        visible &&
+        visibleText &&
         typeof callbacks.onTranscript ===
           "function"
       ) {
-        callbacks.onTranscript(visible);
+        callbacks.onTranscript(
+          visibleText
+        );
       }
     }
 
@@ -260,17 +310,17 @@
         new SpeechRecognition();
 
       /*
-        Android one-shot mode.
-        iPhone/desktop ka behavior same rahega.
+        Android ke liye one-shot recognition.
+        App.js ko restart logic nahi karna.
       */
-      instance.continuous = !android;
+      instance.continuous = !isAndroid;
       instance.interimResults = true;
       instance.lang = language;
       instance.maxAlternatives = 1;
 
       instance.onstart = () => {
-        controller.countedThisCycle =
-          false;
+        controller.lastSingleWordText =
+          "";
 
         if (
           typeof callbacks.onStart ===
@@ -309,7 +359,7 @@
         }
 
         if (
-          android &&
+          isAndroid &&
           !controller.stopped
         ) {
           clearTimeout(
@@ -319,7 +369,7 @@
           controller.restartTimer =
             setTimeout(() => {
               startRecognition();
-            }, 450);
+            }, 500);
         }
       };
 
@@ -346,7 +396,7 @@
         controller.restartTimer =
           setTimeout(() => {
             startRecognition();
-          }, 650);
+          }, 700);
       }
     }
 
@@ -354,7 +404,7 @@
       controller.stopped = false;
       controller.finalText = "";
       controller.countedText = "";
-      controller.countedThisCycle = false;
+      controller.lastSingleWordText = "";
 
       startRecognition();
     };
