@@ -3024,13 +3024,12 @@
 
         let confirmedFinalText = "";
         let sessionMatchCount = 0;
-        let androidLastMatchCount = 0;
+        let lastProcessedIndex = 0;
 
         recognition =
           new SpeechRecognition();
 
-        const isAndroid = /android/i.test(navigator.userAgent);
-        recognition.continuous = !isAndroid;
+        recognition.continuous = true;
 
         recognition.interimResults =
           true;
@@ -3053,7 +3052,7 @@
             setListening(true);
             confirmedFinalText = "";
             sessionMatchCount = 0;
-            androidLastMatchCount = 0;
+            lastProcessedIndex = 0;
 
             setStatus(
               "Listening for: “" +
@@ -3072,7 +3071,7 @@
             }
 
             let interimText = "";
-            let latestFinalChunk = "";
+            let newFinalText = "";
 
             for (
               let i = event.resultIndex;
@@ -3086,14 +3085,17 @@
                 result[0].transcript.trim();
 
               if (result.isFinal) {
-                latestFinalChunk += " " + text;
+                if (i >= lastProcessedIndex) {
+                  newFinalText += " " + text;
+                  lastProcessedIndex = i + 1;
+                }
               } else {
                 interimText += " " + text;
               }
             }
 
-            if (latestFinalChunk) {
-              confirmedFinalText += " " + latestFinalChunk;
+            if (newFinalText.trim()) {
+              confirmedFinalText += " " + newFinalText.trim();
             }
 
             const visibleText =
@@ -3108,45 +3110,30 @@
                 visibleText;
             }
 
-            const isSingleWord = targetPhrase && targetPhrase.trim().split(/\s+/).length === 1;
+            const allFinalNormalized =
+              normalize(confirmedFinalText);
 
-            if (isAndroid && isSingleWord) {
-              const totalMatchesNow = countPhraseMatches(normalize(visibleText), targetPhrase);
-              if (totalMatchesNow > androidLastMatchCount) {
-                const added = totalMatchesNow - androidLastMatchCount;
-                androidLastMatchCount = totalMatchesNow;
-                registerCount(added);
-                setStatus(
-                  "Phrase detected. +" + added + " counted.",
-                  "success"
-                );
-              }
-            } else {
-              const allFinalNormalized =
-                normalize(confirmedFinalText);
+            const totalMatchesNow =
+              countPhraseMatches(
+                allFinalNormalized,
+                targetPhrase
+              );
 
-              const totalMatchesNow =
-                countPhraseMatches(
-                  allFinalNormalized,
-                  targetPhrase
-                );
+            if (totalMatchesNow > sessionMatchCount) {
+              const added =
+                totalMatchesNow - sessionMatchCount;
 
-              if (totalMatchesNow > sessionMatchCount) {
-                const added =
-                  totalMatchesNow - sessionMatchCount;
+              sessionMatchCount =
+                totalMatchesNow;
 
-                sessionMatchCount =
-                  totalMatchesNow;
+              registerCount(added);
 
-                registerCount(added);
-
-                setStatus(
-                  "Phrase detected. +" +
-                  added +
-                  " counted.",
-                  "success"
-                );
-              }
+              setStatus(
+                "Phrase detected. +" +
+                added +
+                " counted.",
+                "success"
+              );
             }
           };
 
