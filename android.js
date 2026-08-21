@@ -18,20 +18,37 @@
   }
 
   function escapeRegExp(text) {
-    return text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    return text.replace(
+      /[.*+?^${}()|[\]\\]/g,
+      "\\$&"
+    );
   }
 
-  function countExactMatches(text, phrase) {
-    const spoken = normalize(text);
-    const target = normalize(phrase);
+  function isSingleWord(phrase) {
+    return normalize(phrase)
+      .split(/\s+/)
+      .filter(Boolean)
+      .length === 1;
+  }
 
-    if (!spoken || !target) return 0;
+  function countMultiWordMatches(
+    spokenText,
+    targetPhrase
+  ) {
+    const spoken = normalize(spokenText);
+    const target = normalize(targetPhrase);
+
+    if (!spoken || !target) {
+      return 0;
+    }
 
     const pattern = escapeRegExp(target)
       .replace(/\\ +/g, "\\s+");
 
     const regex = new RegExp(
-      "(^|\\s)" + pattern + "(?=\\s|$)",
+      "(^|\\s)" +
+      pattern +
+      "(?=\\s|$)",
       "gi"
     );
 
@@ -40,21 +57,17 @@
     return matches ? matches.length : 0;
   }
 
-  function getOnlyNewText(currentText, previousText) {
-    const current = normalize(currentText);
-    const previous = normalize(previousText);
+  function isExactSingleWord(
+    spokenText,
+    targetPhrase
+  ) {
+    const spoken = normalize(spokenText);
+    const target = normalize(targetPhrase);
 
-    if (!current) return "";
-    if (!previous) return current;
-    if (current === previous) return "";
-
-    if (current.startsWith(previous)) {
-      return current
-        .slice(previous.length)
-        .trim();
-    }
-
-    return "";
+    return (
+      spoken === target ||
+      spoken.split(/\s+/).includes(target)
+    );
   }
 
   function createVoiceRecognition(
@@ -66,29 +79,120 @@
       return null;
     }
 
-    const isAndroid =
-      /android/i.test(navigator.userAgent);
-
     if (activeController) {
       activeController.stop();
     }
+
+    const phrase = normalize(targetPhrase);
+    const singleWordMode = isSingleWord(phrase);
 
     const controller = {
       recognition: null,
       manuallyStopped: false,
       restartTimer: null,
-      finalText: "",
-      countedText: "",
-      lastRawFinalText: "",
+      finalTranscript: "",
+      lastProcessedTranscript: "",
+      singleWordDetectedInCycle: false,
       start: null,
       stop: null
     };
 
     activeController = controller;
 
+    function emitMatch(amount) {
+      if (
+        amount > 0 &&
+        typeof callbacks.onMatch === "function"
+      ) {
+        callbacks.onMatch(amount);
+      }
+    }
+
+    function processSingleWordResult(text) {
+      const normalizedText = normalize(text);
+
+      if (!normalizedText) {
+        return;
+      }
+
+      /*
+        Ek Android recognition cycle me same single word
+        ko sirf ek baar count karo.
+      */
+      if (
+        controller.singleWordDetectedInCycle
+      ) {
+        return;
+      }
+
+      if (
+        isExactSingleWord(
+          normalizedText,
+          phrase
+        )
+      ) {
+        controller.singleWordDetectedInCycle =
+          true;
+
+        emitMatch(1);
+      }
+    }
+
+    function processMultiWordResult(text) {
+      const normalizedText = normalize(text);
+
+      if (!normalizedText) {
+        return;
+      }
+
+      if (
+        normalizedText ===
+        controller.lastProcessedTranscript
+      ) {
+        return;
+      }
+
+      let newText = normalizedText;
+
+      if (
+        controller.lastProcessedTranscript &&
+        normalizedText.startsWith(
+          controller.lastProcessedTranscript
+        )
+      ) {
+        newText = normalizedText
+          .slice(
+            controller.lastProcessedTranscript.length
+          )
+          .trim();
+      }
+
+      if (!newText) {
+        return;
+      }
+
+      const added =
+        countMultiWordMatches(
+          newText,
+          phrase
+        );
+
+      emitMatch(added);
+
+      controller.lastProcessedTranscript =
+        normalizedText;
+
+      controller.finalTranscript =
+        (
+          controller.finalTranscript +
+          " " +
+          newText
+        ).trim();
+    }
+
     function processResult(event) {
-      let latestFinalText = "";
-      let interimText = "";
+      let currentFinalText = "";
+      let currentInterimText = "";
 
       for (
         let i = event.resultIndex;
@@ -98,99 +202,104 @@
         const result = event.results[i];
         const alternative = result[0];
 
-        if (!alternative) continue;
+        if (!alternative) {
+          continue;
+        }
 
         const text =
           alternative.transcript.trim();
 
-        if (!text) continue;
+        if (!text) {
+          continue;
+        }
+
+        const confidence =
+          alternative.confidence;
 
         /*
-          Android ke kuch versions interim result ko
-          isFinal=true ke saath bhejte hain, lekin confidence 0 hota hai.
-          Aise result ko final count nahi karna.
+          Single-word ke case me confidence 0 ko reject
+          nahi karna, kyunki Android usse interim/final
+          dono tarah bhej sakta hai.
         */
-        const isRealFinal =
-          result.isFinal &&
+        const usableText =
+          result.isFinal ||
           (
-            typeof alternative.confidence !== "number" ||
-            alternative.confidence > 0
+            singleWordMode &&
+            (
+              typeof confidence !== "number" ||
+              confidence >= 0
+            )
           );
 
-        if (isRealFinal) {
-          latestFinalText =
+        if (!usableText) {
+          continue;
+        }
+
+        if (result.isFinal) {
+          currentFinalText =
             (
-              latestFinalText +
+              currentFinalText +
               " " +
               text
             ).trim();
         } else {
-          interimText =
+          currentInterimText =
             (
-              interimText +
+              currentInterimText +
               " " +
               text
             ).trim();
         }
       }
 
-      if (latestFinalText) {
-        const normalizedLatest =
-          normalize(latestFinalText);
-
+      if (singleWordMode) {
         /*
-          Android same final transcript ko dobara bhej sakta hai.
-          Sirf tab process hoga jab transcript genuinely extend ho.
+          Single word ke liye latest final/interim text dono
+          ko check karte hain, lekin cycle me count maximum 1.
         */
-        const newText = getOnlyNewText(
-          normalizedLatest,
-          controller.countedText
-        );
+        const candidate =
+          currentFinalText ||
+          currentInterimText;
 
-        if (newText) {
-          const added = countExactMatches(
-            newText,
-            targetPhrase
+        if (candidate) {
+          processSingleWordResult(
+            candidate
           );
 
           if (
-            added > 0 &&
-            typeof callbacks.onMatch === "function"
+            typeof callbacks.onTranscript ===
+            "function"
           ) {
-            callbacks.onMatch(added);
+            callbacks.onTranscript(
+              normalize(candidate)
+            );
           }
-
-          controller.countedText =
-            (
-              controller.countedText +
-              " " +
-              newText
-            ).trim();
-
-          controller.finalText =
-            (
-              controller.finalText +
-              " " +
-              newText
-            ).trim();
         }
 
-        controller.lastRawFinalText =
-          normalizedLatest;
+        return;
+      }
+
+      if (currentFinalText) {
+        processMultiWordResult(
+          currentFinalText
+        );
       }
 
       const visibleText =
         (
-          controller.finalText +
+          controller.finalTranscript +
           " " +
-          interimText
+          currentInterimText
         ).trim();
 
       if (
         visibleText &&
-        typeof callbacks.onTranscript === "function"
+        typeof callbacks.onTranscript ===
+          "function"
       ) {
-        callbacks.onTranscript(visibleText);
+        callbacks.onTranscript(
+          visibleText
+        );
       }
     }
 
@@ -198,43 +307,53 @@
       const instance =
         new SpeechRecognition();
 
-      /*
-        Android par one-shot recognition.
-        Restart module khud karega.
-      */
+      const isAndroid =
+        /android/i.test(
+          navigator.userAgent
+        );
+
       instance.continuous = !isAndroid;
       instance.interimResults = true;
       instance.lang = language;
       instance.maxAlternatives = 1;
 
       instance.onstart = () => {
+        controller.singleWordDetectedInCycle =
+          false;
+
         if (
-          typeof callbacks.onStart === "function"
+          typeof callbacks.onStart ===
+          "function"
         ) {
           callbacks.onStart();
         }
       };
 
-      instance.onresult = processResult;
+      instance.onresult =
+        processResult;
 
       instance.onerror = event => {
         if (
-          typeof callbacks.onError === "function"
+          typeof callbacks.onError ===
+          "function"
         ) {
           callbacks.onError(event);
         }
 
         if (
           event.error === "not-allowed" ||
-          event.error === "service-not-allowed"
+          event.error ===
+            "service-not-allowed"
         ) {
-          controller.manuallyStopped = true;
+          controller.manuallyStopped =
+            true;
         }
       };
 
       instance.onend = () => {
         if (
-          typeof callbacks.onEnd === "function"
+          typeof callbacks.onEnd ===
+          "function"
         ) {
           callbacks.onEnd();
         }
@@ -247,6 +366,10 @@
             controller.restartTimer
           );
 
+          /*
+            New Android cycle ke liye single-word
+            detection flag reset hoga onstart par.
+          */
           controller.restartTimer =
             setTimeout(() => {
               startRecognition();
@@ -282,12 +405,20 @@
     }
 
     controller.start = () => {
-      controller.manuallyStopped = false;
+      controller.manuallyStopped =
+        false;
+
+      controller.finalTranscript = "";
+      controller.lastProcessedTranscript = "";
+      controller.singleWordDetectedInCycle =
+        false;
+
       startRecognition();
     };
 
     controller.stop = () => {
-      controller.manuallyStopped = true;
+      controller.manuallyStopped =
+        true;
 
       clearTimeout(
         controller.restartTimer
