@@ -66,27 +66,43 @@ let deferredInstallPrompt = null;
 
 function getTodayKey() {
   const date = new Date();
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
 
-  return year + "-" + month + "-" + day;
+  return (
+    date.getFullYear() +
+    "-" +
+    String(date.getMonth() + 1).padStart(2, "0") +
+    "-" +
+    String(date.getDate()).padStart(2, "0")
+  );
 }
 
 function formatDate(dateKey) {
   const parts = dateKey.split("-");
 
-  if (parts.length !== 3) return dateKey;
+  if (parts.length !== 3) {
+    return dateKey;
+  }
 
-  return parts[2] + "/" + parts[1] + "/" + parts[0];
+  return (
+    parts[2] +
+    "/" +
+    parts[1] +
+    "/" +
+    parts[0]
+  );
 }
 
 function readHistory() {
   try {
-    const stored = localStorage.getItem(STORAGE_KEYS.history);
-    const parsed = stored ? JSON.parse(stored) : {};
+    const stored =
+      localStorage.getItem(STORAGE_KEYS.history);
 
-    return parsed && typeof parsed === "object"
+    const parsed = stored
+      ? JSON.parse(stored)
+      : {};
+
+    return parsed &&
+      typeof parsed === "object"
       ? parsed
       : {};
   } catch (error) {
@@ -108,7 +124,9 @@ function saveHistory(history) {
 function getTodayCount() {
   const history = readHistory();
 
-  return Number(history[getTodayKey()]) || 0;
+  return Number(
+    history[getTodayKey()]
+  ) || 0;
 }
 
 function addToToday(amount) {
@@ -125,14 +143,16 @@ function addToToday(amount) {
 
 function getSortedHistory() {
   return Object.entries(readHistory())
-    .sort((a, b) => b[0].localeCompare(a[0]))
+    .sort((a, b) =>
+      b[0].localeCompare(a[0])
+    )
     .slice(0, 14);
 }
 
 function calculateStreak() {
   const history = readHistory();
-  let streak = 0;
   const date = new Date();
+  let streak = 0;
 
   while (true) {
     const key =
@@ -144,7 +164,9 @@ function calculateStreak() {
 
     if (Number(history[key]) > 0) {
       streak++;
-      date.setDate(date.getDate() - 1);
+      date.setDate(
+        date.getDate() - 1
+      );
     } else {
       break;
     }
@@ -157,7 +179,9 @@ function calculateBestStreak() {
   const history = readHistory();
 
   const days = Object.keys(history)
-    .filter(key => Number(history[key]) > 0)
+    .filter(key =>
+      Number(history[key]) > 0
+    )
     .sort();
 
   let best = 0;
@@ -165,7 +189,8 @@ function calculateBestStreak() {
   let previousDate = null;
 
   days.forEach(key => {
-    const currentDate = new Date(key + "T00:00:00");
+    const currentDate =
+      new Date(key + "T00:00:00");
 
     if (
       previousDate &&
@@ -193,7 +218,10 @@ function getWeekData() {
 
   for (let i = 0; i < 7; i++) {
     const date = new Date(today);
-    date.setDate(today.getDate() - i);
+
+    date.setDate(
+      today.getDate() - i
+    );
 
     const key =
       date.getFullYear() +
@@ -202,7 +230,8 @@ function getWeekData() {
       "-" +
       String(date.getDate()).padStart(2, "0");
 
-    const count = Number(history[key]) || 0;
+    const count =
+      Number(history[key]) || 0;
 
     total += count;
 
@@ -210,7 +239,10 @@ function getWeekData() {
       practiceDays++;
     }
 
-    bestDay = Math.max(bestDay, count);
+    bestDay = Math.max(
+      bestDay,
+      count
+    );
   }
 
   return {
@@ -222,20 +254,30 @@ function getWeekData() {
 
 function updateDailyTools() {
   const today = getTodayCount();
-  const target = Math.max(
-    1,
-    Number(targetInput.value) || 108
+
+  const target = Math.min(
+    100000,
+    Math.max(
+      1,
+      Number(targetInput.value) || 108
+    )
   );
 
-  todayValue.textContent = String(today);
+  todayValue.textContent =
+    String(today);
+
   targetStatus.textContent =
-    "Today: " + today + " / " + target;
+    "Today: " +
+    today +
+    " / " +
+    target;
 
   const streak = calculateStreak();
   const best = calculateBestStreak();
 
   streakValue.textContent =
-    streak + (streak === 1 ? " day" : " days");
+    streak +
+    (streak === 1 ? " day" : " days");
 
   bestStreakNote.textContent =
     "Your best: " +
@@ -249,19 +291,35 @@ function renderHistory() {
   historyList.innerHTML = "";
 
   if (items.length === 0) {
-    const empty = document.createElement("li");
-    empty.textContent = "No jap history yet.";
+    const empty =
+      document.createElement("li");
+
+    empty.textContent =
+      "No jap history yet.";
+
     historyList.appendChild(empty);
   } else {
     items.forEach(([date, count]) => {
-      const item = document.createElement("li");
-      const dateText = document.createElement("span");
-      const countText = document.createElement("strong");
+      const item =
+        document.createElement("li");
 
-      dateText.textContent = formatDate(date);
-      countText.textContent = String(count);
+      const dateText =
+        document.createElement("span");
 
-      item.append(dateText, countText);
+      const countText =
+        document.createElement("strong");
+
+      dateText.textContent =
+        formatDate(date);
+
+      countText.textContent =
+        String(count);
+
+      item.append(
+        dateText,
+        countText
+      );
+
       historyList.appendChild(item);
     });
   }
@@ -271,17 +329,23 @@ function renderHistory() {
   weeklyReport.innerHTML =
     "<div class='report-row'>" +
     "<span>This week</span>" +
-    "<strong>" + week.total + " jap</strong>" +
+    "<strong>" +
+    week.total +
+    " jap</strong>" +
     "</div>" +
 
     "<div class='report-row'>" +
     "<span>Practice days</span>" +
-    "<strong>" + week.practiceDays + " / 7</strong>" +
+    "<strong>" +
+    week.practiceDays +
+    " / 7</strong>" +
     "</div>" +
 
     "<div class='report-row'>" +
     "<span>Best day</span>" +
-    "<strong>" + week.bestDay + " jap</strong>" +
+    "<strong>" +
+    week.bestDay +
+    " jap</strong>" +
     "</div>";
 }
 
@@ -296,8 +360,11 @@ function registerCount(amount) {
   totalCount += safeAmount;
   sessionCount += safeAmount;
 
-  countDisplay.textContent = String(totalCount);
-  sessionJap.textContent = sessionCount + " jap";
+  countDisplay.textContent =
+    String(totalCount);
+
+  sessionJap.textContent =
+    sessionCount + " jap";
 
   addToToday(safeAmount);
   updateDailyTools();
@@ -307,10 +374,14 @@ function registerCount(amount) {
 function saveTarget() {
   const target = Math.min(
     100000,
-    Math.max(1, Number(targetInput.value) || 108)
+    Math.max(
+      1,
+      Number(targetInput.value) || 108
+    )
   );
 
-  targetInput.value = String(target);
+  targetInput.value =
+    String(target);
 
   localStorage.setItem(
     STORAGE_KEYS.target,
@@ -318,42 +389,60 @@ function saveTarget() {
   );
 
   updateDailyTools();
-  setStatus("Daily target saved.", "success");
+  setStatus(
+    "Daily target saved.",
+    "success"
+  );
 }
 
 function normalize(text) {
   return String(text)
     .toLowerCase()
+    .normalize("NFC")
     .replace(/[।,.;:!?()[\]{}"'`]/g, " ")
     .replace(/\s+/g, " ")
     .trim();
 }
 
 function escapeRegExp(text) {
-  return text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return text.replace(
+    /[.*+?^${}()|[\]\\]/g,
+    "\\$&"
+  );
 }
 
-function countPhraseMatches(spokenText, phrase) {
+function countPhraseMatches(
+  spokenText,
+  phrase
+) {
   const spoken = normalize(spokenText);
   const target = normalize(phrase);
 
-  if (!spoken || !target) return 0;
+  if (!spoken || !target) {
+    return 0;
+  }
 
   const pattern = escapeRegExp(target)
     .replace(/\\ +/g, "\\s+");
 
   const regex = new RegExp(
-    "(^|\\s)" + pattern + "(?=\\s|$)",
+    "(^|\\s)" +
+    pattern +
+    "(?=\\s|$)",
     "gi"
   );
 
-  const matches = spoken.match(regex);
+  const matches =
+    spoken.match(regex);
 
-  return matches ? matches.length : 0;
+  return matches
+    ? matches.length
+    : 0;
 }
 
 function updatePhrase() {
-  targetPhrase = normalize(mantraInput.value);
+  targetPhrase =
+    normalize(mantraInput.value);
 
   if (targetPhrase) {
     mantraPreview.textContent =
@@ -375,9 +464,15 @@ function updatePhrase() {
   }
 }
 
-function setStatus(message, type = "") {
-  statusText.textContent = message;
-  statusText.className = "status-message";
+function setStatus(
+  message,
+  type = ""
+) {
+  statusText.textContent =
+    message;
+
+  statusText.className =
+    "status-message";
 
   if (type) {
     statusText.classList.add(type);
@@ -391,24 +486,34 @@ function setListening(value) {
   stopBtn.disabled = !value;
 
   if (value) {
-    startBtn.textContent = "● Listening...";
-    supportText.textContent = "Microphone active";
+    startBtn.textContent =
+      "● Listening...";
+
+    supportText.textContent =
+      "Microphone active";
+
     startSessionTimer();
   } else {
-    startBtn.textContent = "🎙 Start Listening";
-    supportText.textContent = "Microphone ready";
+    startBtn.textContent =
+      "🎙 Start Listening";
+
+    supportText.textContent =
+      "Microphone ready";
+
     stopSessionTimer();
   }
 }
 
 function formatTime(totalSeconds) {
-  const minutes = Math.floor(totalSeconds / 60)
-    .toString()
-    .padStart(2, "0");
+  const minutes =
+    Math.floor(totalSeconds / 60)
+      .toString()
+      .padStart(2, "0");
 
-  const seconds = (totalSeconds % 60)
-    .toString()
-    .padStart(2, "0");
+  const seconds =
+    (totalSeconds % 60)
+      .toString()
+      .padStart(2, "0");
 
   return minutes + ":" + seconds;
 }
@@ -421,29 +526,36 @@ function startSessionTimer() {
   clearInterval(sessionInterval);
 
   sessionInterval = setInterval(() => {
-    sessionElapsedSeconds = Math.floor(
-      (Date.now() - sessionStartedAt) / 1000
-    );
+    sessionElapsedSeconds =
+      Math.floor(
+        (Date.now() - sessionStartedAt) / 1000
+      );
 
     sessionTimer.textContent =
-      formatTime(sessionElapsedSeconds);
+      formatTime(
+        sessionElapsedSeconds
+      );
   }, 1000);
 }
 
 function stopSessionTimer() {
   if (!sessionStartedAt) return;
 
-  sessionElapsedSeconds = Math.floor(
-    (Date.now() - sessionStartedAt) / 1000
-  );
+  sessionElapsedSeconds =
+    Math.floor(
+      (Date.now() - sessionStartedAt) / 1000
+    );
 
   sessionTimer.textContent =
-    formatTime(sessionElapsedSeconds);
+    formatTime(
+      sessionElapsedSeconds
+    );
 
   clearInterval(sessionInterval);
   sessionInterval = null;
 
-  sessionSummaryCard.hidden = false;
+  sessionSummaryCard.hidden =
+    false;
 
   sessionSummaryCard.innerHTML =
     "<strong>Session complete</strong>" +
@@ -451,7 +563,9 @@ function stopSessionTimer() {
     sessionCount +
     "</span>" +
     "<span>Time practiced: " +
-    formatTime(sessionElapsedSeconds) +
+    formatTime(
+      sessionElapsedSeconds
+    ) +
     "</span>";
 
   sessionStartedAt = null;
@@ -465,9 +579,14 @@ function resetSession() {
   clearInterval(sessionInterval);
   sessionInterval = null;
 
-  sessionTimer.textContent = "00:00";
-  sessionJap.textContent = "0 jap";
-  sessionSummaryCard.hidden = true;
+  sessionTimer.textContent =
+    "00:00";
+
+  sessionJap.textContent =
+    "0 jap";
+
+  sessionSummaryCard.hidden =
+    true;
 }
 
 function playSoftSound() {
@@ -481,7 +600,9 @@ function playSoftSound() {
     audioContext =
       audioContext || new AudioCtx();
 
-    if (audioContext.state === "suspended") {
+    if (
+      audioContext.state === "suspended"
+    ) {
       audioContext.resume();
     }
 
@@ -513,7 +634,10 @@ function playSoftSound() {
     gain.connect(audioContext.destination);
 
     oscillator.start();
-    oscillator.stop(audioContext.currentTime + 0.17);
+
+    oscillator.stop(
+      audioContext.currentTime + 0.17
+    );
   } catch (error) {
     return;
   }
@@ -549,6 +673,7 @@ function showPlaceholder() {
 
 function showUnsupported() {
   supportPill.classList.add("error");
+
   supportText.textContent =
     "Speech recognition unavailable";
 
@@ -559,33 +684,19 @@ function showUnsupported() {
   startBtn.disabled = true;
 }
 
-async function stopRecognitionSafely() {
-  clearTimeout(restartTimer);
-
-  const activeRecognition = recognition;
-  recognition = null;
-  listening = false;
-
-  if (!activeRecognition) return;
-
-  try {
-    activeRecognition.stop();
-  } catch (error) {
-    return;
-  }
-}
-
 function resetDailyCount() {
   clearTimeout(restartTimer);
 
   if (recognition) {
-    const activeRecognition = recognition;
+    const activeRecognition =
+      recognition;
+
     recognition = null;
 
     try {
       activeRecognition.stop();
     } catch (error) {
-      // Recognition may already be stopped.
+      // Already stopped.
     }
   }
 
@@ -596,9 +707,12 @@ function resetDailyCount() {
   totalCount = 0;
   countDisplay.textContent = "0";
 
-  localStorage.removeItem(STORAGE_KEYS.total);
+  localStorage.removeItem(
+    STORAGE_KEYS.total
+  );
 
   const history = readHistory();
+
   history[getTodayKey()] = 0;
   saveHistory(history);
 
@@ -612,6 +726,7 @@ async function enableReminder() {
   if (!("Notification" in window)) {
     reminderStatus.textContent =
       "Notifications are not supported in this browser.";
+
     return;
   }
 
@@ -622,6 +737,7 @@ async function enableReminder() {
     if (permission !== "granted") {
       reminderStatus.textContent =
         "Notification permission was not granted.";
+
       return;
     }
 
@@ -703,7 +819,10 @@ async function showReminderIfDue() {
       "japReminderLastShown"
     );
 
-  if (currentTime !== savedTime || lastShown === today) {
+  if (
+    currentTime !== savedTime ||
+    lastShown === today
+  ) {
     return;
   }
 
@@ -719,7 +838,8 @@ async function showReminderIfDue() {
       await registration.showNotification(
         "Naam Jap Reminder",
         {
-          body: "It is time for your Naam Jap practice.",
+          body:
+            "It is time for your Naam Jap practice.",
           icon: "./icon-192.svg",
           badge: "./icon-192.svg",
           tag: "naam-jap-reminder"
@@ -732,7 +852,8 @@ async function showReminderIfDue() {
       new Notification(
         "Naam Jap Reminder",
         {
-          body: "It is time for your Naam Jap practice."
+          body:
+            "It is time for your Naam Jap practice."
         }
       );
     }
@@ -763,6 +884,7 @@ installBtn.addEventListener(
       setStatus(
         "Use your browser menu and choose Add to Home screen."
       );
+
       return;
     }
 
@@ -771,7 +893,7 @@ installBtn.addEventListener(
     try {
       await deferredInstallPrompt.userChoice;
     } catch (error) {
-      // User closed the install prompt.
+      // Prompt closed.
     }
 
     deferredInstallPrompt = null;
@@ -811,7 +933,8 @@ targetInput.addEventListener(
 historyToggle.addEventListener(
   "click",
   () => {
-    const isOpen = !historyContent.hidden;
+    const isOpen =
+      !historyContent.hidden;
 
     historyContent.hidden = isOpen;
 
@@ -821,7 +944,9 @@ historyToggle.addEventListener(
     );
 
     historyToggle.textContent =
-      isOpen ? "View history" : "Hide history";
+      isOpen
+        ? "View history"
+        : "Hide history";
 
     if (!isOpen) {
       renderHistory();
@@ -853,7 +978,10 @@ tapBtn.addEventListener(
   "click",
   () => {
     registerCount(1);
-    setStatus("Tap counted. +1", "success");
+    setStatus(
+      "Tap counted. +1",
+      "success"
+    );
   }
 );
 
@@ -894,12 +1022,15 @@ startBtn.addEventListener(
   () => {
     updatePhrase();
 
-    tapFallback.classList.remove("visible");
+    tapFallback.classList.remove(
+      "visible"
+    );
 
     if (!SpeechRecognition) {
       showTapFallback(
         "Voice recognition is unavailable."
       );
+
       return;
     }
 
@@ -917,23 +1048,32 @@ startBtn.addEventListener(
 
     clearTimeout(restartTimer);
 
-    const currentSession = ++sessionId;
+    const currentSession =
+      ++sessionId;
+
     const isAndroid =
-      /android/i.test(navigator.userAgent);
+      /android/i.test(
+        navigator.userAgent
+      );
 
     if (
       isAndroid &&
-      typeof handleAndroidRecognition === "function"
+      typeof handleAndroidRecognition ===
+        "function"
     ) {
-      recognition = handleAndroidRecognition(
-        languageSelect.value,
-        targetPhrase,
-        {
-          onMatch: added => {
-            if (
-              currentSession === sessionId &&
-              listening
-            ) {
+      recognition =
+        handleAndroidRecognition(
+          languageSelect.value,
+          targetPhrase,
+          {
+            onMatch: added => {
+              if (
+                currentSession !== sessionId ||
+                !listening
+              ) {
+                return;
+              }
+
               registerCount(added);
 
               setStatus(
@@ -942,29 +1082,32 @@ startBtn.addEventListener(
                 " counted.",
                 "success"
               );
-            }
-          },
+            },
 
-          onTranscript: visibleText => {
-            if (
-              currentSession === sessionId &&
-              listening
-            ) {
+            onTranscript: visibleText => {
+              if (
+                currentSession !== sessionId ||
+                !listening
+              ) {
+                return;
+              }
+
               transcriptBox.textContent =
                 visibleText;
             }
           }
-        }
-      );
+        );
     } else {
-      let confirmedFinalText = "";
-      const processedFinalTexts = new Set();
+      let confirmedText = "";
+      let lastCountedFinalText = "";
 
-      recognition = new SpeechRecognition();
+      recognition =
+        new SpeechRecognition();
 
       recognition.continuous = true;
       recognition.interimResults = true;
-      recognition.lang = languageSelect.value;
+      recognition.lang =
+        languageSelect.value;
       recognition.maxAlternatives = 1;
 
       recognition.onresult = event => {
@@ -976,64 +1119,106 @@ startBtn.addEventListener(
         }
 
         let interimText = "";
-        const newFinalParts = [];
+        let latestFinalText = "";
 
         for (
           let i = event.resultIndex;
           i < event.results.length;
           i++
         ) {
-          const result = event.results[i];
-          const text = result[0].transcript.trim();
+          const result =
+            event.results[i];
+
+          const text =
+            result[0].transcript.trim();
 
           if (!text) continue;
 
           if (result.isFinal) {
-            const resultKey =
-              i + "|" + normalize(text);
-
-            if (
-              !processedFinalTexts.has(resultKey)
-            ) {
-              processedFinalTexts.add(resultKey);
-              newFinalParts.push(text);
-            }
+            latestFinalText =
+              (
+                latestFinalText +
+                " " +
+                text
+              ).trim();
           } else {
-            interimText += " " + text;
+            interimText =
+              (
+                interimText +
+                " " +
+                text
+              ).trim();
           }
         }
 
-        if (newFinalParts.length > 0) {
-          const newFinalText =
-            newFinalParts.join(" ");
-
-          confirmedFinalText =
-            (
-              confirmedFinalText +
-              " " +
-              newFinalText
-            ).trim();
-
-          const added = countPhraseMatches(
-            newFinalText,
-            targetPhrase
-          );
-
-          if (added > 0) {
-            registerCount(added);
-
-            setStatus(
-              "Phrase detected. +" +
-              added +
-              " counted.",
-              "success"
+        if (latestFinalText) {
+          const currentFinal =
+            normalize(
+              latestFinalText
             );
+
+          const previousFinal =
+            normalize(
+              lastCountedFinalText
+            );
+
+          let newFinalText = "";
+
+          if (
+            !previousFinal
+          ) {
+            newFinalText =
+              currentFinal;
+          } else if (
+            currentFinal.startsWith(
+              previousFinal
+            )
+          ) {
+            newFinalText =
+              currentFinal
+                .slice(
+                  previousFinal.length
+                )
+                .trim();
+          }
+
+          if (newFinalText) {
+            const added =
+              countPhraseMatches(
+                newFinalText,
+                targetPhrase
+              );
+
+            if (added > 0) {
+              registerCount(added);
+
+              setStatus(
+                "Phrase detected. +" +
+                added +
+                " counted.",
+                "success"
+              );
+            }
+
+            lastCountedFinalText =
+              (
+                lastCountedFinalText +
+                " " +
+                newFinalText
+              ).trim();
+
+            confirmedText =
+              (
+                confirmedText +
+                " " +
+                newFinalText
+              ).trim();
           }
         }
 
         const visibleText =
           (
-            confirmedFinalText +
+            confirmedText +
             " " +
             interimText
           ).trim();
@@ -1049,11 +1234,16 @@ startBtn.addEventListener(
       showTapFallback(
         "Recognition could not be started."
       );
+
       return;
     }
 
     recognition.onstart = () => {
-      if (currentSession !== sessionId) return;
+      if (
+        currentSession !== sessionId
+      ) {
+        return;
+      }
 
       setListening(true);
 
@@ -1065,15 +1255,23 @@ startBtn.addEventListener(
     };
 
     recognition.onerror = event => {
-      if (currentSession !== sessionId) return;
+      if (
+        currentSession !== sessionId
+      ) {
+        return;
+      }
 
-      if (event.error === "not-allowed") {
+      if (
+        event.error === "not-allowed"
+      ) {
         setListening(false);
 
         showTapFallback(
           "Microphone permission was not allowed."
         );
-      } else if (event.error === "no-speech") {
+      } else if (
+        event.error === "no-speech"
+      ) {
         setStatus(
           "No speech detected. Please try again.",
           "error"
@@ -1089,7 +1287,11 @@ startBtn.addEventListener(
     };
 
     recognition.onend = () => {
-      if (currentSession !== sessionId) return;
+      if (
+        currentSession !== sessionId
+      ) {
+        return;
+      }
 
       if (!listening) {
         setListening(false);
@@ -1117,7 +1319,7 @@ startBtn.addEventListener(
             "You can use tap counting."
           );
         }
-      }, 350);
+      }, 500);
     };
 
     try {
@@ -1135,14 +1337,18 @@ startBtn.addEventListener(
 stopBtn.addEventListener(
   "click",
   () => {
-    if (!recognition || !listening) return;
+    if (!recognition || !listening) {
+      return;
+    }
 
     sessionId++;
     listening = false;
 
     clearTimeout(restartTimer);
 
-    const activeRecognition = recognition;
+    const activeRecognition =
+      recognition;
+
     recognition = null;
 
     setListening(false);
@@ -1166,40 +1372,56 @@ if (!SpeechRecognition) {
 }
 
 totalCount = getTodayCount();
-countDisplay.textContent = String(totalCount);
+countDisplay.textContent =
+  String(totalCount);
 
 const savedTarget =
-  localStorage.getItem(STORAGE_KEYS.target);
+  localStorage.getItem(
+    STORAGE_KEYS.target
+  );
 
 if (savedTarget) {
-  targetInput.value = savedTarget;
+  targetInput.value =
+    savedTarget;
 }
 
 const savedLanguage =
-  localStorage.getItem(STORAGE_KEYS.language);
+  localStorage.getItem(
+    STORAGE_KEYS.language
+  );
 
 if (savedLanguage) {
-  languageSelect.value = savedLanguage;
+  languageSelect.value =
+    savedLanguage;
 }
 
 soundToggle.checked =
-  localStorage.getItem(STORAGE_KEYS.sound) === "true";
+  localStorage.getItem(
+    STORAGE_KEYS.sound
+  ) === "true";
 
 vibrationToggle.checked =
-  localStorage.getItem(STORAGE_KEYS.vibration) === "true";
+  localStorage.getItem(
+    STORAGE_KEYS.vibration
+  ) === "true";
 
 if (
-  localStorage.getItem(STORAGE_KEYS.theme) === "dark"
+  localStorage.getItem(
+    STORAGE_KEYS.theme
+  ) === "dark"
 ) {
   document.body.classList.add("dark");
-  themeToggle.textContent = "☀️ Light";
+  themeToggle.textContent =
+    "☀️ Light";
 }
 
 themeToggle.addEventListener(
   "click",
   () => {
     const dark =
-      document.body.classList.toggle("dark");
+      document.body.classList.toggle(
+        "dark"
+      );
 
     localStorage.setItem(
       STORAGE_KEYS.theme,
@@ -1207,7 +1429,9 @@ themeToggle.addEventListener(
     );
 
     themeToggle.textContent =
-      dark ? "☀️ Light" : "🌙 Dark";
+      dark
+        ? "☀️ Light"
+        : "🌙 Dark";
   }
 );
 
@@ -1219,13 +1443,18 @@ if ("serviceWorker" in navigator) {
   window.addEventListener(
     "load",
     () => {
-      navigator.serviceWorker.register("sw.js")
+      navigator.serviceWorker
+        .register("sw.js")
         .catch(() => {
-          // Service worker registration failed.
+          // Registration failed.
         });
     }
   );
 }
 
-setInterval(showReminderIfDue, 30000);
+setInterval(
+  showReminderIfDue,
+  30000
+);
+
 showReminderIfDue();
