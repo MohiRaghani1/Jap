@@ -1999,7 +1999,6 @@
     let listening = false;
     let totalCount = 0;
     let targetPhrase = "";
-    let countedFinalText = "";
     let sessionId = 0;
     let audioContext = null;
     let sessionStartedAt = null;
@@ -3023,14 +3022,7 @@
         const currentSession =
           ++sessionId;
 
-        countedFinalText =
-          "";
-
-        let finalText =
-          "";
-          
-        let sessionMatchCount = 
-          0;
+        let indexMatchCounts = [];
 
         recognition =
           new SpeechRecognition();
@@ -3056,6 +3048,8 @@
               return;
             }
 
+            indexMatchCounts = [];
+
             setListening(true);
 
             setStatus(
@@ -3074,10 +3068,10 @@
               return;
             }
 
-            let interimText = "";
+            let fullTranscript = "";
 
             for (
-              let i = event.resultIndex;
+              let i = 0;
               i < event.results.length;
               i++
             ) {
@@ -3085,51 +3079,44 @@
                 event.results[i];
 
               const text =
-                result[0].transcript.trim();
+                result[0].transcript;
 
-              if (result.isFinal) {
-                finalText += " " + text;
-              } else {
-                interimText += " " + text;
+              fullTranscript += " " + text;
+
+              if (typeof indexMatchCounts[i] === "undefined") {
+                indexMatchCounts[i] = 0;
+              }
+
+              const matchesInThisIndex =
+                countPhraseMatches(
+                  text,
+                  targetPhrase
+                );
+
+              if (matchesInThisIndex > indexMatchCounts[i]) {
+                const added =
+                  matchesInThisIndex - indexMatchCounts[i];
+
+                indexMatchCounts[i] =
+                  matchesInThisIndex;
+
+                registerCount(added);
+
+                setStatus(
+                  "Phrase detected. +" +
+                  added +
+                  " counted.",
+                  "success"
+                );
               }
             }
 
             const visibleText =
-              (
-                finalText +
-                " " +
-                interimText
-              ).trim();
+              fullTranscript.trim().replace(/\s+/g, " ");
 
             if (visibleText) {
               transcriptBox.textContent =
                 visibleText;
-            }
-
-            const allVisibleText =
-              normalize(visibleText);
-
-            const totalMatchesNow =
-              countPhraseMatches(
-                allVisibleText,
-                targetPhrase
-              );
-
-            if (totalMatchesNow > sessionMatchCount) {
-              const added =
-                totalMatchesNow - sessionMatchCount;
-
-              registerCount(added);
-
-              sessionMatchCount =
-                totalMatchesNow;
-
-              setStatus(
-                "Phrase detected. +" +
-                added +
-                " counted.",
-                "success"
-              );
             }
           };
 
