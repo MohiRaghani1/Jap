@@ -3024,20 +3024,12 @@
 
         let confirmedFinalText = "";
         let sessionMatchCount = 0;
-        let androidLastProcessedText = "";
+        let lastProcessedIndex = 0;
 
         recognition =
           new SpeechRecognition();
 
-        const isAndroid = /android/i.test(navigator.userAgent);
-        const isSingleWord = targetPhrase && targetPhrase.trim().split(/\s+/).length === 1;
-
-        // CLEAN SEPARATION: continuous=false for Android single-word (single shot burst), true for multi-word & iPhone
-        if (isAndroid && isSingleWord) {
-          recognition.continuous = false;
-        } else {
-          recognition.continuous = true;
-        }
+        recognition.continuous = true;
 
         recognition.interimResults =
           true;
@@ -3060,7 +3052,7 @@
             setListening(true);
             confirmedFinalText = "";
             sessionMatchCount = 0;
-            androidLastProcessedText = "";
+            lastProcessedIndex = 0;
 
             setStatus(
               "Listening for: “" +
@@ -3079,7 +3071,7 @@
             }
 
             let interimText = "";
-            let latestFinalChunk = "";
+            let newFinalText = "";
 
             for (
               let i = event.resultIndex;
@@ -3093,14 +3085,29 @@
                 result[0].transcript.trim();
 
               if (result.isFinal) {
-                latestFinalChunk += " " + text;
+                if (i >= lastProcessedIndex) {
+                  newFinalText += " " + text;
+                  lastProcessedIndex = i + 1;
+                }
               } else {
                 interimText += " " + text;
               }
             }
 
-            if (latestFinalChunk) {
-              confirmedFinalText += " " + latestFinalChunk;
+            if (newFinalText.trim()) {
+              confirmedFinalText += " " + newFinalText.trim();
+              const chunkNormalized = normalize(newFinalText);
+              const added = countPhraseMatches(chunkNormalized, targetPhrase);
+
+              if (added > 0) {
+                registerCount(added);
+                setStatus(
+                  "Phrase detected. +" +
+                  added +
+                  " counted.",
+                  "success"
+                );
+              }
             }
 
             const visibleText =
@@ -3113,51 +3120,6 @@
             if (visibleText) {
               transcriptBox.textContent =
                 visibleText;
-            }
-
-            // PATH 1: ANDROID SINGLE WORD (1 word) - Clean Text Uniqueness Deduping, No Time Cooldown (Supports Fast Jap)
-            if (isAndroid && isSingleWord) {
-              if (latestFinalChunk.trim()) {
-                const chunkNormalized = normalize(latestFinalChunk);
-                if (chunkNormalized && chunkNormalized !== androidLastProcessedText) {
-                  androidLastProcessedText = chunkNormalized;
-                  const matches = countPhraseMatches(chunkNormalized, targetPhrase);
-                  if (matches > 0) {
-                    registerCount(matches);
-                    setStatus(
-                      "Phrase detected. +" + matches + " counted.",
-                      "success"
-                    );
-                  }
-                }
-              }
-            } else {
-              // PATH 2: ANDROID MULTI-WORD (2+ words) & iPHONE / DESKTOP (Rolling Session Match Count)
-              const allFinalNormalized =
-                normalize(confirmedFinalText);
-
-              const totalMatchesNow =
-                countPhraseMatches(
-                  allFinalNormalized,
-                  targetPhrase
-                );
-
-              if (totalMatchesNow > sessionMatchCount) {
-                const added =
-                  totalMatchesNow - sessionMatchCount;
-
-                sessionMatchCount =
-                  totalMatchesNow;
-
-                registerCount(added);
-
-                setStatus(
-                  "Phrase detected. +" +
-                  added +
-                  " counted.",
-                  "success"
-                );
-              }
             }
           };
 
