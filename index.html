@@ -65,6 +65,8 @@
       --border: #24435f;
       --blue-soft: #123451;
       --gold-soft: #3b2b13;
+      --success-bg: #0d3522;
+      --error-bg: #451b1b;
       --shadow: 0 18px 50px rgba(0, 0, 0, 0.35);
       --shadow-soft: 0 8px 24px rgba(0, 0, 0, 0.25);
     }
@@ -3022,7 +3024,7 @@
 
         let confirmedFinalText = "";
         let sessionMatchCount = 0;
-        let androidSingleWordCounted = false;
+        let androidLastMatchCount = 0;
 
         recognition =
           new SpeechRecognition();
@@ -3049,7 +3051,9 @@
             }
 
             setListening(true);
-            androidSingleWordCounted = false;
+            confirmedFinalText = "";
+            sessionMatchCount = 0;
+            androidLastMatchCount = 0;
 
             setStatus(
               "Listening for: “" +
@@ -3107,12 +3111,13 @@
             const isSingleWord = targetPhrase && targetPhrase.trim().split(/\s+/).length === 1;
 
             if (isAndroid && isSingleWord) {
-              const matches = countPhraseMatches(normalize(visibleText), targetPhrase);
-              if (matches > 0 && !androidSingleWordCounted) {
-                androidSingleWordCounted = true;
-                registerCount(1);
+              const totalMatchesNow = countPhraseMatches(normalize(visibleText), targetPhrase);
+              if (totalMatchesNow > androidLastMatchCount) {
+                const added = totalMatchesNow - androidLastMatchCount;
+                androidLastMatchCount = totalMatchesNow;
+                registerCount(added);
                 setStatus(
-                  "Phrase detected. +1 counted.",
+                  "Phrase detected. +" + added + " counted.",
                   "success"
                 );
               }
