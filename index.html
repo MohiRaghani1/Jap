@@ -3023,7 +3023,6 @@
           ++sessionId;
 
         let confirmedFinalText = "";
-        let sessionMatchCount = 0;
         let lastProcessedIndex = 0;
 
         recognition =
@@ -3051,7 +3050,6 @@
 
             setListening(true);
             confirmedFinalText = "";
-            sessionMatchCount = 0;
             lastProcessedIndex = 0;
 
             setStatus(
@@ -3096,6 +3094,18 @@
 
             if (newFinalText.trim()) {
               confirmedFinalText += " " + newFinalText.trim();
+              const chunkNormalized = normalize(newFinalText);
+              const added = countPhraseMatches(chunkNormalized, targetPhrase);
+
+              if (added > 0) {
+                registerCount(added);
+                setStatus(
+                  "Phrase detected. +" +
+                  added +
+                  " counted.",
+                  "success"
+                );
+              }
             }
 
             const visibleText =
@@ -3108,32 +3118,6 @@
             if (visibleText) {
               transcriptBox.textContent =
                 visibleText;
-            }
-
-            const allFinalNormalized =
-              normalize(confirmedFinalText);
-
-            const totalMatchesNow =
-              countPhraseMatches(
-                allFinalNormalized,
-                targetPhrase
-              );
-
-            if (totalMatchesNow > sessionMatchCount) {
-              const added =
-                totalMatchesNow - sessionMatchCount;
-
-              sessionMatchCount =
-                totalMatchesNow;
-
-              registerCount(added);
-
-              setStatus(
-                "Phrase detected. +" +
-                added +
-                " counted.",
-                "success"
-              );
             }
           };
 
