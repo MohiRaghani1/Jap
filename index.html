@@ -3024,7 +3024,7 @@
 
         let confirmedFinalText = "";
         let sessionMatchCount = 0;
-        let androidSingleWordCounted = false;
+        let androidLastMatchCount = 0;
 
         recognition =
           new SpeechRecognition();
@@ -3032,7 +3032,7 @@
         const isAndroid = /android/i.test(navigator.userAgent);
         const isSingleWord = targetPhrase && targetPhrase.trim().split(/\s+/).length === 1;
 
-        // SEPARATE LOGIC: False for Android 1-word (single shot burst), True for everything else
+        // SEPARATE CONFIGURATION: False for Android single word, True for Android multi-word & iPhone
         if (isAndroid && isSingleWord) {
           recognition.continuous = false;
         } else {
@@ -3058,7 +3058,9 @@
             }
 
             setListening(true);
-            androidSingleWordCounted = false;
+            confirmedFinalText = "";
+            sessionMatchCount = 0;
+            androidLastMatchCount = 0;
 
             setStatus(
               "Listening for: “" +
@@ -3113,19 +3115,20 @@
                 visibleText;
             }
 
-            // SEPARATE HANDLING FOR ANDROID SINGLE WORD
+            // ANDROID SINGLE WORD: Rolling non-blocking match check
             if (isAndroid && isSingleWord) {
-              const matches = countPhraseMatches(normalize(visibleText), targetPhrase);
-              if (matches > 0 && !androidSingleWordCounted) {
-                androidSingleWordCounted = true;
-                registerCount(1);
+              const totalMatchesNow = countPhraseMatches(normalize(visibleText), targetPhrase);
+              if (totalMatchesNow > androidLastMatchCount) {
+                const added = totalMatchesNow - androidLastMatchCount;
+                androidLastMatchCount = totalMatchesNow;
+                registerCount(added);
                 setStatus(
-                  "Phrase detected. +1 counted.",
+                  "Phrase detected. +" + added + " counted.",
                   "success"
                 );
               }
             } else {
-              // STANDARD MULTI-WORD & iPHONE LOGIC
+              // iPHONE & ANDROID MULTI-WORD: Standard rolling session match count
               const allFinalNormalized =
                 normalize(confirmedFinalText);
 
