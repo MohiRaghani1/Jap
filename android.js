@@ -30,7 +30,10 @@
       .length === 1;
   }
 
-  function countPhraseMatches(text, phrase) {
+  function countPhraseMatches(
+    text,
+    phrase
+  ) {
     const spoken = normalize(text);
     const target = normalize(phrase);
 
@@ -48,9 +51,47 @@
       "gi"
     );
 
-    const matches = spoken.match(regex);
+    const matches =
+      spoken.match(regex);
 
-    return matches ? matches.length : 0;
+    return matches
+      ? matches.length
+      : 0;
+  }
+
+  function getNewTranscript(
+    currentText,
+    previousText
+  ) {
+    const current =
+      normalize(currentText);
+
+    const previous =
+      normalize(previousText);
+
+    if (!current) {
+      return "";
+    }
+
+    if (!previous) {
+      return current;
+    }
+
+    if (current === previous) {
+      return "";
+    }
+
+    if (current.startsWith(previous)) {
+      return current
+        .slice(previous.length)
+        .trim();
+    }
+
+    /*
+      Android kabhi result ko shorter/revised form me bhejta hai.
+      Aise result ko duplicate count nahi karna.
+    */
+    return "";
   }
 
   function createVoiceRecognition(
@@ -67,7 +108,9 @@
     }
 
     const isAndroid =
-      /android/i.test(navigator.userAgent);
+      /android/i.test(
+        navigator.userAgent
+      );
 
     const singleWord =
       isSingleWord(targetPhrase);
@@ -77,9 +120,17 @@
       stopped: false,
       restartTimer: null,
 
-      finalText: "",
-      countedText: "",
-      lastSingleWordText: "",
+      /*
+        Single-word ke liye separate state.
+      */
+      singleWordCountedText: "",
+      singleWordDisplayText: "",
+
+      /*
+        Multi-word ka existing state.
+      */
+      multiWordCountedText: "",
+      multiWordDisplayText: "",
 
       start: null,
       stop: null
@@ -97,23 +148,23 @@
       }
     }
 
+    /*
+      ONLY SINGLE-WORD LOGIC
+    */
     function processSingleWord(
-      text,
+      finalText,
       confidence
     ) {
-      const spoken = normalize(text);
-      const target = normalize(targetPhrase);
+      const current =
+        normalize(finalText);
 
-      if (!spoken || !target) {
+      if (!current) {
         return;
       }
 
       /*
-        Single-word rule:
-        1. Interim result ignore.
-        2. confidence 0 ignore.
-        3. Same final transcript ignore.
-        4. Ek final Android result me maximum 1 count.
+        Single-word ke liye sirf final,
+        positive-confidence result count hoga.
       */
       if (
         typeof confidence !== "number" ||
@@ -122,33 +173,53 @@
         return;
       }
 
-      if (
-        spoken !== target &&
-        !spoken
-          .split(/\s+/)
-          .includes(target)
-      ) {
+      const newText =
+        getNewTranscript(
+          current,
+          controller.singleWordCountedText
+        );
+
+      if (!newText) {
         return;
       }
 
-      if (
-        controller.lastSingleWordText ===
-        spoken
-      ) {
-        return;
+      /*
+        Example:
+        current = "radha radha radha"
+        previous = "radha"
+        newText = "radha radha"
+        added = 2
+      */
+      const added =
+        countPhraseMatches(
+          newText,
+          targetPhrase
+        );
+
+      if (added > 0) {
+        sendMatch(added);
       }
 
-      controller.lastSingleWordText =
-        spoken;
+      controller.singleWordCountedText =
+        current;
 
-      sendMatch(1);
+      controller.singleWordDisplayText =
+        current;
     }
 
-    function processMultiWord(text) {
-      const current = normalize(text);
-      const previous = normalize(
-        controller.countedText
-      );
+    /*
+      MULTI-WORD LOGIC
+      Isko intentionally previous working logic
+      ke jaise hi rakha gaya hai.
+    */
+    function processMultiWord(
+      finalText
+    ) {
+      const current =
+        normalize(finalText);
+
+      const previous =
+        controller.multiWordCountedText;
 
       if (!current) {
         return;
@@ -158,17 +229,11 @@
         return;
       }
 
-      let newText = current;
-
-      if (
-        previous &&
-        current.startsWith(previous)
-      ) {
-        newText =
-          current
-            .slice(previous.length)
-            .trim();
-      }
+      const newText =
+        getNewTranscript(
+          current,
+          previous
+        );
 
       if (!newText) {
         return;
@@ -180,21 +245,15 @@
           targetPhrase
         );
 
-      sendMatch(added);
+      if (added > 0) {
+        sendMatch(added);
+      }
 
-      controller.countedText =
-        (
-          controller.countedText +
-          " " +
-          newText
-        ).trim();
+      controller.multiWordCountedText =
+        current;
 
-      controller.finalText =
-        (
-          controller.finalText +
-          " " +
-          newText
-        ).trim();
+      controller.multiWordDisplayText =
+        current;
     }
 
     function handleResult(event) {
@@ -202,13 +261,20 @@
       let finalConfidence = 0;
       let interimText = "";
 
+      /*
+        Entire result list read kar rahe hain.
+        Sirf resultIndex par depend nahi kar rahe.
+      */
       for (
-        let i = event.resultIndex;
+        let i = 0;
         i < event.results.length;
         i++
       ) {
-        const result = event.results[i];
-        const alternative = result[0];
+        const result =
+          event.results[i];
+
+        const alternative =
+          result[0];
 
         if (!alternative) {
           continue;
@@ -221,13 +287,6 @@
           continue;
         }
 
-        const confidence =
-          Number(alternative.confidence) || 0;
-
-        /*
-          Single word ke liye ONLY final result.
-          Isse interim + final double count nahi hoga.
-        */
         if (result.isFinal) {
           finalText =
             (
@@ -239,7 +298,9 @@
           finalConfidence =
             Math.max(
               finalConfidence,
-              confidence
+              Number(
+                alternative.confidence
+              ) || 0
             );
         } else {
           interimText =
@@ -251,12 +312,10 @@
         }
       }
 
+      /*
+        SINGLE-WORD CONDITION
+      */
       if (singleWord) {
-        /*
-          Interim ko display kar sakte hain,
-          lekin count sirf confidence-positive
-          final result par hoga.
-        */
         if (finalText) {
           processSingleWord(
             finalText,
@@ -281,7 +340,8 @@
       }
 
       /*
-        Multi-word ka existing correct behavior.
+        MULTI-WORD CONDITION
+        Is branch ko touch nahi kiya gaya.
       */
       if (finalText) {
         processMultiWord(finalText);
@@ -289,7 +349,7 @@
 
       const visibleText =
         (
-          controller.finalText +
+          controller.multiWordDisplayText +
           " " +
           interimText
         ).trim();
@@ -305,22 +365,38 @@
       }
     }
 
-    function makeRecognition() {
-      const instance =
+    function createRecognition() {
+      const recognition =
         new SpeechRecognition();
 
       /*
-        Android ke liye one-shot recognition.
-        App.js ko restart logic nahi karna.
+        Android one-shot mode.
+        Android restart isi file ke andar hoga.
       */
-      instance.continuous = !isAndroid;
-      instance.interimResults = true;
-      instance.lang = language;
-      instance.maxAlternatives = 1;
+      recognition.continuous =
+        !isAndroid;
 
-      instance.onstart = () => {
-        controller.lastSingleWordText =
-          "";
+      recognition.interimResults =
+        true;
+
+      recognition.lang =
+        language;
+
+      recognition.maxAlternatives =
+        1;
+
+      recognition.onstart = () => {
+        /*
+          Har new Android recognition session me
+          single-word ka duplicate state reset.
+        */
+        if (singleWord) {
+          controller.singleWordCountedText =
+            "";
+
+          controller.singleWordDisplayText =
+            "";
+        }
 
         if (
           typeof callbacks.onStart ===
@@ -330,10 +406,10 @@
         }
       };
 
-      instance.onresult =
+      recognition.onresult =
         handleResult;
 
-      instance.onerror = event => {
+      recognition.onerror = event => {
         if (
           typeof callbacks.onError ===
             "function"
@@ -346,11 +422,12 @@
           event.error ===
             "service-not-allowed"
         ) {
-          controller.stopped = true;
+          controller.stopped =
+            true;
         }
       };
 
-      instance.onend = () => {
+      recognition.onend = () => {
         if (
           typeof callbacks.onEnd ===
             "function"
@@ -369,11 +446,11 @@
           controller.restartTimer =
             setTimeout(() => {
               startRecognition();
-            }, 500);
+            }, 350);
         }
       };
 
-      return instance;
+      return recognition;
     }
 
     function startRecognition() {
@@ -383,7 +460,7 @@
 
       if (!controller.recognition) {
         controller.recognition =
-          makeRecognition();
+          createRecognition();
       }
 
       try {
@@ -396,36 +473,52 @@
         controller.restartTimer =
           setTimeout(() => {
             startRecognition();
-          }, 700);
+          }, 600);
       }
     }
 
     controller.start = () => {
-      controller.stopped = false;
-      controller.finalText = "";
-      controller.countedText = "";
-      controller.lastSingleWordText = "";
+      controller.stopped =
+        false;
+
+      controller.singleWordCountedText =
+        "";
+
+      controller.singleWordDisplayText =
+        "";
+
+      controller.multiWordCountedText =
+        "";
+
+      controller.multiWordDisplayText =
+        "";
 
       startRecognition();
     };
 
     controller.stop = () => {
-      controller.stopped = true;
+      controller.stopped =
+        true;
 
       clearTimeout(
         controller.restartTimer
       );
 
-      const instance =
+      const recognition =
         controller.recognition;
 
-      controller.recognition = null;
+      controller.recognition =
+        null;
 
-      if (instance) {
+      if (recognition) {
         try {
-          instance.stop();
+          recognition.abort();
         } catch (error) {
-          // Already stopped.
+          try {
+            recognition.stop();
+          } catch (stopError) {
+            // Already stopped.
+          }
         }
       }
 
