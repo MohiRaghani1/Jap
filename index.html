@@ -3024,7 +3024,7 @@
 
         let confirmedFinalText = "";
         let sessionMatchCount = 0;
-        let androidLastMatchCount = 0;
+        let androidLastProcessedText = "";
 
         recognition =
           new SpeechRecognition();
@@ -3032,7 +3032,7 @@
         const isAndroid = /android/i.test(navigator.userAgent);
         const isSingleWord = targetPhrase && targetPhrase.trim().split(/\s+/).length === 1;
 
-        // SEPARATE CONFIGURATION: False for Android single word, True for Android multi-word & iPhone
+        // CLEAN SEPARATION: continuous=false for Android single-word (single shot burst), true for multi-word & iPhone
         if (isAndroid && isSingleWord) {
           recognition.continuous = false;
         } else {
@@ -3060,7 +3060,7 @@
             setListening(true);
             confirmedFinalText = "";
             sessionMatchCount = 0;
-            androidLastMatchCount = 0;
+            androidLastProcessedText = "";
 
             setStatus(
               "Listening for: “" +
@@ -3115,20 +3115,24 @@
                 visibleText;
             }
 
-            // ANDROID SINGLE WORD: Rolling non-blocking match check
+            // PATH 1: ANDROID SINGLE WORD (1 word) - Clean Text Uniqueness Deduping, No Time Cooldown (Supports Fast Jap)
             if (isAndroid && isSingleWord) {
-              const totalMatchesNow = countPhraseMatches(normalize(visibleText), targetPhrase);
-              if (totalMatchesNow > androidLastMatchCount) {
-                const added = totalMatchesNow - androidLastMatchCount;
-                androidLastMatchCount = totalMatchesNow;
-                registerCount(added);
-                setStatus(
-                  "Phrase detected. +" + added + " counted.",
-                  "success"
-                );
+              if (latestFinalChunk.trim()) {
+                const chunkNormalized = normalize(latestFinalChunk);
+                if (chunkNormalized && chunkNormalized !== androidLastProcessedText) {
+                  androidLastProcessedText = chunkNormalized;
+                  const matches = countPhraseMatches(chunkNormalized, targetPhrase);
+                  if (matches > 0) {
+                    registerCount(matches);
+                    setStatus(
+                      "Phrase detected. +" + matches + " counted.",
+                      "success"
+                    );
+                  }
+                }
               }
             } else {
-              // iPHONE & ANDROID MULTI-WORD: Standard rolling session match count
+              // PATH 2: ANDROID MULTI-WORD (2+ words) & iPHONE / DESKTOP (Rolling Session Match Count)
               const allFinalNormalized =
                 normalize(confirmedFinalText);
 
