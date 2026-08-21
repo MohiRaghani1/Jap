@@ -14,42 +14,113 @@ const STORAGE_KEYS = {
   reminderTime: "japReminderTime"
 };
 
-const mantraInput = document.getElementById("mantraInput");
-const languageSelect = document.getElementById("languageSelect");
-const countDisplay = document.getElementById("countDisplay");
-const mantraPreview = document.getElementById("mantraPreview");
-const speakInstruction = document.getElementById("speakInstruction");
-const startBtn = document.getElementById("startBtn");
-const stopBtn = document.getElementById("stopBtn");
-const resetBtn = document.getElementById("resetBtn");
-const statusText = document.getElementById("statusText");
-const transcriptBox = document.getElementById("transcriptBox");
-const supportText = document.getElementById("supportText");
-const supportPill = document.getElementById("supportPill");
-const themeToggle = document.getElementById("themeToggle");
-const targetInput = document.getElementById("targetInput");
-const saveTargetBtn = document.getElementById("saveTargetBtn");
-const targetStatus = document.getElementById("targetStatus");
-const streakValue = document.getElementById("streakValue");
-const bestStreakNote = document.getElementById("bestStreakNote");
-const todayValue = document.getElementById("todayValue");
-const historyToggle = document.getElementById("historyToggle");
-const historyContent = document.getElementById("historyContent");
-const historyList = document.getElementById("historyList");
-const weeklyReport = document.getElementById("weeklyReport");
-const soundToggle = document.getElementById("soundToggle");
-const vibrationToggle = document.getElementById("vibrationToggle");
-const tapFallback = document.getElementById("tapFallback");
-const tapBtn = document.getElementById("tapBtn");
-const sessionTimer = document.getElementById("sessionTimer");
-const sessionJap = document.getElementById("sessionJap");
-const sessionSummaryCard = document.getElementById("sessionSummaryCard");
-const reminderTime = document.getElementById("reminderTime");
-const enableReminderBtn = document.getElementById("enableReminderBtn");
-const disableReminderBtn = document.getElementById("disableReminderBtn");
-const reminderStatus = document.getElementById("reminderStatus");
-const installArea = document.getElementById("installArea");
-const installBtn = document.getElementById("installBtn");
+const mantraInput =
+  document.getElementById("mantraInput");
+
+const languageSelect =
+  document.getElementById("languageSelect");
+
+const countDisplay =
+  document.getElementById("countDisplay");
+
+const mantraPreview =
+  document.getElementById("mantraPreview");
+
+const speakInstruction =
+  document.getElementById("speakInstruction");
+
+const startBtn =
+  document.getElementById("startBtn");
+
+const stopBtn =
+  document.getElementById("stopBtn");
+
+const resetBtn =
+  document.getElementById("resetBtn");
+
+const statusText =
+  document.getElementById("statusText");
+
+const transcriptBox =
+  document.getElementById("transcriptBox");
+
+const supportText =
+  document.getElementById("supportText");
+
+const supportPill =
+  document.getElementById("supportPill");
+
+const themeToggle =
+  document.getElementById("themeToggle");
+
+const targetInput =
+  document.getElementById("targetInput");
+
+const saveTargetBtn =
+  document.getElementById("saveTargetBtn");
+
+const targetStatus =
+  document.getElementById("targetStatus");
+
+const streakValue =
+  document.getElementById("streakValue");
+
+const bestStreakNote =
+  document.getElementById("bestStreakNote");
+
+const todayValue =
+  document.getElementById("todayValue");
+
+const historyToggle =
+  document.getElementById("historyToggle");
+
+const historyContent =
+  document.getElementById("historyContent");
+
+const historyList =
+  document.getElementById("historyList");
+
+const weeklyReport =
+  document.getElementById("weeklyReport");
+
+const soundToggle =
+  document.getElementById("soundToggle");
+
+const vibrationToggle =
+  document.getElementById("vibrationToggle");
+
+const tapFallback =
+  document.getElementById("tapFallback");
+
+const tapBtn =
+  document.getElementById("tapBtn");
+
+const sessionTimer =
+  document.getElementById("sessionTimer");
+
+const sessionJap =
+  document.getElementById("sessionJap");
+
+const sessionSummaryCard =
+  document.getElementById("sessionSummaryCard");
+
+const reminderTime =
+  document.getElementById("reminderTime");
+
+const enableReminderBtn =
+  document.getElementById("enableReminderBtn");
+
+const disableReminderBtn =
+  document.getElementById("disableReminderBtn");
+
+const reminderStatus =
+  document.getElementById("reminderStatus");
+
+const installArea =
+  document.getElementById("installArea");
+
+const installBtn =
+  document.getElementById("installBtn");
 
 let recognition = null;
 let listening = false;
@@ -61,7 +132,6 @@ let sessionStartedAt = null;
 let sessionElapsedSeconds = 0;
 let sessionCount = 0;
 let sessionInterval = null;
-let restartTimer = null;
 let deferredInstallPrompt = null;
 
 function getTodayKey() {
@@ -95,7 +165,9 @@ function formatDate(dateKey) {
 function readHistory() {
   try {
     const stored =
-      localStorage.getItem(STORAGE_KEYS.history);
+      localStorage.getItem(
+        STORAGE_KEYS.history
+      );
 
     const parsed = stored
       ? JSON.parse(stored)
@@ -137,8 +209,6 @@ function addToToday(amount) {
     (Number(history[today]) || 0) + amount;
 
   saveHistory(history);
-
-  return history[today];
 }
 
 function getSortedHistory() {
@@ -389,6 +459,7 @@ function saveTarget() {
   );
 
   updateDailyTools();
+
   setStatus(
     "Daily target saved.",
     "success"
@@ -660,7 +731,10 @@ function showTapFallback(message) {
   tapFallback.classList.add("visible");
 
   if (message) {
-    setStatus(message, "error");
+    setStatus(
+      message,
+      "error"
+    );
   }
 }
 
@@ -685,31 +759,17 @@ function showUnsupported() {
 }
 
 function resetDailyCount() {
-  clearTimeout(restartTimer);
-
   if (recognition) {
-    const activeRecognition =
-      recognition;
-
+    recognition.stop();
     recognition = null;
-
-    try {
-      activeRecognition.stop();
-    } catch (error) {
-      // Already stopped.
-    }
   }
 
   sessionId++;
-  listening = false;
   setListening(false);
 
   totalCount = 0;
-  countDisplay.textContent = "0";
-
-  localStorage.removeItem(
-    STORAGE_KEYS.total
-  );
+  countDisplay.textContent =
+    "0";
 
   const history = readHistory();
 
@@ -782,7 +842,8 @@ function getReminderState() {
       STORAGE_KEYS.reminderTime
     ) || "06:00";
 
-  reminderTime.value = time;
+  reminderTime.value =
+    time;
 
   if (enabled) {
     reminderStatus.textContent =
@@ -893,7 +954,7 @@ installBtn.addEventListener(
     try {
       await deferredInstallPrompt.userChoice;
     } catch (error) {
-      // Prompt closed.
+      // User closed prompt.
     }
 
     deferredInstallPrompt = null;
@@ -936,7 +997,8 @@ historyToggle.addEventListener(
     const isOpen =
       !historyContent.hidden;
 
-    historyContent.hidden = isOpen;
+    historyContent.hidden =
+      isOpen;
 
     historyToggle.setAttribute(
       "aria-expanded",
@@ -978,6 +1040,7 @@ tapBtn.addEventListener(
   "click",
   () => {
     registerCount(1);
+
     setStatus(
       "Tap counted. +1",
       "success"
@@ -1026,7 +1089,7 @@ startBtn.addEventListener(
       "visible"
     );
 
-    if (!SpeechRecognition) {
+    if (!window.voiceRecognitionSupported) {
       showTapFallback(
         "Voice recognition is unavailable."
       );
@@ -1046,189 +1109,101 @@ startBtn.addEventListener(
 
     if (listening) return;
 
-    clearTimeout(restartTimer);
-
     const currentSession =
       ++sessionId;
 
-    const isAndroid =
-      /android/i.test(
-        navigator.userAgent
+    recognition =
+      window.createVoiceRecognition(
+        languageSelect.value,
+        targetPhrase,
+        {
+          onStart: () => {
+            if (
+              currentSession !== sessionId
+            ) {
+              return;
+            }
+
+            setListening(true);
+
+            setStatus(
+              "Listening for: “" +
+              mantraInput.value.trim() +
+              "”"
+            );
+          },
+
+          onMatch: amount => {
+            if (
+              currentSession !== sessionId ||
+              !listening
+            ) {
+              return;
+            }
+
+            registerCount(amount);
+
+            setStatus(
+              "Phrase detected. +" +
+              amount +
+              " counted.",
+              "success"
+            );
+          },
+
+          onTranscript: text => {
+            if (
+              currentSession !== sessionId ||
+              !listening
+            ) {
+              return;
+            }
+
+            transcriptBox.textContent =
+              text;
+          },
+
+          onError: event => {
+            if (
+              currentSession !== sessionId
+            ) {
+              return;
+            }
+
+            if (
+              event.error === "not-allowed" ||
+              event.error ===
+                "service-not-allowed"
+            ) {
+              setListening(false);
+
+              showTapFallback(
+                "Microphone permission was not allowed."
+              );
+            } else if (
+              event.error === "no-speech"
+            ) {
+              setStatus(
+                "No speech detected. Please try again.",
+                "error"
+              );
+            }
+          },
+
+          onEnd: () => {
+            if (
+              currentSession !== sessionId
+            ) {
+              return;
+            }
+
+            /*
+              Android ka restart android.js
+              internally karega.
+            */
+          }
+        }
       );
-
-    if (
-      isAndroid &&
-      typeof handleAndroidRecognition ===
-        "function"
-    ) {
-      recognition =
-        handleAndroidRecognition(
-          languageSelect.value,
-          targetPhrase,
-          {
-            onMatch: added => {
-              if (
-                currentSession !== sessionId ||
-                !listening
-              ) {
-                return;
-              }
-
-              registerCount(added);
-
-              setStatus(
-                "Phrase detected. +" +
-                added +
-                " counted.",
-                "success"
-              );
-            },
-
-            onTranscript: visibleText => {
-              if (
-                currentSession !== sessionId ||
-                !listening
-              ) {
-                return;
-              }
-
-              transcriptBox.textContent =
-                visibleText;
-            }
-          }
-        );
-    } else {
-      let confirmedText = "";
-      let lastCountedFinalText = "";
-
-      recognition =
-        new SpeechRecognition();
-
-      recognition.continuous = true;
-      recognition.interimResults = true;
-      recognition.lang =
-        languageSelect.value;
-      recognition.maxAlternatives = 1;
-
-      recognition.onresult = event => {
-        if (
-          currentSession !== sessionId ||
-          !listening
-        ) {
-          return;
-        }
-
-        let interimText = "";
-        let latestFinalText = "";
-
-        for (
-          let i = event.resultIndex;
-          i < event.results.length;
-          i++
-        ) {
-          const result =
-            event.results[i];
-
-          const text =
-            result[0].transcript.trim();
-
-          if (!text) continue;
-
-          if (result.isFinal) {
-            latestFinalText =
-              (
-                latestFinalText +
-                " " +
-                text
-              ).trim();
-          } else {
-            interimText =
-              (
-                interimText +
-                " " +
-                text
-              ).trim();
-          }
-        }
-
-        if (latestFinalText) {
-          const currentFinal =
-            normalize(
-              latestFinalText
-            );
-
-          const previousFinal =
-            normalize(
-              lastCountedFinalText
-            );
-
-          let newFinalText = "";
-
-          if (
-            !previousFinal
-          ) {
-            newFinalText =
-              currentFinal;
-          } else if (
-            currentFinal.startsWith(
-              previousFinal
-            )
-          ) {
-            newFinalText =
-              currentFinal
-                .slice(
-                  previousFinal.length
-                )
-                .trim();
-          }
-
-          if (newFinalText) {
-            const added =
-              countPhraseMatches(
-                newFinalText,
-                targetPhrase
-              );
-
-            if (added > 0) {
-              registerCount(added);
-
-              setStatus(
-                "Phrase detected. +" +
-                added +
-                " counted.",
-                "success"
-              );
-            }
-
-            lastCountedFinalText =
-              (
-                lastCountedFinalText +
-                " " +
-                newFinalText
-              ).trim();
-
-            confirmedText =
-              (
-                confirmedText +
-                " " +
-                newFinalText
-              ).trim();
-          }
-        }
-
-        const visibleText =
-          (
-            confirmedText +
-            " " +
-            interimText
-          ).trim();
-
-        if (visibleText) {
-          transcriptBox.textContent =
-            visibleText;
-        }
-      };
-    }
 
     if (!recognition) {
       showTapFallback(
@@ -1238,99 +1213,7 @@ startBtn.addEventListener(
       return;
     }
 
-    recognition.onstart = () => {
-      if (
-        currentSession !== sessionId
-      ) {
-        return;
-      }
-
-      setListening(true);
-
-      setStatus(
-        "Listening for: “" +
-        mantraInput.value.trim() +
-        "”"
-      );
-    };
-
-    recognition.onerror = event => {
-      if (
-        currentSession !== sessionId
-      ) {
-        return;
-      }
-
-      if (
-        event.error === "not-allowed"
-      ) {
-        setListening(false);
-
-        showTapFallback(
-          "Microphone permission was not allowed."
-        );
-      } else if (
-        event.error === "no-speech"
-      ) {
-        setStatus(
-          "No speech detected. Please try again.",
-          "error"
-        );
-      } else {
-        setListening(false);
-
-        showTapFallback(
-          "Voice recognition stopped. " +
-          "You can use tap counting."
-        );
-      }
-    };
-
-    recognition.onend = () => {
-      if (
-        currentSession !== sessionId
-      ) {
-        return;
-      }
-
-      if (!listening) {
-        setListening(false);
-        return;
-      }
-
-      clearTimeout(restartTimer);
-
-      restartTimer = setTimeout(() => {
-        if (
-          currentSession !== sessionId ||
-          !listening ||
-          !recognition
-        ) {
-          return;
-        }
-
-        try {
-          recognition.start();
-        } catch (error) {
-          setListening(false);
-
-          showTapFallback(
-            "Voice recognition stopped. " +
-            "You can use tap counting."
-          );
-        }
-      }, 500);
-    };
-
-    try {
-      recognition.start();
-    } catch (error) {
-      setListening(false);
-
-      showTapFallback(
-        "Recognition could not be started."
-      );
-    }
+    recognition.start();
   }
 );
 
@@ -1342,23 +1225,16 @@ stopBtn.addEventListener(
     }
 
     sessionId++;
-    listening = false;
-
-    clearTimeout(restartTimer);
 
     const activeRecognition =
       recognition;
 
     recognition = null;
 
+    activeRecognition.stop();
+
     setListening(false);
     setStatus("Listening stopped.");
-
-    try {
-      activeRecognition.stop();
-    } catch (error) {
-      return;
-    }
   }
 );
 
@@ -1367,11 +1243,12 @@ resetBtn.addEventListener(
   resetDailyCount
 );
 
-if (!SpeechRecognition) {
+if (!window.voiceRecognitionSupported) {
   showUnsupported();
 }
 
 totalCount = getTodayCount();
+
 countDisplay.textContent =
   String(totalCount);
 
@@ -1411,6 +1288,7 @@ if (
   ) === "dark"
 ) {
   document.body.classList.add("dark");
+
   themeToggle.textContent =
     "☀️ Light";
 }
