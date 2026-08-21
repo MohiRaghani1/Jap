@@ -1,22 +1,12 @@
 // android.js
-function handleAndroidRecognition(language, targetPhrase, callbacks) {
+(function () {
+  "use strict";
+
   const SpeechRecognition =
     window.SpeechRecognition ||
     window.webkitSpeechRecognition;
 
-  if (!SpeechRecognition) return null;
-
-  const recognition = new SpeechRecognition();
-
-  // Android par continuous mode unreliable ho sakta hai,
-  // isliye app.js onend par recognition restart karega.
-  recognition.continuous = false;
-  recognition.interimResults = true;
-  recognition.lang = language;
-  recognition.maxAlternatives = 1;
-
-  let finalText = "";
-  let lastCountedFinalText = "";
+  let activeController = null;
 
   function normalize(text) {
     return String(text)
@@ -31,7 +21,7 @@ function handleAndroidRecognition(language, targetPhrase, callbacks) {
     return text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   }
 
-  function countMatches(text, phrase) {
+  function countExactMatches(text, phrase) {
     const spoken = normalize(text);
     const target = normalize(phrase);
 
@@ -64,79 +54,269 @@ function handleAndroidRecognition(language, targetPhrase, callbacks) {
         .trim();
     }
 
-    return current;
+    return "";
   }
 
-  recognition.onresult = event => {
-    let interimText = "";
-    let latestFinalText = "";
-
-    /*
-      Android kabhi-kabhi resultIndex = 0 bhejkar
-      poora current transcript dobara bhejta hai.
-      Isliye sirf resultIndex par depend nahi karna.
-    */
-    for (let i = 0; i < event.results.length; i++) {
-      const result = event.results[i];
-      const text = result[0].transcript.trim();
-
-      if (!text) continue;
-
-      if (result.isFinal) {
-        latestFinalText =
-          (latestFinalText + " " + text).trim();
-      } else {
-        interimText =
-          (interimText + " " + text).trim();
-      }
+  function createVoiceRecognition(
+    language,
+    targetPhrase,
+    callbacks = {}
+  ) {
+    if (!SpeechRecognition) {
+      return null;
     }
 
-    if (latestFinalText) {
-      const newFinalText = getOnlyNewText(
-        latestFinalText,
-        lastCountedFinalText
-      );
+    const isAndroid =
+      /android/i.test(navigator.userAgent);
 
-      if (newFinalText) {
-        const added = countMatches(
-          newFinalText,
-          targetPhrase
+    if (activeController) {
+      activeController.stop();
+    }
+
+    const controller = {
+      recognition: null,
+      manuallyStopped: false,
+      restartTimer: null,
+      finalText: "",
+      countedText: "",
+      lastRawFinalText: "",
+      start: null,
+      stop: null
+    };
+
+    activeController = controller;
+
+    function processResult(event) {
+      let latestFinalText = "";
+      let interimText = "";
+
+      for (
+        let i = event.resultIndex;
+        i < event.results.length;
+        i++
+      ) {
+        const result = event.results[i];
+        const alternative = result[0];
+
+        if (!alternative) continue;
+
+        const text =
+          alternative.transcript.trim();
+
+        if (!text) continue;
+
+        /*
+          Android ke kuch versions interim result ko
+          isFinal=true ke saath bhejte hain, lekin confidence 0 hota hai.
+          Aise result ko final count nahi karna.
+        */
+        const isRealFinal =
+          result.isFinal &&
+          (
+            typeof alternative.confidence !== "number" ||
+            alternative.confidence > 0
+          );
+
+        if (isRealFinal) {
+          latestFinalText =
+            (
+              latestFinalText +
+              " " +
+              text
+            ).trim();
+        } else {
+          interimText =
+            (
+              interimText +
+              " " +
+              text
+            ).trim();
+        }
+      }
+
+      if (latestFinalText) {
+        const normalizedLatest =
+          normalize(latestFinalText);
+
+        /*
+          Android same final transcript ko dobara bhej sakta hai.
+          Sirf tab process hoga jab transcript genuinely extend ho.
+        */
+        const newText = getOnlyNewText(
+          normalizedLatest,
+          controller.countedText
         );
 
-        if (added > 0 && callbacks.onMatch) {
-          callbacks.onMatch(added);
+        if (newText) {
+          const added = countExactMatches(
+            newText,
+            targetPhrase
+          );
+
+          if (
+            added > 0 &&
+            typeof callbacks.onMatch === "function"
+          ) {
+            callbacks.onMatch(added);
+          }
+
+          controller.countedText =
+            (
+              controller.countedText +
+              " " +
+              newText
+            ).trim();
+
+          controller.finalText =
+            (
+              controller.finalText +
+              " " +
+              newText
+            ).trim();
         }
 
-        lastCountedFinalText =
-          (
-            lastCountedFinalText +
-            " " +
-            newFinalText
-          ).trim();
+        controller.lastRawFinalText =
+          normalizedLatest;
+      }
 
-        finalText =
-          (
-            finalText +
-            " " +
-            newFinalText
-          ).trim();
+      const visibleText =
+        (
+          controller.finalText +
+          " " +
+          interimText
+        ).trim();
+
+      if (
+        visibleText &&
+        typeof callbacks.onTranscript === "function"
+      ) {
+        callbacks.onTranscript(visibleText);
       }
     }
 
-    const visibleText =
-      (
-        finalText +
-        " " +
-        interimText
-      ).trim();
+    function createRecognition() {
+      const instance =
+        new SpeechRecognition();
 
-    if (
-      visibleText &&
-      callbacks.onTranscript
-    ) {
-      callbacks.onTranscript(visibleText);
+      /*
+        Android par one-shot recognition.
+        Restart module khud karega.
+      */
+      instance.continuous = !isAndroid;
+      instance.interimResults = true;
+      instance.lang = language;
+      instance.maxAlternatives = 1;
+
+      instance.onstart = () => {
+        if (
+          typeof callbacks.onStart === "function"
+        ) {
+          callbacks.onStart();
+        }
+      };
+
+      instance.onresult = processResult;
+
+      instance.onerror = event => {
+        if (
+          typeof callbacks.onError === "function"
+        ) {
+          callbacks.onError(event);
+        }
+
+        if (
+          event.error === "not-allowed" ||
+          event.error === "service-not-allowed"
+        ) {
+          controller.manuallyStopped = true;
+        }
+      };
+
+      instance.onend = () => {
+        if (
+          typeof callbacks.onEnd === "function"
+        ) {
+          callbacks.onEnd();
+        }
+
+        if (
+          isAndroid &&
+          !controller.manuallyStopped
+        ) {
+          clearTimeout(
+            controller.restartTimer
+          );
+
+          controller.restartTimer =
+            setTimeout(() => {
+              startRecognition();
+            }, 500);
+        }
+      };
+
+      return instance;
     }
-  };
 
-  return recognition;
-}
+    function startRecognition() {
+      if (controller.manuallyStopped) {
+        return;
+      }
+
+      if (!controller.recognition) {
+        controller.recognition =
+          createRecognition();
+      }
+
+      try {
+        controller.recognition.start();
+      } catch (error) {
+        clearTimeout(
+          controller.restartTimer
+        );
+
+        controller.restartTimer =
+          setTimeout(() => {
+            startRecognition();
+          }, 700);
+      }
+    }
+
+    controller.start = () => {
+      controller.manuallyStopped = false;
+      startRecognition();
+    };
+
+    controller.stop = () => {
+      controller.manuallyStopped = true;
+
+      clearTimeout(
+        controller.restartTimer
+      );
+
+      const instance =
+        controller.recognition;
+
+      controller.recognition = null;
+
+      if (instance) {
+        try {
+          instance.stop();
+        } catch (error) {
+          // Already stopped.
+        }
+      }
+
+      if (activeController === controller) {
+        activeController = null;
+      }
+    };
+
+    return controller;
+  }
+
+  window.createVoiceRecognition =
+    createVoiceRecognition;
+
+  window.voiceRecognitionSupported =
+    Boolean(SpeechRecognition);
+})();
