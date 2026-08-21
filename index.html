@@ -65,8 +65,6 @@
       --border: #24435f;
       --blue-soft: #123451;
       --gold-soft: #3b2b13;
-      --success-bg: #0d3522;
-      --error-bg: #451b1b;
       --shadow: 0 18px 50px rgba(0, 0, 0, 0.35);
       --shadow-soft: 0 8px 24px rgba(0, 0, 0, 0.25);
     }
@@ -3024,11 +3022,11 @@
 
         let confirmedFinalText = "";
         let sessionMatchCount = 0;
+        let androidSingleWordCounted = false;
 
         recognition =
           new SpeechRecognition();
 
-        // Android over-counting fix: false for Android (single phrase chunking), true for iOS/Desktop
         const isAndroid = /android/i.test(navigator.userAgent);
         recognition.continuous = !isAndroid;
 
@@ -3051,6 +3049,7 @@
             }
 
             setListening(true);
+            androidSingleWordCounted = false;
 
             setStatus(
               "Listening for: “" +
@@ -3105,30 +3104,44 @@
                 visibleText;
             }
 
-            const allFinalNormalized =
-              normalize(confirmedFinalText);
+            const isSingleWord = targetPhrase && targetPhrase.trim().split(/\s+/).length === 1;
 
-            const totalMatchesNow =
-              countPhraseMatches(
-                allFinalNormalized,
-                targetPhrase
-              );
+            if (isAndroid && isSingleWord) {
+              const matches = countPhraseMatches(normalize(visibleText), targetPhrase);
+              if (matches > 0 && !androidSingleWordCounted) {
+                androidSingleWordCounted = true;
+                registerCount(1);
+                setStatus(
+                  "Phrase detected. +1 counted.",
+                  "success"
+                );
+              }
+            } else {
+              const allFinalNormalized =
+                normalize(confirmedFinalText);
 
-            if (totalMatchesNow > sessionMatchCount) {
-              const added =
-                totalMatchesNow - sessionMatchCount;
+              const totalMatchesNow =
+                countPhraseMatches(
+                  allFinalNormalized,
+                  targetPhrase
+                );
 
-              sessionMatchCount =
-                totalMatchesNow;
+              if (totalMatchesNow > sessionMatchCount) {
+                const added =
+                  totalMatchesNow - sessionMatchCount;
 
-              registerCount(added);
+                sessionMatchCount =
+                  totalMatchesNow;
 
-              setStatus(
-                "Phrase detected. +" +
-                added +
-                " counted.",
-                "success"
-              );
+                registerCount(added);
+
+                setStatus(
+                  "Phrase detected. +" +
+                  added +
+                  " counted.",
+                  "success"
+                );
+              }
             }
           };
 
