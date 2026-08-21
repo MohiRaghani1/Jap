@@ -2,184 +2,309 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1"
-  />
-
-  <meta
-    name="description"
-    content="Learn how to use Naam Jap Voice Counter, microphone permission and Start Stop buttons."
-  />
-
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="Learn how to use Naam Jap Voice Counter, microphone permission and Start Stop buttons." />
   <meta name="robots" content="index, follow" />
-
-  <link
-    rel="canonical"
-    href="https://mohiraghani1.github.io/guides/voice-counter-guide.html"
-  />
-
-  <title>
-    How To Use Naam Jap Voice Counter
-  </title>
+  <meta name="theme-color" content="#102a43" />
+  <link rel="canonical" href="https://mohiraghani1.github.io/guides/voice-counter-guide.html" />
+  <link rel="manifest" href="../manifest.json" />
+  <link rel="icon" type="image/svg+xml" href="../icon-192.svg" />
+  <title>How To Use Naam Jap Voice Counter - Naam Jap Voice Counter</title>
 
   <style>
     :root {
-      --bg: #f8fafc;
-      --card: #ffffff;
-      --text: #111827;
+      --navy: #102a43;
+      --blue: #2878c8;
+      --blue-soft: #eaf4ff;
+      --gold: #c68b2c;
+      --gold-soft: #fff6df;
+      --cream: #fbf8f1;
+      --white: #ffffff;
+      --text: #17202a;
       --muted: #64748b;
-      --border: #e2e8f0;
-      --primary: #2563eb;
+      --border: #e5e7eb;
+      --shadow: 0 18px 50px rgba(16, 42, 67, 0.12);
+      --shadow-soft: 0 8px 24px rgba(16, 42, 67, 0.08);
+    }
+
+    body.dark {
+      --cream: #071b2f;
+      --white: #0d243b;
+      --text: #f1f5f9;
+      --muted: #b5c1cd;
+      --border: #24435f;
+      --blue-soft: #123451;
+      --gold-soft: #3b2b13;
+      --shadow: 0 18px 50px rgba(0, 0, 0, 0.35);
+      --shadow-soft: 0 8px 24px rgba(0, 0, 0, 0.25);
     }
 
     * {
       box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
     }
 
     body {
-      margin: 0;
-      padding: 20px;
-      background: var(--bg);
+      min-height: 100vh;
+      padding: 0 16px 28px;
+      background: var(--cream);
       color: var(--text);
-      font-family: system-ui, sans-serif;
-      line-height: 1.7;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.6;
     }
 
-    main {
-      max-width: 760px;
-      margin: auto;
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 18px;
-      padding: 28px;
+    a {
+      color: inherit;
     }
 
-    .nav {
+    button {
+      font: inherit;
+    }
+
+    button:focus-visible, a:focus-visible {
+      outline: 3px solid rgba(198, 139, 44, 0.45);
+      outline-offset: 2px;
+    }
+
+    .site-header {
+      width: 100%;
+      max-width: 1060px;
+      margin: 0 auto;
+      padding: 22px 0 16px;
+    }
+
+    .header-inner {
       display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-bottom: 24px;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
     }
 
-    .nav a {
-      color: var(--primary);
-      border: 1px solid var(--border);
-      padding: 6px 10px;
-      border-radius: 999px;
+    .brand {
+      color: var(--navy);
       text-decoration: none;
+    }
+
+    body.dark .brand {
+      color: #ffffff;
+    }
+
+    .brand-name {
+      display: block;
+      font-size: 1.05rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+    }
+
+    .brand-tagline {
+      display: block;
+      color: var(--muted);
+      font-size: 0.73rem;
+    }
+
+    .theme-btn {
+      min-height: 40px;
+      padding: 8px 12px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: var(--white);
+      color: var(--text);
+      cursor: pointer;
       font-size: 0.8rem;
     }
 
-    .nav a:hover {
-      background: var(--primary);
-      color: white;
+    .main-nav {
+      display: flex;
+      justify-content: center;
+      gap: 7px;
+      flex-wrap: wrap;
+      max-width: 1060px;
+      margin: 5px auto 22px;
     }
 
-    h1,
-    h2 {
-      color: var(--primary);
-      line-height: 1.3;
-    }
-
-    h2 {
-      margin-top: 25px;
-    }
-
-    p,
-    li {
+    .main-nav a {
+      padding: 7px 12px;
+      border-radius: 999px;
       color: var(--muted);
-      font-size: 0.95rem;
+      font-size: 0.8rem;
+      text-decoration: none;
     }
 
-    footer {
+    .main-nav a:hover,
+    .main-nav a.active {
+      background: var(--blue-soft);
+      color: var(--blue);
+    }
+
+    .content-card {
+      width: 100%;
       max-width: 760px;
-      margin: 18px auto 0;
-      text-align: center;
+      margin: 0 auto 30px;
+      padding: 30px;
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      background: var(--white);
+      box-shadow: var(--shadow);
+    }
+
+    h1, h2 {
+      color: var(--navy);
+      line-height: 1.3;
+      letter-spacing: -0.025em;
+    }
+
+    body.dark h1, body.dark h2 {
+      color: #ffffff;
+    }
+
+    h1 {
+      margin-bottom: 16px;
+      font-size: 1.6rem;
+    }
+
+    h2 {
+      margin-top: 24px;
+      margin-bottom: 8px;
+      font-size: 1.05rem;
+    }
+
+    p, li {
+      margin-bottom: 14px;
       color: var(--muted);
-      font-size: 0.8rem;
+      font-size: 0.92rem;
+      line-height: 1.65;
+    }
+
+    ol {
+      margin-left: 20px;
+      margin-bottom: 14px;
+    }
+
+    .site-footer {
+      width: 100%;
+      max-width: 1060px;
+      margin: 42px auto 0;
+      padding-top: 22px;
+      border-top: 1px solid var(--border);
+      text-align: center;
+    }
+
+    .footer-brand {
+      margin-bottom: 7px;
+      color: var(--navy);
+      font-weight: 800;
+    }
+
+    body.dark .footer-brand {
+      color: #ffffff;
+    }
+
+    .footer-text,
+    .footer-links {
+      color: var(--muted);
+      font-size: 0.77rem;
+    }
+
+    .footer-links {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin: 10px 0;
+    }
+
+    .footer-links a {
+      text-decoration: none;
+    }
+
+    .footer-links a:hover {
+      color: var(--blue);
     }
   </style>
 </head>
 
 <body>
-  <main>
-    <nav class="nav">
-      <a href="../index.html">Home</a>
-      <a href="../about.html">About Us</a>
-      <a href="../guides.html">Guides</a>
-      <a href="../privacy.html">Privacy Policy</a>
-      <a href="../terms.html">Terms</a>
-      <a href="../contact.html">Contact</a>
-    </nav>
+  <header class="site-header">
+    <div class="header-inner">
+      <a class="brand" href="../index.html">
+        <span class="brand-name">Naam Jap Voice Counter</span>
+        <span class="brand-tagline">Speak your mantra. Count your practice.</span>
+      </a>
+      <button id="themeToggle" class="theme-btn" type="button" aria-label="Toggle color theme">🌙 Dark</button>
+    </div>
+  </header>
 
-    <article>
-      <h1>
-        Voice Counter Ko Kaise Use Karein?
-      </h1>
+  <nav class="main-nav" aria-label="Main navigation">
+    <a href="../index.html">Home</a>
+    <a href="../guides.html">Guides</a>
+    <a href="../about.html">About</a>
+    <a href="../privacy.html">Privacy</a>
+    <a href="../terms.html">Terms</a>
+    <a href="../contact.html">Contact</a>
+  </nav>
+
+  <main>
+    <article class="content-card">
+      <h1>How to Use the Voice Counter</h1>
 
       <p>
-        Is voice counter ko use karne ke liye pehle input box mein woh
-        naam ya mantra likhein jise aap count karna chahte hain.
+        To use this voice counter effectively, first enter the name or mantra you wish to count into the designated input box[cite: 13].
       </p>
 
-      <h2>
-        Step-by-Step Method
-      </h2>
+      <h2>Step-by-Step Instructions</h2>
 
       <ol>
-        <li>
-          Jap ya naam input box mein likhein.
-        </li>
-
-        <li>
-          Multiple names ko comma se separate karein, jaise:
-          <strong>ram, raam</strong>.
-        </li>
-
-        <li>
-          Apni speech ke according Hindi ya English language select
-          karein.
-        </li>
-
-        <li>
-          <strong>Start Listening</strong> button press karein.
-        </li>
-
-        <li>
-          Microphone permission aaye toh browser mein permission allow
-          karein.
-        </li>
-
-        <li>
-          Naam ko clear voice mein bolna shuru karein.
-        </li>
-
-        <li>
-          Practice complete hone par <strong>Stop</strong> press karein.
-        </li>
+        <li>Type your desired Jap or name into the input box[cite: 13].</li>
+        <li>Separate multiple names using commas, such as: <strong>ram, raam</strong>[cite: 13].</li>
+        <li>Select either Hindi or English as your recognition language according to your speech[cite: 13].</li>
+        <li>Click the <strong>Start Listening</strong> button[cite: 13].</li>
+        <li>Allow microphone permissions when prompted by your browser[cite: 13].</li>
+        <li>Begin reciting your mantra in a clear voice[cite: 13].</li>
+        <li>Click the <strong>Stop</strong> button once your practice session is complete[cite: 13].</li>
       </ol>
 
-      <h2>
-        Reset Kaise Karein?
-      </h2>
+      <h2>How to Reset Your Count</h2>
 
       <p>
-        Agar aap count ko zero se start karna chahte hain, toh Reset
-        button press karein. Reset karne se saved count remove ho jaata
-        hai.
+        If you wish to restart your count from zero, click the Reset button[cite: 13]. Resetting permanently removes the currently saved session count[cite: 13].
       </p>
 
       <p>
-        Speech recognition browser aur device ke according different
-        behave kar sakta hai. Agar feature work na kare, updated Chrome
-        ya Edge browser try karein.
+        Speech recognition behavior may vary across different browsers and devices[cite: 13]. If you encounter issues, try using an updated version of Google Chrome or Microsoft Edge[cite: 13].
       </p>
     </article>
   </main>
 
-  <footer>
-    &copy; 2026 Naam Jap Voice Counter
+  <footer class="site-footer">
+    <div class="footer-brand">Naam Jap Voice Counter</div>
+    <div class="footer-text">A simple voice tool for mantra and Naam Jap practice.</div>
+    <div class="footer-links">
+      <a href="../index.html">Home</a>
+      <a href="../guides.html">Guides</a>
+      <a href="../about.html">About</a>
+      <a href="../privacy.html">Privacy</a>
+      <a href="../terms.html">Terms</a>
+      <a href="../contact.html">Contact</a>
+    </div>
+    <div class="footer-text">© 2026 Naam Jap Voice Counter</div>
   </footer>
+
+  <script>
+    const themeToggle = document.getElementById("themeToggle");
+    if (localStorage.getItem("japTheme") === "dark") {
+      document.body.classList.add("dark");
+      themeToggle.textContent = "☀️ Light";
+    }
+    themeToggle.addEventListener("click", () => {
+      const dark = document.body.classList.toggle("dark");
+      localStorage.setItem("japTheme", dark ? "dark" : "light");
+      themeToggle.textContent = dark ? "☀️ Light" : "🌙 Dark";
+    });
+  </script>
 </body>
 </html>
