@@ -3024,12 +3024,20 @@
 
         let confirmedFinalText = "";
         let sessionMatchCount = 0;
-        let lastProcessedIndex = 0;
+        let androidSingleWordCounted = false;
 
         recognition =
           new SpeechRecognition();
 
-        recognition.continuous = true;
+        const isAndroid = /android/i.test(navigator.userAgent);
+        const isSingleWord = targetPhrase && targetPhrase.trim().split(/\s+/).length === 1;
+
+        // SEPARATE LOGIC: False for Android 1-word (single shot burst), True for everything else
+        if (isAndroid && isSingleWord) {
+          recognition.continuous = false;
+        } else {
+          recognition.continuous = true;
+        }
 
         recognition.interimResults =
           true;
@@ -3050,9 +3058,7 @@
             }
 
             setListening(true);
-            confirmedFinalText = "";
-            sessionMatchCount = 0;
-            lastProcessedIndex = 0;
+            androidSingleWordCounted = false;
 
             setStatus(
               "Listening for: “" +
@@ -3071,8 +3077,7 @@
             }
 
             let interimText = "";
-            let newFinalText = "";
-            const isAndroid = /android/i.test(navigator.userAgent);
+            let latestFinalChunk = "";
 
             for (
               let i = event.resultIndex;
@@ -3086,21 +3091,14 @@
                 result[0].transcript.trim();
 
               if (result.isFinal) {
-                if (isAndroid) {
-                  if (i >= lastProcessedIndex) {
-                    newFinalText += " " + text;
-                    lastProcessedIndex = i + 1;
-                  }
-                } else {
-                  newFinalText += " " + text;
-                }
+                latestFinalChunk += " " + text;
               } else {
                 interimText += " " + text;
               }
             }
 
-            if (newFinalText.trim()) {
-              confirmedFinalText += " " + newFinalText.trim();
+            if (latestFinalChunk) {
+              confirmedFinalText += " " + latestFinalChunk;
             }
 
             const visibleText =
@@ -3115,22 +3113,19 @@
                 visibleText;
             }
 
-            if (isAndroid) {
-              if (newFinalText.trim()) {
-                const chunkNormalized = normalize(newFinalText);
-                const added = countPhraseMatches(chunkNormalized, targetPhrase);
-
-                if (added > 0) {
-                  registerCount(added);
-                  setStatus(
-                    "Phrase detected. +" +
-                    added +
-                    " counted.",
-                    "success"
-                  );
-                }
+            // SEPARATE HANDLING FOR ANDROID SINGLE WORD
+            if (isAndroid && isSingleWord) {
+              const matches = countPhraseMatches(normalize(visibleText), targetPhrase);
+              if (matches > 0 && !androidSingleWordCounted) {
+                androidSingleWordCounted = true;
+                registerCount(1);
+                setStatus(
+                  "Phrase detected. +1 counted.",
+                  "success"
+                );
               }
             } else {
+              // STANDARD MULTI-WORD & iPHONE LOGIC
               const allFinalNormalized =
                 normalize(confirmedFinalText);
 
