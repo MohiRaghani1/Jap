@@ -3036,7 +3036,7 @@
           true;
 
         recognition.interimResults =
-          true;
+          false;
 
         recognition.lang =
           languageSelect.value;
@@ -3143,9 +3143,6 @@
                 " counted.",
                 "success"
               );
-
-              finalText = "";
-              countedFinalText = "";
             } else {
               setStatus(
                 "Phrase not detected. Please repeat clearly.",
@@ -3195,9 +3192,6 @@
             }
 
             if (listening) {
-              finalText = "";
-              countedFinalText = "";
-
               try {
                 recognition.start();
               } catch (error) {
