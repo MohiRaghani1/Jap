@@ -5,6 +5,12 @@
     window.SpeechRecognition ||
     window.webkitSpeechRecognition;
 
+  const SINGLE_WORD_API =
+    "https://naam-jap-vosk.onrender.com/transcribe";
+
+  const SINGLE_WORD_CHUNK_MS = 3000;
+  const SINGLE_WORD_OVERLAP_MS = 500;
+
   let activeController = null;
 
   function normalize(text) {
@@ -57,11 +63,8 @@
     currentText,
     previousText
   ) {
-    const current =
-      normalize(currentText);
-
-    const previous =
-      normalize(previousText);
+    const current = normalize(currentText);
+    const previous = normalize(previousText);
 
     if (!current) {
       return "";
@@ -84,19 +87,378 @@
     return "";
   }
 
+  function getRecorderMimeType() {
+    const options = [
+      "audio/webm;codecs=opus",
+      "audio/webm",
+      "audio/ogg;codecs=opus",
+      "audio/mp4"
+    ];
+
+    for (const type of options) {
+      if (
+        window.MediaRecorder &&
+        MediaRecorder.isTypeSupported(type)
+      ) {
+        return type;
+      }
+    }
+
+    return "";
+  }
+
+  function createSingleWordBackendController(
+    language,
+    targetPhrase,
+    callbacks
+  ) {
+    const controller = {
+      stream: null,
+      recorder: null,
+      stopped: false,
+      started: false,
+      processing: false,
+      queue: [],
+      requestController: null,
+      chunks: [],
+      chunkTimer: null,
+      lastTranscript: "",
+      start: null,
+      stop: null
+    };
+
+    function reportError(message) {
+      if (
+        typeof callbacks.onError ===
+          "function"
+      ) {
+        callbacks.onError({
+          error: "backend-error",
+          message
+        });
+      }
+    }
+
+    function emitTranscript(text) {
+      if (
+        text &&
+        typeof callbacks.onTranscript ===
+          "function"
+      ) {
+        callbacks.onTranscript(text);
+      }
+    }
+
+    function emitMatch(amount) {
+      if (
+        amount > 0 &&
+        typeof callbacks.onMatch ===
+          "function"
+      ) {
+        callbacks.onMatch(amount);
+      }
+    }
+
+    async function uploadAudio(blob) {
+      if (
+        controller.stopped ||
+        !blob ||
+        blob.size < 1500
+      ) {
+        return;
+      }
+
+      const formData = new FormData();
+
+      formData.append(
+        "audio",
+        blob,
+        "single-word.webm"
+      );
+
+      formData.append(
+        "target",
+        targetPhrase
+      );
+
+      controller.requestController =
+        new AbortController();
+
+      const response = await fetch(
+        SINGLE_WORD_API,
+        {
+          method: "POST",
+          body: formData,
+          signal:
+            controller.requestController.signal
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(
+          "Backend response: " +
+          response.status
+        );
+      }
+
+      const result = await response.json();
+
+      if (controller.stopped) {
+        return;
+      }
+
+      const transcript = normalize(
+        result.transcript || ""
+      );
+
+      /*
+        Backend har complete audio chunk ka
+        independent count return karta hai.
+      */
+      const added = Number(result.count) || 0;
+
+      if (transcript) {
+        controller.lastTranscript =
+          (
+            controller.lastTranscript +
+            " " +
+            transcript
+          ).trim();
+
+        emitTranscript(
+          controller.lastTranscript
+        );
+      }
+
+      if (added > 0) {
+        emitMatch(added);
+      }
+    }
+
+    async function processQueue() {
+      if (
+        controller.processing ||
+        controller.stopped
+      ) {
+        return;
+      }
+
+      controller.processing = true;
+
+      while (
+        controller.queue.length > 0 &&
+        !controller.stopped
+      ) {
+        const blob =
+          controller.queue.shift();
+
+        try {
+          await uploadAudio(blob);
+        } catch (error) {
+          if (
+            error.name !== "AbortError" &&
+            !controller.stopped
+          ) {
+            reportError(
+              "Single-word voice server could not process audio."
+            );
+          }
+        }
+      }
+
+      controller.processing = false;
+    }
+
+    function queueBlob(blob) {
+      if (
+        controller.stopped ||
+        !blob ||
+        blob.size < 1500
+      ) {
+        return;
+      }
+
+      controller.queue.push(blob);
+      processQueue();
+    }
+
+    function startNewRecorder() {
+      if (
+        controller.stopped ||
+        !controller.stream
+      ) {
+        return;
+      }
+
+      const mimeType =
+        getRecorderMimeType();
+
+      try {
+        controller.recorder = mimeType
+          ? new MediaRecorder(
+              controller.stream,
+              { mimeType }
+            )
+          : new MediaRecorder(
+              controller.stream
+            );
+      } catch (error) {
+        reportError(
+          "Audio recording is not supported on this device."
+        );
+
+        return;
+      }
+
+      controller.chunks = [];
+
+      controller.recorder.ondataavailable =
+        event => {
+          if (
+            event.data &&
+            event.data.size > 0
+          ) {
+            controller.chunks.push(
+              event.data
+            );
+          }
+        };
+
+      controller.recorder.onstop = () => {
+        const mime =
+          controller.recorder &&
+          controller.recorder.mimeType
+            ? controller.recorder.mimeType
+            : "audio/webm";
+
+        const blob = new Blob(
+          controller.chunks,
+          { type: mime }
+        );
+
+        queueBlob(blob);
+
+        if (!controller.stopped) {
+          setTimeout(
+            startNewRecorder,
+            SINGLE_WORD_OVERLAP_MS
+          );
+        }
+      };
+
+      controller.recorder.start();
+
+      controller.chunkTimer =
+        setTimeout(() => {
+          if (
+            controller.recorder &&
+            controller.recorder.state ===
+              "recording"
+          ) {
+            controller.recorder.stop();
+          }
+        }, SINGLE_WORD_CHUNK_MS);
+    }
+
+    controller.start = async () => {
+      if (controller.started) {
+        return;
+      }
+
+      controller.started = true;
+      controller.stopped = false;
+
+      try {
+        controller.stream =
+          await navigator.mediaDevices.getUserMedia(
+            {
+              audio: {
+                channelCount: 1,
+                echoCancellation: true,
+                noiseSuppression: true,
+                autoGainControl: true
+              }
+            }
+          );
+
+        if (
+          typeof callbacks.onStart ===
+            "function"
+        ) {
+          callbacks.onStart();
+        }
+
+        startNewRecorder();
+      } catch (error) {
+        controller.stopped = true;
+
+        if (
+          typeof callbacks.onError ===
+            "function"
+        ) {
+          callbacks.onError({
+            error: "not-allowed",
+            message:
+              "Microphone permission was not allowed."
+          });
+        }
+      }
+    };
+
+    controller.stop = () => {
+      controller.stopped = true;
+
+      clearTimeout(
+        controller.chunkTimer
+      );
+
+      if (controller.requestController) {
+        controller.requestController.abort();
+      }
+
+      controller.queue = [];
+
+      if (
+        controller.recorder &&
+        controller.recorder.state ===
+          "recording"
+      ) {
+        try {
+          controller.recorder.stop();
+        } catch (error) {
+          // Recorder already stopped.
+        }
+      }
+
+      if (controller.stream) {
+        controller.stream
+          .getTracks()
+          .forEach(track => track.stop());
+      }
+
+      controller.stream = null;
+      controller.recorder = null;
+
+      if (
+        typeof callbacks.onEnd ===
+          "function"
+      ) {
+        callbacks.onEnd();
+      }
+
+      if (activeController === controller) {
+        activeController = null;
+      }
+    };
+
+    return controller;
+  }
+
   function createVoiceRecognition(
     language,
     targetPhrase,
     callbacks = {}
   ) {
-    if (!SpeechRecognition) {
-      return null;
-    }
-
-    if (activeController) {
-      activeController.stop();
-    }
-
     const isAndroid =
       /android/i.test(
         navigator.userAgent
@@ -105,22 +467,55 @@
     const singleWord =
       isSingleWord(targetPhrase);
 
+    /*
+      ANDROID + SINGLE WORD:
+      Browser SpeechRecognition use nahi hoga.
+      Direct mic audio Render/Vosk backend par jayega.
+    */
+    if (isAndroid && singleWord) {
+      if (
+        !navigator.mediaDevices ||
+        !navigator.mediaDevices.getUserMedia ||
+        !window.MediaRecorder
+      ) {
+        return null;
+      }
+
+      if (activeController) {
+        activeController.stop();
+      }
+
+      const backendController =
+        createSingleWordBackendController(
+          language,
+          targetPhrase,
+          callbacks
+        );
+
+      activeController =
+        backendController;
+
+      return backendController;
+    }
+
+    /*
+      Baaki:
+      iPhone, desktop, aur Android multi-word
+      ka current existing logic same.
+    */
+    if (!SpeechRecognition) {
+      return null;
+    }
+
+    if (activeController) {
+      activeController.stop();
+    }
+
     const controller = {
       recognition: null,
       stopped: false,
       restartTimer: null,
 
-      /*
-        Single-word state.
-      */
-      singleWordSeenText: "",
-      singleWordCountedText: "",
-
-      /*
-        Multi-word state.
-        Isko previous working behavior ke
-        liye separate rakha gaya hai.
-      */
       multiWordSeenText: "",
       multiWordCountedText: "",
 
@@ -140,77 +535,6 @@
       }
     }
 
-    /*
-      SINGLE-WORD ONLY
-    */
-    function processSingleWord(
-      currentText
-    ) {
-      const current =
-        normalize(currentText);
-
-      if (!current) {
-        return;
-      }
-
-      const previous =
-        controller.singleWordCountedText;
-
-      /*
-        Android result same ya shorter ho gaya
-        to duplicate/revision ignore.
-      */
-      if (
-        current === previous ||
-        (
-          previous &&
-          !current.startsWith(previous)
-        )
-      ) {
-        return;
-      }
-
-      let newText = current;
-
-      if (previous) {
-        newText =
-          current
-            .slice(previous.length)
-            .trim();
-      }
-
-      if (!newText) {
-        return;
-      }
-
-      /*
-        Example:
-        previous: "radha"
-        current:  "radha radha radha"
-        newText:  "radha radha"
-        result: +2
-      */
-      const added =
-        countMatches(
-          newText,
-          targetPhrase
-        );
-
-      if (added > 0) {
-        sendMatch(added);
-      }
-
-      controller.singleWordCountedText =
-        current;
-
-      controller.singleWordSeenText =
-        current;
-    }
-
-    /*
-      MULTI-WORD ONLY
-      Previous working logic preserved.
-    */
     function processMultiWord(
       currentText
     ) {
@@ -265,11 +589,6 @@
       let fullFinalText = "";
       let interimText = "";
 
-      /*
-        Android me resultIndex kabhi 0 se
-        poora result dobara de sakta hai,
-        isliye complete results list read karte hain.
-      */
       for (
         let i = 0;
         i < event.results.length;
@@ -309,40 +628,6 @@
         }
       }
 
-      /*
-        SINGLE-WORD:
-        Final aur interim dono transcript ko
-        candidate maana jayega, taaki slow speech
-        miss na ho.
-      */
-      if (singleWord) {
-        const candidate =
-          (
-            fullFinalText +
-            " " +
-            interimText
-          ).trim();
-
-        if (candidate) {
-          processSingleWord(candidate);
-
-          if (
-            typeof callbacks.onTranscript ===
-              "function"
-          ) {
-            callbacks.onTranscript(
-              normalize(candidate)
-            );
-          }
-        }
-
-        return;
-      }
-
-      /*
-        MULTI-WORD:
-        Existing final-result behavior.
-      */
       if (fullFinalText) {
         processMultiWord(
           fullFinalText
@@ -371,10 +656,6 @@
       const recognition =
         new SpeechRecognition();
 
-      /*
-        Android one-shot mode.
-        Android restart isi file me hoga.
-      */
       recognition.continuous =
         !isAndroid;
 
@@ -468,14 +749,7 @@
     }
 
     controller.start = () => {
-      controller.stopped =
-        false;
-
-      controller.singleWordSeenText =
-        "";
-
-      controller.singleWordCountedText =
-        "";
+      controller.stopped = false;
 
       controller.multiWordSeenText =
         "";
@@ -487,8 +761,7 @@
     };
 
     controller.stop = () => {
-      controller.stopped =
-        true;
+      controller.stopped = true;
 
       clearTimeout(
         controller.restartTimer
@@ -497,8 +770,7 @@
       const recognition =
         controller.recognition;
 
-      controller.recognition =
-        null;
+      controller.recognition = null;
 
       if (recognition) {
         try {
@@ -524,5 +796,12 @@
     createVoiceRecognition;
 
   window.voiceRecognitionSupported =
-    Boolean(SpeechRecognition);
+    Boolean(
+      SpeechRecognition ||
+      (
+        navigator.mediaDevices &&
+        navigator.mediaDevices.getUserMedia &&
+        window.MediaRecorder
+      )
+    );
 })();
