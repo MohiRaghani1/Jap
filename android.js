@@ -30,6 +30,15 @@
       .length === 1;
   }
 
+  /*
+   * Ye sirf mic-recognition side ke liye hai.
+   *
+   * Single word:
+   * Radha -> Radha Radha
+   *
+   * Multi-word:
+   * Jai Shri Radha -> Jai Shri Radha
+   */
   function getMicTarget(userPhrase) {
     const phrase = normalize(userPhrase);
 
@@ -37,19 +46,6 @@
       return "";
     }
 
-    /*
-     * IMPORTANT:
-     *
-     * Single word:
-     * User input: Radha
-     * Mic target:  Radha Radha
-     *
-     * Multi-word:
-     * User input: Jai Shri Radha
-     * Mic target:  Jai Shri Radha
-     *
-     * Multi-word ko bilkul double nahi karna.
-     */
     if (isSingleWord(phrase)) {
       return phrase + " " + phrase;
     }
@@ -57,7 +53,14 @@
     return phrase;
   }
 
-  function countSingleWordSpeech(
+  /*
+   * Latest recognized speech mein
+   * single word jitni baar aaya,
+   * utna hi count.
+   *
+   * Radha Radha Radha Radha = 4
+   */
+  function countSingleWord(
     speechText,
     userPhrase
   ) {
@@ -68,28 +71,28 @@
       return 0;
     }
 
-    const pattern = new RegExp(
+    const regex = new RegExp(
       "(^|\\s)" +
         escapeRegExp(word) +
         "(?=\\s|$)",
       "gi"
     );
 
-    /*
-     * Latest recognized speech mein
-     * jitni baar single word aaya hai,
-     * utna hi count hoga.
-     *
-     * Radha Radha Radha Radha = 4
-     *
-     * Pair nahi banana.
-     */
     return Array.from(
-      speech.matchAll(pattern)
+      speech.matchAll(regex)
     ).length;
   }
 
-  function countMultiWordSpeech(
+  /*
+   * Multi-word phrase ko original hi rakho.
+   *
+   * Jai Shri Radha =
+   * 1 complete match
+   *
+   * Jai Shri Radha Jai Shri Radha =
+   * 2 complete matches
+   */
+  function countMultiWord(
     speechText,
     userPhrase
   ) {
@@ -100,7 +103,7 @@
       return 0;
     }
 
-    const pattern = new RegExp(
+    const regex = new RegExp(
       "(^|\\s)" +
         escapeRegExp(phrase)
           .replace(/\\ +/g, "\\s+") +
@@ -108,68 +111,26 @@
       "gi"
     );
 
-    /*
-     * Multi-word phrase ko original hi rakho.
-     *
-     * Jai Shri Radha =
-     * 1 complete match
-     *
-     * Jai Shri Radha Jai Shri Radha =
-     * 2 complete matches
-     */
     return Array.from(
-      speech.matchAll(pattern)
+      speech.matchAll(regex)
     ).length;
   }
 
-  function countLatestSpeech(
+  function countRecognizedText(
     speechText,
     userPhrase
   ) {
     if (isSingleWord(userPhrase)) {
-      /*
-       * Single word:
-       * Latest speech mein direct word count.
-       * Mic target ka double yahan use nahi hoga.
-       */
-      return countSingleWordSpeech(
+      return countSingleWord(
         speechText,
         userPhrase
       );
     }
 
-    /*
-     * Multi-word:
-     * Original complete phrase count.
-     */
-    return countMultiWordSpeech(
+    return countMultiWord(
       speechText,
       userPhrase
     );
-  }
-
-  function getNewText(
-    currentText,
-    previousCountedText
-  ) {
-    const current = normalize(currentText);
-    const previous =
-      normalize(previousCountedText);
-
-    if (!current) {
-      return "";
-    }
-
-    if (
-      previous &&
-      current.startsWith(previous)
-    ) {
-      return current
-        .slice(previous.length)
-        .trim();
-    }
-
-    return current;
   }
 
   function createVoiceRecognition(
@@ -196,11 +157,6 @@
       activeController.stop();
     }
 
-    /*
-     * Sirf mic recognition ko target dene ke liye.
-     *
-     * Counting ke liye is target ko use nahi karna.
-     */
     const micTarget =
       getMicTarget(userPhrase);
 
@@ -209,14 +165,25 @@
       stopped: true,
       started: false,
       restartTimer: null,
+
+      /*
+       * Screen par dikhne wala complete
+       * latest final speech.
+       */
       finalText: "",
-      countedText: "",
+
+      /*
+       * Har recognition instance ke final
+       * result indexes yahan track honge.
+       */
+      processedIndexes: new Set(),
 
       start() {
         this.stopped = false;
         this.started = false;
         this.finalText = "";
-        this.countedText = "";
+        this.processedIndexes =
+          new Set();
 
         startRecognition();
       },
@@ -265,13 +232,11 @@
       recognition.maxAlternatives = 1;
 
       /*
-       * Mic ko internally target diya ja raha hai.
+       * Android/mic ke single-word issue
+       * ke liye internally prepared target.
        *
-       * Single:
-       * Radha Radha
-       *
-       * Multi-word:
-       * Original phrase
+       * Actual counting mein micTarget use
+       * nahi hota.
        */
       void micTarget;
 
@@ -287,12 +252,8 @@
       };
 
       recognition.onresult = event => {
-        let finalPart = "";
-        let interimPart = "";
+        let interimText = "";
 
-        /*
-         * Sirf changed result items read karo.
-         */
         for (
           let i = event.resultIndex;
           i < event.results.length;
@@ -305,92 +266,81 @@
             continue;
           }
 
-          const transcript =
+          const text =
             alternative.transcript.trim();
 
-          if (!transcript) {
+          if (!text) {
             continue;
           }
 
           if (result.isFinal) {
-            finalPart = (
-              finalPart +
+            /*
+             * Same final result dobara count
+             * nahi hoga.
+             */
+            if (
+              controller.processedIndexes
+                .has(i)
+            ) {
+              continue;
+            }
+
+            controller.processedIndexes.add(i);
+
+            /*
+             * Latest recognized speech ke
+             * original text ko preserve karo.
+             */
+            controller.finalText = (
+              controller.finalText +
               " " +
-              transcript
+              text
             ).trim();
-          } else {
-            interimPart = (
-              interimPart +
-              " " +
-              transcript
-            ).trim();
-          }
-        }
 
-        /*
-         * Final recognized speech ko save karo.
-         * Yehi Latest recognized speech mein dikhega.
-         */
-        if (finalPart) {
-          controller.finalText = (
-            controller.finalText +
-            " " +
-            finalPart
-          ).trim();
-
-          if (
-            typeof callbacks.onTranscript ===
-            "function"
-          ) {
-            callbacks.onTranscript(
-              controller.finalText
-            );
-          }
-
-          /*
-           * Sirf new final text count hoga.
-           */
-          const newText = getNewText(
-            controller.finalText,
-            controller.countedText
-          );
-
-          /*
-           * IMPORTANT:
-           *
-           * Counting latest speech ke
-           * original text se hogi.
-           *
-           * Single word ko yahan double nahi
-           * karna aur pair mein divide nahi karna.
-           */
-          const amount =
-            countLatestSpeech(
-              newText,
-              userPhrase
-            );
-
-          if (
-            amount > 0 &&
-            typeof callbacks.onMatch ===
+            if (
+              typeof callbacks.onTranscript ===
               "function"
-          ) {
-            callbacks.onMatch(amount);
-          }
+            ) {
+              callbacks.onTranscript(
+                controller.finalText
+              );
+            }
 
-          controller.countedText =
-            controller.finalText;
+            /*
+             * Sirf current final result count
+             * hoga, poora old transcript nahi.
+             */
+            const amount =
+              countRecognizedText(
+                text,
+                userPhrase
+              );
+
+            if (
+              amount > 0 &&
+              typeof callbacks.onMatch ===
+                "function"
+            ) {
+              callbacks.onMatch(amount);
+            }
+          } else {
+            interimText = (
+              interimText +
+              " " +
+              text
+            ).trim();
+          }
         }
 
         /*
-         * Interim speech sirf display hogi.
-         * Interim speech count nahi hogi.
+         * Interim text display only.
+         * Interim text count nahi hoga.
          */
-        if (interimPart) {
+        if (interimText) {
           const visibleText = (
             controller.finalText +
             " " +
-            interimPart
+            interimText
           ).trim();
 
           if (
@@ -431,10 +381,6 @@
           callbacks.onEnd();
         }
 
-        /*
-         * User ne Stop nahi dabaya ho,
-         * to mic recognition restart hoga.
-         */
         if (!controller.stopped) {
           clearTimeout(
             controller.restartTimer
@@ -455,14 +401,21 @@
         return;
       }
 
-      if (!controller.recognition) {
-        controller.recognition =
-          createRecognition();
-      }
+      /*
+       * Har automatic restart par naya
+       * recognition object banao.
+       *
+       * Isse purane indexes ke saath
+       * collision nahi hogi.
+       */
+      controller.recognition =
+        createRecognition();
 
       try {
         controller.recognition.start();
       } catch (error) {
+        controller.recognition = null;
+
         clearTimeout(
           controller.restartTimer
         );
