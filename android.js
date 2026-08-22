@@ -96,7 +96,7 @@
     function reportError(error, message) {
       if (
         typeof callbacks.onError ===
-        "function"
+          "function"
       ) {
         callbacks.onError({
           error,
@@ -109,7 +109,7 @@
       if (
         text &&
         typeof callbacks.onTranscript ===
-        "function"
+          "function"
       ) {
         callbacks.onTranscript(text);
       }
@@ -119,7 +119,7 @@
       if (
         amount > 0 &&
         typeof callbacks.onMatch ===
-        "function"
+          "function"
       ) {
         callbacks.onMatch(amount);
       }
@@ -151,14 +151,23 @@
       const mimeType =
         getRecorderMimeType();
 
-      controller.recorder = mimeType
-        ? new MediaRecorder(
-            controller.stream,
-            { mimeType }
-          )
-        : new MediaRecorder(
-            controller.stream
-          );
+      try {
+        controller.recorder = mimeType
+          ? new MediaRecorder(
+              controller.stream,
+              { mimeType }
+            )
+          : new MediaRecorder(
+              controller.stream
+            );
+      } catch (error) {
+        reportError(
+          "audio-error",
+          "Audio recording is not supported."
+        );
+
+        return;
+      }
 
       controller.recorder.ondataavailable =
         event => {
@@ -224,13 +233,10 @@
 
         const params =
           new URLSearchParams({
-            model: "nova-3",
-            language: language || "en-IN",
+            model: "nova-2",
             interim_results: "true",
             smart_format: "false",
-            punctuate: "false",
-            endpointing: "300",
-            keyterm: targetPhrase
+            punctuate: "false"
           });
 
         controller.socket = new WebSocket(
@@ -244,7 +250,12 @@
             controller.stream =
               await navigator.mediaDevices.getUserMedia(
                 {
-                  audio: true
+                  audio: {
+                    channelCount: 1,
+                    echoCancellation: true,
+                    noiseSuppression: true,
+                    autoGainControl: true
+                  }
                 }
               );
 
@@ -260,7 +271,7 @@
 
             if (
               typeof callbacks.onStart ===
-              "function"
+                "function"
             ) {
               callbacks.onStart();
             }
@@ -278,7 +289,10 @@
               JSON.parse(event.data)
             );
           } catch (error) {
-            console.error(error);
+            console.error(
+              "Deepgram message error:",
+              error
+            );
           }
         };
 
@@ -291,11 +305,30 @@
           }
         };
 
-        controller.socket.onclose = () => {
+        controller.socket.onclose = event => {
+          console.log(
+            "Deepgram closed:",
+            event.code,
+            event.reason
+          );
+
+          if (!controller.stopped) {
+            reportError(
+              "deepgram-error",
+              "Deepgram closed: " +
+                event.code +
+                (
+                  event.reason
+                    ? " - " + event.reason
+                    : ""
+                )
+            );
+          }
+
           if (
             !controller.stopped &&
             typeof callbacks.onEnd ===
-            "function"
+              "function"
           ) {
             callbacks.onEnd();
           }
@@ -306,7 +339,7 @@
         reportError(
           "deepgram-error",
           error.message ||
-          "Deepgram could not start."
+            "Deepgram could not start."
         );
       }
     };
@@ -341,7 +374,7 @@
 
       if (
         typeof callbacks.onEnd ===
-        "function"
+          "function"
       ) {
         callbacks.onEnd();
       }
@@ -367,6 +400,10 @@
     const singleWord =
       isSingleWord(targetPhrase);
 
+    /*
+      Android single-word:
+      Deepgram live streaming.
+    */
     if (isAndroid && singleWord) {
       if (
         !navigator.mediaDevices ||
@@ -392,6 +429,10 @@
       return controller;
     }
 
+    /*
+      Multi-word:
+      Old working Web Speech behavior unchanged.
+    */
     if (!SpeechRecognition) {
       return null;
     }
@@ -404,10 +445,8 @@
       recognition: null,
       stopped: false,
       restartTimer: null,
-
       multiWordSeenText: "",
       multiWordCountedText: "",
-
       start: null,
       stop: null
     };
@@ -418,7 +457,7 @@
       if (
         amount > 0 &&
         typeof callbacks.onMatch ===
-        "function"
+          "function"
       ) {
         callbacks.onMatch(amount);
       }
@@ -529,7 +568,7 @@
       if (
         visibleText &&
         typeof callbacks.onTranscript ===
-        "function"
+          "function"
       ) {
         callbacks.onTranscript(
           visibleText
@@ -541,6 +580,10 @@
       const recognition =
         new SpeechRecognition();
 
+      /*
+        OLD MULTI-WORD SETTINGS:
+        Android false, others true.
+      */
       recognition.continuous =
         !isAndroid;
 
@@ -553,7 +596,7 @@
       recognition.onstart = () => {
         if (
           typeof callbacks.onStart ===
-          "function"
+            "function"
         ) {
           callbacks.onStart();
         }
@@ -565,7 +608,7 @@
       recognition.onerror = event => {
         if (
           typeof callbacks.onError ===
-          "function"
+            "function"
         ) {
           callbacks.onError(event);
         }
@@ -573,7 +616,7 @@
         if (
           event.error === "not-allowed" ||
           event.error ===
-          "service-not-allowed"
+            "service-not-allowed"
         ) {
           controller.stopped = true;
         }
@@ -582,11 +625,15 @@
       recognition.onend = () => {
         if (
           typeof callbacks.onEnd ===
-          "function"
+            "function"
         ) {
           callbacks.onEnd();
         }
 
+        /*
+          OLD ANDROID MULTI-WORD RESTART:
+          exactly 350ms.
+        */
         if (
           isAndroid &&
           !controller.stopped
