@@ -19,12 +19,7 @@
 
   <link
     rel="canonical"
-    href="https://mohiraghani1.github.io/Jap/manual-counter.html"
-  />
-
-  <link
-    rel="manifest"
-    href="./manifest.json"
+    href="https://mohiraghani1.github.io/Jap/Manual-Counter.html"
   />
 
   <link
@@ -70,10 +65,6 @@
       box-sizing: border-box;
       margin: 0;
       padding: 0;
-    }
-
-    html {
-      scroll-behavior: smooth;
     }
 
     body {
@@ -415,7 +406,10 @@
 
     .manual-steps-grid {
       display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
+      grid-template-columns: repeat(
+        3,
+        minmax(0, 1fr)
+      );
       gap: 13px;
     }
 
@@ -459,7 +453,10 @@
 
     .manual-benefits {
       display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
+      grid-template-columns: repeat(
+        3,
+        minmax(0, 1fr)
+      );
       gap: 13px;
       margin-top: 16px;
     }
@@ -597,7 +594,7 @@
     <div class="header-inner">
       <a
         class="brand"
-        href="./index.html">
+        href="https://mohiraghani1.github.io/Jap/">
 
         <span class="brand-name">
           Naam Jap Voice Counter
@@ -622,25 +619,29 @@
     class="main-nav"
     aria-label="Main navigation">
 
-    <a href="./index.html">
+    <a
+      href="https://mohiraghani1.github.io/Jap/">
       Home
     </a>
 
     <a
       class="active"
-      href="./manual-counter.html">
+      href="https://mohiraghani1.github.io/Jap/Manual-Counter.html">
       Manual Counter
     </a>
 
-    <a href="./index.html#how-it-works">
+    <a
+      href="https://mohiraghani1.github.io/Jap/#how-it-works">
       How It Works
     </a>
 
-    <a href="./guides.html">
+    <a
+      href="https://mohiraghani1.github.io/Jap/guides.html">
       Guides
     </a>
 
-    <a href="./about.html">
+    <a
+      href="https://mohiraghani1.github.io/Jap/about.html">
       About
     </a>
   </nav>
@@ -742,9 +743,8 @@
 
         <div class="manual-note">
           <strong>Note:</strong>
-          Reset session sirf is page par current session ke manual
-          taps ko remove karega. Pehle ke voice ya manual counts safe
-          rahenge.
+          Reset session sirf current manual session ke taps ko remove
+          karega. Pehle ke voice ya manual counts safe rahenge.
         </div>
       </section>
 
@@ -860,31 +860,38 @@
     </div>
 
     <div class="footer-links">
-      <a href="./index.html">
+      <a
+        href="https://mohiraghani1.github.io/Jap/">
         Home
       </a>
 
-      <a href="./manual-counter.html">
+      <a
+        href="https://mohiraghani1.github.io/Jap/Manual-Counter.html">
         Manual Counter
       </a>
 
-      <a href="./guides.html">
+      <a
+        href="https://mohiraghani1.github.io/Jap/guides.html">
         Guides
       </a>
 
-      <a href="./about.html">
+      <a
+        href="https://mohiraghani1.github.io/Jap/about.html">
         About
       </a>
 
-      <a href="./privacy.html">
+      <a
+        href="https://mohiraghani1.github.io/Jap/privacy.html">
         Privacy
       </a>
 
-      <a href="./terms.html">
+      <a
+        href="https://mohiraghani1.github.io/Jap/terms.html">
         Terms
       </a>
 
-      <a href="./contact.html">
+      <a
+        href="https://mohiraghani1.github.io/Jap/contact.html">
         Contact
       </a>
     </div>
@@ -897,8 +904,11 @@
   <script>
     "use strict";
 
-    const HISTORY_KEY = "japHistory";
-    const THEME_KEY = "japTheme";
+    const HISTORY_KEY =
+      "japHistory";
+
+    const THEME_KEY =
+      "japTheme";
 
     const totalElement =
       document.getElementById(
@@ -981,7 +991,8 @@
     }
 
     function getTodayTotal() {
-      const history = readHistory();
+      const history =
+        readHistory();
 
       return Number(
         history[getTodayKey()]
@@ -999,11 +1010,15 @@
     }
 
     function addJap() {
-      const history = readHistory();
-      const today = getTodayKey();
+      const history =
+        readHistory();
+
+      const today =
+        getTodayKey();
 
       history[today] =
-        (Number(history[today]) || 0) + 1;
+        (Number(history[today]) || 0) +
+        1;
 
       manualSessionCount++;
 
@@ -1015,14 +1030,20 @@
     }
 
     function undoLast() {
-      if (manualSessionCount <= 0) {
+      if (
+        manualSessionCount <= 0
+      ) {
         feedbackElement.textContent =
           "Is session mein undo karne ke liye kuch nahi hai.";
+
         return;
       }
 
-      const history = readHistory();
-      const today = getTodayKey();
+      const history =
+        readHistory();
+
+      const today =
+        getTodayKey();
 
       const current =
         Number(history[today]) || 0;
@@ -1040,9 +1061,12 @@
     }
 
     function resetSession() {
-      if (manualSessionCount <= 0) {
+      if (
+        manualSessionCount <= 0
+      ) {
         feedbackElement.textContent =
           "Is session mein reset karne ke liye kuch nahi hai.";
+
         return;
       }
 
@@ -1057,8 +1081,11 @@
         return;
       }
 
-      const history = readHistory();
-      const today = getTodayKey();
+      const history =
+        readHistory();
+
+      const today =
+        getTodayKey();
 
       const current =
         Number(history[today]) || 0;
