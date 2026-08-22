@@ -1063,13 +1063,13 @@ function startVoiceRecognition() {
           }
 
           /*
-           * amount Latest recognized speech
-           * ke original text se aata hai.
+           * amount Android.js se latest
+           * recognized speech ke original text
+           * se aata hai.
            *
-           * Example:
            * Radha Radha Radha Radha = 4
            *
-           * Isko pair ya divide nahi karna.
+           * Is amount ko pair/divide nahi karna.
            */
           registerCount(amount);
 
@@ -1089,8 +1089,8 @@ function startVoiceRecognition() {
           }
 
           /*
-           * Latest recognized speech mein
-           * wahi original recognized text show hoga.
+           * Latest recognized speech ko
+           * exactly display karo.
            */
           transcriptBox.textContent =
             text;
@@ -1155,7 +1155,7 @@ function startVoiceRecognition() {
           }
 
           /*
-           * android.js automatic restart
+           * Automatic restart android.js
            * handle karega.
            */
         }
