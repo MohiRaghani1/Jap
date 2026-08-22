@@ -1,17 +1,19 @@
 "use strict";
 
 const STORAGE_KEYS = {
-  total: "japCount",
-  target: "japDailyTarget",
   history: "japHistory",
+  target: "japDailyTarget",
+  language: "japLanguage",
   sound: "japSound",
   vibration: "japVibration",
-  language: "japLanguage",
   theme: "japTheme",
   reminderEnabled: "japReminderEnabled",
   reminderTime: "japReminderTime",
   reminderLastShown: "japReminderLastShown"
 };
+
+const MANUAL_COUNTER_URL =
+  "https://mohiraghani1.github.io/Jap/Manual-Counter.html";
 
 const mantraInput =
   document.getElementById("mantraInput");
@@ -51,6 +53,12 @@ const supportPill =
 
 const themeToggle =
   document.getElementById("themeToggle");
+
+const tapFallback =
+  document.getElementById("tapFallback");
+
+const tapFallbackMessage =
+  document.getElementById("tapFallbackMessage");
 
 const targetInput =
   document.getElementById("targetInput");
@@ -127,12 +135,12 @@ let recognition = null;
 let listening = false;
 let totalCount = 0;
 let targetPhrase = "";
-let sessionId = 0;
-let audioContext = null;
+let recognitionSessionId = 0;
 let sessionStartedAt = null;
 let sessionCount = 0;
 let sessionInterval = null;
 let deferredInstallPrompt = null;
+let audioContext = null;
 
 function getTodayKey() {
   const date = new Date();
@@ -186,11 +194,15 @@ function readHistory() {
       ? JSON.parse(stored)
       : {};
 
-    return parsed &&
+    if (
+      parsed &&
       typeof parsed === "object" &&
       !Array.isArray(parsed)
-      ? parsed
-      : {};
+    ) {
+      return parsed;
+    }
+
+    return {};
   } catch (error) {
     return {};
   }
@@ -204,7 +216,7 @@ function saveHistory(history) {
     );
   } catch (error) {
     console.warn(
-      "Could not save history.",
+      "Unable to save jap history.",
       error
     );
   }
@@ -337,7 +349,10 @@ function getWeekData() {
       practiceDays++;
     }
 
-    bestDay = Math.max(bestDay, value);
+    bestDay = Math.max(
+      bestDay,
+      value
+    );
   }
 
   return {
@@ -367,8 +382,11 @@ function updateDailyTools() {
     " / " +
     target;
 
-  const streak = calculateStreak();
-  const best = calculateBestStreak();
+  const streak =
+    calculateStreak();
+
+  const best =
+    calculateBestStreak();
 
   streakValue.textContent =
     streak +
@@ -419,7 +437,8 @@ function renderHistory() {
     });
   }
 
-  const week = getWeekData();
+  const week =
+    getWeekData();
 
   weeklyReport.innerHTML =
     "<div class='report-row'>" +
@@ -442,54 +461,41 @@ function renderHistory() {
     "</div>";
 }
 
-function registerCount(amount) {
-  const safeAmount = Math.max(
-    0,
-    Number(amount) || 0
-  );
-
-  if (!safeAmount) {
+function showManualFallback(message) {
+  if (!tapFallback) {
     return;
   }
 
-  totalCount += safeAmount;
-  sessionCount += safeAmount;
+  tapFallback.hidden = false;
 
-  countDisplay.textContent =
-    String(totalCount);
-
-  sessionJap.textContent =
-    sessionCount + " jap";
-
-  addToToday(safeAmount);
-  updateDailyTools();
-  renderHistory();
-  playFeedback();
+  if (
+    message &&
+    tapFallbackMessage
+  ) {
+    tapFallbackMessage.textContent =
+      message;
+  }
 }
 
-function saveTarget() {
-  const target = Math.min(
-    100000,
-    Math.max(
-      1,
-      Number(targetInput.value) || 108
-    )
-  );
+function hideManualFallback() {
+  if (!tapFallback) {
+    return;
+  }
 
-  targetInput.value =
-    String(target);
+  tapFallback.hidden = true;
+}
 
-  localStorage.setItem(
-    STORAGE_KEYS.target,
-    String(target)
-  );
+function setStatus(
+  message,
+  type = ""
+) {
+  statusText.textContent = message;
+  statusText.className =
+    "status-message";
 
-  updateDailyTools();
-
-  setStatus(
-    "Daily target saved.",
-    "success"
-  );
+  if (type) {
+    statusText.classList.add(type);
+  }
 }
 
 function updatePhrase() {
@@ -519,19 +525,6 @@ function updatePhrase() {
   }
 }
 
-function setStatus(
-  message,
-  type = ""
-) {
-  statusText.textContent = message;
-  statusText.className =
-    "status-message";
-
-  if (type) {
-    statusText.classList.add(type);
-  }
-}
-
 function setListening(value) {
   listening = value;
 
@@ -554,8 +547,12 @@ function setListening(value) {
     startBtn.textContent =
       "🎙 Start Listening";
 
-    supportText.textContent =
-      "Microphone ready";
+    if (
+      window.voiceRecognitionSupported
+    ) {
+      supportText.textContent =
+        "Microphone ready";
+    }
 
     stopSessionTimer();
   }
@@ -644,7 +641,10 @@ function resetSession() {
 }
 
 function playSoftSound() {
-  if (!soundToggle.checked) {
+  if (
+    !soundToggle ||
+    !soundToggle.checked
+  ) {
     return;
   }
 
@@ -713,11 +713,62 @@ function playFeedback() {
   playSoftSound();
 
   if (
+    vibrationToggle &&
     vibrationToggle.checked &&
     "vibrate" in navigator
   ) {
     navigator.vibrate(120);
   }
+}
+
+function registerCount(amount) {
+  const safeAmount = Math.max(
+    0,
+    Number(amount) || 0
+  );
+
+  if (!safeAmount) {
+    return;
+  }
+
+  totalCount += safeAmount;
+  sessionCount += safeAmount;
+
+  countDisplay.textContent =
+    String(totalCount);
+
+  sessionJap.textContent =
+    sessionCount + " jap";
+
+  addToToday(safeAmount);
+  updateDailyTools();
+  renderHistory();
+  playFeedback();
+}
+
+function saveTarget() {
+  const target = Math.min(
+    100000,
+    Math.max(
+      1,
+      Number(targetInput.value) || 108
+    )
+  );
+
+  targetInput.value =
+    String(target);
+
+  localStorage.setItem(
+    STORAGE_KEYS.target,
+    String(target)
+  );
+
+  updateDailyTools();
+
+  setStatus(
+    "Daily target saved.",
+    "success"
+  );
 }
 
 function showUnsupported() {
@@ -730,17 +781,272 @@ function showUnsupported() {
 
   startBtn.disabled = true;
 
+  showManualFallback(
+    "Your browser does not support voice recognition. You can continue your practice with the manual counter."
+  );
+
   setStatus(
-    "Voice recognition unavailable. Open the manual counter below.",
+    "Voice recognition unavailable. Manual counter is available below.",
     "error"
   );
 }
 
-function resetDailyCount() {
-  sessionId++;
+function startVoiceRecognition() {
+  updatePhrase();
+
+  if (
+    !window.voiceRecognitionSupported
+  ) {
+    showUnsupported();
+    return;
+  }
+
+  if (!targetPhrase) {
+    setStatus(
+      "Enter your mantra or phrase first.",
+      "error"
+    );
+
+    mantraInput.focus();
+    return;
+  }
+
+  hideManualFallback();
+
+  if (listening) {
+    return;
+  }
+
+  const currentSession =
+    ++recognitionSessionId;
+
+  recognition =
+    window.createVoiceRecognition(
+      languageSelect.value,
+      targetPhrase,
+      {
+        onStart: () => {
+          if (
+            currentSession !==
+            recognitionSessionId
+          ) {
+            return;
+          }
+
+          hideManualFallback();
+          setListening(true);
+
+          setStatus(
+            "Listening for: “" +
+            mantraInput.value.trim() +
+            "”"
+          );
+        },
+
+        onMatch: amount => {
+          if (
+            currentSession !==
+              recognitionSessionId ||
+            !listening
+          ) {
+            return;
+          }
+
+          registerCount(amount);
+
+          setStatus(
+            "Phrase detected. +" +
+            amount +
+            " counted.",
+            "success"
+          );
+        },
+
+        onTranscript: text => {
+          if (
+            currentSession !==
+            recognitionSessionId
+          ) {
+            return;
+          }
+
+          transcriptBox.textContent =
+            text;
+        },
+
+        onError: event => {
+          if (
+            currentSession !==
+            recognitionSessionId
+          ) {
+            return;
+          }
+
+          console.warn(
+            "Voice recognition error:",
+            event
+          );
+
+          setListening(false);
+
+          const errorType =
+            event.error || "unknown";
+
+          if (
+            errorType ===
+              "not-allowed" ||
+            errorType ===
+              "service-not-allowed"
+          ) {
+            supportPill.classList.add(
+              "error"
+            );
+
+            showManualFallback(
+              "Microphone permission was not allowed. You can continue your practice with the manual counter."
+            );
+
+            setStatus(
+              "Microphone permission was not allowed.",
+              "error"
+            );
+
+            return;
+          }
+
+          if (
+            errorType ===
+            "no-speech"
+          ) {
+            showManualFallback(
+              "No speech was detected. You can try voice again or continue with the manual counter."
+            );
+
+            setStatus(
+              "No speech detected. Please try again.",
+              "error"
+            );
+
+            return;
+          }
+
+          if (
+            errorType ===
+            "audio-capture"
+          ) {
+            showManualFallback(
+              "No microphone was found or the microphone could not be accessed. Continue with the manual counter."
+            );
+
+            setStatus(
+              "Microphone could not be accessed.",
+              "error"
+            );
+
+            return;
+          }
+
+          if (
+            errorType ===
+            "network"
+          ) {
+            showManualFallback(
+              "Voice recognition needs a working network connection. You can continue with the manual counter."
+            );
+
+            setStatus(
+              "Voice recognition network error.",
+              "error"
+            );
+
+            return;
+          }
+
+          showManualFallback(
+            "Voice recognition stopped because of an error. You can continue with the manual counter."
+          );
+
+          setStatus(
+            "Voice recognition error: " +
+              errorType,
+            "error"
+          );
+        },
+
+        onEnd: () => {
+          if (
+            currentSession !==
+            recognitionSessionId
+          ) {
+            return;
+          }
+
+          recognition = null;
+          setListening(false);
+        }
+      }
+    );
+
+  if (!recognition) {
+    showUnsupported();
+    return;
+  }
+
+  try {
+    recognition.start();
+  } catch (error) {
+    console.warn(
+      "Recognition could not start.",
+      error
+    );
+
+    recognition = null;
+    setListening(false);
+
+    showManualFallback(
+      "Voice recognition could not start. You can continue your practice with the manual counter."
+    );
+
+    setStatus(
+      "Voice recognition could not start.",
+      "error"
+    );
+  }
+}
+
+function stopVoiceRecognition() {
+  recognitionSessionId++;
 
   if (recognition) {
-    recognition.stop();
+    try {
+      recognition.stop();
+    } catch (error) {
+      console.warn(
+        "Recognition stop failed.",
+        error
+      );
+    }
+
+    recognition = null;
+  }
+
+  setListening(false);
+  setStatus("Listening stopped.");
+}
+
+function resetDailyCount() {
+  recognitionSessionId++;
+
+  if (recognition) {
+    try {
+      recognition.stop();
+    } catch (error) {
+      console.warn(
+        "Recognition stop failed.",
+        error
+      );
+    }
+
     recognition = null;
   }
 
@@ -750,28 +1056,31 @@ function resetDailyCount() {
   countDisplay.textContent =
     "0";
 
-  const history = readHistory();
+  const history =
+    readHistory();
 
   history[getTodayKey()] = 0;
   saveHistory(history);
 
   updateDailyTools();
   renderHistory();
+  resetSession();
 
   transcriptBox.innerHTML =
-    '<span class="placeholder">' +
+    "<span class='placeholder'>" +
     "Your latest recognized speech will appear here." +
     "</span>";
-
-  resetSession();
 
   setStatus("Count reset.");
 }
 
 async function enableReminder() {
-  if (!("Notification" in window)) {
+  if (
+    !("Notification" in window)
+  ) {
     reminderStatus.textContent =
       "Notifications are not supported.";
+
     return;
   }
 
@@ -782,6 +1091,7 @@ async function enableReminder() {
     if (permission !== "granted") {
       reminderStatus.textContent =
         "Notification permission was not granted.";
+
       return;
     }
 
@@ -819,10 +1129,12 @@ function disableReminder() {
   reminderStatus.textContent =
     "Reminder is off.";
 
-  setStatus("Reminder disabled.");
+  setStatus(
+    "Reminder disabled."
+  );
 }
 
-function getReminderState() {
+function loadReminderSettings() {
   const enabled =
     localStorage.getItem(
       STORAGE_KEYS.reminderEnabled
@@ -833,7 +1145,8 @@ function getReminderState() {
       STORAGE_KEYS.reminderTime
     ) || "06:00";
 
-  reminderTime.value = time;
+  reminderTime.value =
+    time;
 
   reminderStatus.textContent =
     enabled
@@ -866,12 +1179,12 @@ async function showReminderIfDue() {
       "0"
     ) +
     ":" +
-    String(now.getMinutes()).padStart(
-      2,
-      "0"
-    );
+    String(
+      now.getMinutes()
+    ).padStart(2, "0");
 
-  const today = getTodayKey();
+  const today =
+    getTodayKey();
 
   const lastShown =
     localStorage.getItem(
@@ -931,6 +1244,40 @@ async function showReminderIfDue() {
   }
 }
 
+function loadTheme() {
+  const dark =
+    localStorage.getItem(
+      STORAGE_KEYS.theme
+    ) === "dark";
+
+  document.body.classList.toggle(
+    "dark",
+    dark
+  );
+
+  themeToggle.textContent =
+    dark
+      ? "☀️ Light"
+      : "🌙 Dark";
+}
+
+function toggleTheme() {
+  const dark =
+    document.body.classList.toggle(
+      "dark"
+    );
+
+  localStorage.setItem(
+    STORAGE_KEYS.theme,
+    dark ? "dark" : "light"
+  );
+
+  themeToggle.textContent =
+    dark
+      ? "☀️ Light"
+      : "🌙 Dark";
+}
+
 function loadSavedSettings() {
   const savedTarget =
     localStorage.getItem(
@@ -962,179 +1309,8 @@ function loadSavedSettings() {
       STORAGE_KEYS.vibration
     ) === "true";
 
-  if (
-    localStorage.getItem(
-      STORAGE_KEYS.theme
-    ) === "dark"
-  ) {
-    document.body.classList.add(
-      "dark"
-    );
-
-    themeToggle.textContent =
-      "☀️ Light";
-  }
-
-  getReminderState();
-}
-
-function startVoiceRecognition() {
-  updatePhrase();
-
-  if (!window.voiceRecognitionSupported) {
-    showUnsupported();
-    return;
-  }
-
-  if (!targetPhrase) {
-    setStatus(
-      "Enter your mantra or phrase first.",
-      "error"
-    );
-
-    mantraInput.focus();
-    return;
-  }
-
-  if (listening) {
-    return;
-  }
-
-  const currentSession =
-    ++sessionId;
-
-  recognition =
-    window.createVoiceRecognition(
-      languageSelect.value,
-      targetPhrase,
-      {
-        onStart: () => {
-          if (
-            currentSession !== sessionId
-          ) {
-            return;
-          }
-
-          setListening(true);
-
-          setStatus(
-            "Listening for: “" +
-            mantraInput.value.trim() +
-            "”"
-          );
-        },
-
-        onMatch: amount => {
-          if (
-            currentSession !== sessionId ||
-            !listening
-          ) {
-            return;
-          }
-
-          registerCount(amount);
-
-          setStatus(
-            "Phrase detected. +" +
-            amount +
-            " counted.",
-            "success"
-          );
-        },
-
-        onTranscript: text => {
-          if (
-            currentSession !== sessionId
-          ) {
-            return;
-          }
-
-          transcriptBox.textContent =
-            text;
-        },
-
-        onError: event => {
-          if (
-            currentSession !== sessionId
-          ) {
-            return;
-          }
-
-          console.warn(
-            "Voice recognition error:",
-            event
-          );
-
-          if (
-            event.error === "not-allowed" ||
-            event.error ===
-              "service-not-allowed"
-          ) {
-            setListening(false);
-
-            supportPill.classList.add(
-              "error"
-            );
-
-            setStatus(
-              "Microphone permission was not allowed.",
-              "error"
-            );
-          } else if (
-            event.error === "unsupported"
-          ) {
-            setListening(false);
-            showUnsupported();
-          } else if (
-            event.error === "no-speech"
-          ) {
-            setStatus(
-              "No speech detected. Please try again.",
-              "error"
-            );
-          } else {
-            setStatus(
-              "Voice recognition error: " +
-                (event.error || "unknown"),
-              "error"
-            );
-          }
-        },
-
-        onEnd: () => {
-          if (
-            currentSession !== sessionId
-          ) {
-            return;
-          }
-        }
-      }
-    );
-
-  if (!recognition) {
-    showUnsupported();
-    return;
-  }
-
-  recognition.start();
-}
-
-function stopVoiceRecognition() {
-  if (!recognition) {
-    return;
-  }
-
-  sessionId++;
-
-  const activeRecognition =
-    recognition;
-
-  recognition = null;
-
-  activeRecognition.stop();
-
-  setListening(false);
-  setStatus("Listening stopped.");
+  loadTheme();
+  loadReminderSettings();
 }
 
 mantraInput.addEventListener(
@@ -1192,23 +1368,23 @@ targetInput.addEventListener(
 historyToggle.addEventListener(
   "click",
   () => {
-    const willOpen =
+    const shouldOpen =
       historyContent.hidden;
 
     historyContent.hidden =
-      !willOpen;
+      !shouldOpen;
 
     historyToggle.textContent =
-      willOpen
+      shouldOpen
         ? "Hide history"
         : "View history";
 
     historyToggle.setAttribute(
       "aria-expanded",
-      String(willOpen)
+      String(shouldOpen)
     );
 
-    if (willOpen) {
+    if (shouldOpen) {
       renderHistory();
     }
   }
@@ -1270,22 +1446,7 @@ reminderTime.addEventListener(
 
 themeToggle.addEventListener(
   "click",
-  () => {
-    const dark =
-      document.body.classList.toggle(
-        "dark"
-      );
-
-    localStorage.setItem(
-      STORAGE_KEYS.theme,
-      dark ? "dark" : "light"
-    );
-
-    themeToggle.textContent =
-      dark
-        ? "☀️ Light"
-        : "🌙 Dark";
-  }
+  toggleTheme
 );
 
 window.addEventListener(
@@ -1295,13 +1456,21 @@ window.addEventListener(
       event.key ===
       STORAGE_KEYS.history
     ) {
-      totalCount = getTodayCount();
+      totalCount =
+        getTodayCount();
 
       countDisplay.textContent =
         String(totalCount);
 
       updateDailyTools();
       renderHistory();
+    }
+
+    if (
+      event.key ===
+      STORAGE_KEYS.theme
+    ) {
+      loadTheme();
     }
   }
 );
@@ -1311,8 +1480,12 @@ window.addEventListener(
   event => {
     event.preventDefault();
 
-    deferredInstallPrompt = event;
-    installArea.classList.add("visible");
+    deferredInstallPrompt =
+      event;
+
+    installArea.classList.add(
+      "visible"
+    );
   }
 );
 
@@ -1346,7 +1519,9 @@ installBtn.addEventListener(
   }
 );
 
-if ("serviceWorker" in navigator) {
+if (
+  "serviceWorker" in navigator
+) {
   window.addEventListener(
     "load",
     () => {
@@ -1362,7 +1537,8 @@ if ("serviceWorker" in navigator) {
   );
 }
 
-totalCount = getTodayCount();
+totalCount =
+  getTodayCount();
 
 countDisplay.textContent =
   String(totalCount);
@@ -1372,7 +1548,9 @@ updatePhrase();
 updateDailyTools();
 renderHistory();
 
-if (!window.voiceRecognitionSupported) {
+if (
+  !window.voiceRecognitionSupported
+) {
   showUnsupported();
 } else {
   supportText.textContent =
