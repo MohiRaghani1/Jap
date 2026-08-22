@@ -242,7 +242,7 @@
         controller.socket = new WebSocket(
           "wss://api.deepgram.com/v1/listen?" +
             params.toString(),
-          ["token", token]
+          ["bearer", token]
         );
 
         controller.socket.onopen = async () => {
