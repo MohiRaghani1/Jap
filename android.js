@@ -30,9 +30,35 @@
       .length === 1;
   }
 
-  function countMatches(text, phrase) {
-    const spoken = normalize(text);
-    const target = normalize(phrase);
+  function getBackendTarget(userPhrase) {
+    const phrase = normalize(userPhrase);
+
+    if (!phrase) {
+      return "";
+    }
+
+    /*
+     * User input:
+     * Radha
+     *
+     * Backend target:
+     * Radha Radha
+     *
+     * Multi-word phrase unchanged rahega.
+     */
+    if (isSingleWord(phrase)) {
+      return phrase + " " + phrase;
+    }
+
+    return phrase;
+  }
+
+  function countPhraseMatches(
+    spokenText,
+    targetPhrase
+  ) {
+    const spoken = normalize(spokenText);
+    const target = normalize(targetPhrase);
 
     if (!spoken || !target) {
       return 0;
@@ -53,9 +79,32 @@
     return matches ? matches.length : 0;
   }
 
+  function getOnlyNewText(
+    currentText,
+    previousText
+  ) {
+    const current = normalize(currentText);
+    const previous = normalize(previousText);
+
+    if (!current) {
+      return "";
+    }
+
+    if (
+      previous &&
+      current.startsWith(previous)
+    ) {
+      return current
+        .slice(previous.length)
+        .trim();
+    }
+
+    return current;
+  }
+
   function createVoiceRecognition(
     language,
-    targetPhrase,
+    userPhrase,
     callbacks = {}
   ) {
     if (!SpeechRecognition) {
@@ -66,7 +115,7 @@
         callbacks.onError({
           error: "unsupported",
           message:
-            "Is browser me Speech Recognition supported nahi hai."
+            "Speech recognition is not supported in this browser."
         });
       }
 
@@ -77,299 +126,56 @@
       activeController.stop();
     }
 
-    /*
-     * User ka input screen par original rahega.
-     *
-     * Example:
-     * Radha -> Radha
-     * Jai Shri Radha -> Jai Shri Radha
-     */
-    const userTarget =
-      normalize(targetPhrase);
-
-    /*
-     * Sirf backend counting ke liye:
-     *
-     * Single word:
-     * Radha -> Radha Radha
-     *
-     * Multi-word:
-     * Jai Shri Radha -> Jai Shri Radha
-     */
-    const backendTarget =
-      isSingleWord(userTarget)
-        ? `${userTarget} ${userTarget}`
-        : userTarget;
-
     const controller = {
       recognition: null,
       stopped: true,
       started: false,
       restartTimer: null,
+      finalText: "",
+      countedText: "",
 
-      /*
-       * Ab tak ka final transcript.
-       * Counting isi text se hogi.
-       */
-      finalTranscript: "",
+      start() {
+        this.stopped = false;
+        this.started = false;
+        this.finalText = "";
+        this.countedText = "";
 
-      /*
-       * Is text ko already count kiya gaya hai.
-       */
-      countedTranscript: "",
+        startRecognition();
+      },
 
-      start: null,
-      stop: null
-    };
+      stop() {
+        this.stopped = true;
+        this.started = false;
 
-    function emitStart() {
-      if (
-        typeof callbacks.onStart ===
-        "function"
-      ) {
-        callbacks.onStart();
-      }
-    }
+        clearTimeout(this.restartTimer);
 
-    function emitEnd() {
-      if (
-        typeof callbacks.onEnd ===
-        "function"
-      ) {
-        callbacks.onEnd();
-      }
-    }
+        const currentRecognition =
+          this.recognition;
 
-    function emitTranscript(text) {
-      if (
-        text &&
-        typeof callbacks.onTranscript ===
-        "function"
-      ) {
-        callbacks.onTranscript(text);
-      }
-    }
+        this.recognition = null;
 
-    function emitMatch(amount) {
-      if (
-        amount > 0 &&
-        typeof callbacks.onMatch ===
-        "function"
-      ) {
-        callbacks.onMatch(amount);
-      }
-    }
-
-    function emitError(error) {
-      if (
-        typeof callbacks.onError ===
-        "function"
-      ) {
-        callbacks.onError(error);
-      }
-    }
-
-    function getNewTranscript(
-      currentText,
-      previousText
-    ) {
-      const current = normalize(currentText);
-      const previous = normalize(previousText);
-
-      if (!current) {
-        return "";
-      }
-
-      if (
-        previous &&
-        current.startsWith(previous)
-      ) {
-        return current
-          .slice(previous.length)
-          .trim();
-      }
-
-      return current;
-    }
-
-    function processFinalTranscript(
-      currentTranscript
-    ) {
-      const current =
-        normalize(currentTranscript);
-
-      if (!current) {
-        return;
-      }
-
-      const newText = getNewTranscript(
-        current,
-        controller.countedTranscript
-      );
-
-      if (!newText) {
-        return;
-      }
-
-      /*
-       * Single word ke liye:
-       *
-       * target = Radha Radha
-       *
-       * Multi-word ke liye:
-       *
-       * target = original phrase
-       */
-      const amount = countMatches(
-        newText,
-        backendTarget
-      );
-
-      if (amount > 0) {
-        emitMatch(amount);
-      }
-
-      controller.countedTranscript =
-        current;
-    }
-
-    function handleResult(event) {
-      let newFinalPart = "";
-      let interimPart = "";
-
-      /*
-       * Sirf naye result items process kar rahe hain.
-       * Purane final results dobara process nahi honge.
-       */
-      for (
-        let i = event.resultIndex;
-        i < event.results.length;
-        i++
-      ) {
-        const result = event.results[i];
-        const alternative = result[0];
-
-        if (!alternative) {
-          continue;
+        if (currentRecognition) {
+          try {
+            currentRecognition.abort();
+          } catch (error) {
+            try {
+              currentRecognition.stop();
+            } catch (stopError) {}
+          }
         }
 
-        const text =
-          alternative.transcript.trim();
-
-        if (!text) {
-          continue;
-        }
-
-        if (result.isFinal) {
-          newFinalPart = (
-            newFinalPart +
-            " " +
-            text
-          ).trim();
-        } else {
-          interimPart = (
-            interimPart +
-            " " +
-            text
-          ).trim();
-        }
-      }
-
-      /*
-       * Final transcript ko save karo.
-       */
-      if (newFinalPart) {
-        controller.finalTranscript = (
-          controller.finalTranscript +
-          " " +
-          newFinalPart
-        ).trim();
-
-        /*
-         * Niche original speech text dikhana.
-         */
-        emitTranscript(
-          controller.finalTranscript
-        );
-
-        /*
-         * Backend target ke according count karna.
-         */
-        processFinalTranscript(
-          controller.finalTranscript
-        );
-      }
-
-      /*
-       * Interim text sirf display hoga.
-       * Interim text count nahi hoga.
-       */
-      if (interimPart) {
-        const visibleText = (
-          controller.finalTranscript +
-          " " +
-          interimPart
-        ).trim();
-
-        emitTranscript(visibleText);
-      }
-    }
-
-    function createRecognition() {
-      const recognition =
-        new SpeechRecognition();
-
-      recognition.continuous = true;
-      recognition.interimResults = true;
-      recognition.lang = language;
-      recognition.maxAlternatives = 1;
-
-      recognition.onstart = () => {
-        controller.started = true;
-        emitStart();
-      };
-
-      recognition.onresult =
-        handleResult;
-
-      recognition.onerror = event => {
-        emitError(event);
-
-        /*
-         * Permission error par automatic restart
-         * nahi karna.
-         */
         if (
-          event.error === "not-allowed" ||
-          event.error ===
-            "service-not-allowed"
+          typeof callbacks.onEnd ===
+          "function"
         ) {
-          controller.stopped = true;
+          callbacks.onEnd();
         }
-      };
 
-      recognition.onend = () => {
-        controller.started = false;
-        emitEnd();
-
-        /*
-         * Browser recognition ko automatically
-         * restart karna.
-         */
-        if (!controller.stopped) {
-          clearTimeout(
-            controller.restartTimer
-          );
-
-          controller.restartTimer =
-            setTimeout(() => {
-              startRecognition();
-            }, 350);
+        if (activeController === this) {
+          activeController = null;
         }
-      };
-
-      return recognition;
-    }
+      }
+    };
 
     function startRecognition() {
       if (controller.stopped) {
@@ -395,42 +201,181 @@
       }
     }
 
-    controller.start = () => {
-      controller.stopped = false;
-      controller.finalTranscript = "";
-      controller.countedTranscript = "";
-
-      startRecognition();
-    };
-
-    controller.stop = () => {
-      controller.stopped = true;
-
-      clearTimeout(
-        controller.restartTimer
-      );
-
+    function createRecognition() {
       const recognition =
-        controller.recognition;
+        new SpeechRecognition();
 
-      controller.recognition = null;
+      recognition.lang = language;
+      recognition.continuous = true;
+      recognition.interimResults = true;
+      recognition.maxAlternatives = 1;
 
-      if (recognition) {
-        try {
-          recognition.abort();
-        } catch (error) {
-          try {
-            recognition.stop();
-          } catch (stopError) {}
+      recognition.onstart = () => {
+        controller.started = true;
+
+        if (
+          typeof callbacks.onStart ===
+          "function"
+        ) {
+          callbacks.onStart();
         }
-      }
+      };
 
-      controller.started = false;
+      recognition.onresult = event => {
+        let finalPart = "";
+        let interimPart = "";
 
-      if (activeController === controller) {
-        activeController = null;
-      }
-    };
+        /*
+         * Sirf changed results process honge.
+         * Purane final results dobara count nahi honge.
+         */
+        for (
+          let i = event.resultIndex;
+          i < event.results.length;
+          i++
+        ) {
+          const result = event.results[i];
+          const alternative = result[0];
+
+          if (!alternative) {
+            continue;
+          }
+
+          const text =
+            alternative.transcript.trim();
+
+          if (!text) {
+            continue;
+          }
+
+          if (result.isFinal) {
+            finalPart = (
+              finalPart +
+              " " +
+              text
+            ).trim();
+          } else {
+            interimPart = (
+              interimPart +
+              " " +
+              text
+            ).trim();
+          }
+        }
+
+        /*
+         * Final transcript save karo.
+         */
+        if (finalPart) {
+          controller.finalText = (
+            controller.finalText +
+            " " +
+            finalPart
+          ).trim();
+
+          if (
+            typeof callbacks.onTranscript ===
+            "function"
+          ) {
+            callbacks.onTranscript(
+              controller.finalText
+            );
+          }
+
+          const newText =
+            getOnlyNewText(
+              controller.finalText,
+              controller.countedText
+            );
+
+          const backendTarget =
+            getBackendTarget(userPhrase);
+
+          const amount =
+            countPhraseMatches(
+              newText,
+              backendTarget
+            );
+
+          if (
+            amount > 0 &&
+            typeof callbacks.onMatch ===
+              "function"
+          ) {
+            callbacks.onMatch(amount);
+          }
+
+          controller.countedText =
+            controller.finalText;
+        }
+
+        /*
+         * Interim result sirf display hoga.
+         * Interim result count nahi hoga.
+         */
+        if (interimPart) {
+          const visibleText = (
+            controller.finalText +
+            " " +
+            interimPart
+          ).trim();
+
+          if (
+            typeof callbacks.onTranscript ===
+            "function"
+          ) {
+            callbacks.onTranscript(
+              visibleText
+            );
+          }
+        }
+      };
+
+      recognition.onerror = event => {
+        if (
+          typeof callbacks.onError ===
+          "function"
+        ) {
+          callbacks.onError(event);
+        }
+
+        if (
+          event.error === "not-allowed" ||
+          event.error ===
+            "service-not-allowed"
+        ) {
+          controller.stopped = true;
+        }
+      };
+
+      recognition.onend = () => {
+        controller.started = false;
+
+        if (
+          typeof callbacks.onEnd ===
+          "function"
+        ) {
+          callbacks.onEnd();
+        }
+
+        /*
+         * Stop button nahi dabaya gaya ho
+         * to recognition restart hota rahega.
+         */
+        if (!controller.stopped) {
+          clearTimeout(
+            controller.restartTimer
+          );
+
+          controller.restartTimer =
+            setTimeout(() => {
+              startRecognition();
+            }, 400);
+        }
+      };
+
+      return recognition;
+    }
 
     activeController = controller;
 
