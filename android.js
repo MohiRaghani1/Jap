@@ -231,15 +231,15 @@
           return;
         }
 
-        const params =
+const params =
   new URLSearchParams({
-    model: "nova-3",
+    model: "nova-2",
     language: "en-IN",
     interim_results: "true",
     smart_format: "false",
     punctuate: "false",
-    endpointing: "300",
-    keyterm: targetPhrase
+    endpointing: "150",
+    keywords: targetPhrase + ":8"
   });
 
         controller.socket = new WebSocket(
