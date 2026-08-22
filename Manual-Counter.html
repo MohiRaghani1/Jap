@@ -49,10 +49,7 @@
       --text: #17202a;
       --muted: #64748b;
       --border: #e5e7eb;
-      --success: #15803d;
-      --success-bg: #ecfdf3;
       --error: #b42318;
-      --error-bg: #fff1f0;
       --shadow: 0 18px 50px rgba(16, 42, 67, 0.12);
       --shadow-soft: 0 8px 24px rgba(16, 42, 67, 0.08);
     }
@@ -95,14 +92,11 @@
       line-height: 1.6;
     }
 
-    button,
-    input,
-    select {
+    button {
       font: inherit;
     }
 
     button:focus-visible,
-    input:focus-visible,
     a:focus-visible {
       outline: 3px solid rgba(198, 139, 44, 0.45);
       outline-offset: 3px;
@@ -337,9 +331,7 @@
       font-weight: 800;
       box-shadow: 0 9px 20px rgba(16, 42, 67, 0.2);
       touch-action: manipulation;
-      transition:
-        transform 0.15s ease,
-        opacity 0.15s ease;
+      transition: transform 0.15s ease;
     }
 
     .primary-action:hover {
@@ -386,36 +378,6 @@
       text-align: center;
     }
 
-    .info-grid {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 13px;
-      margin-top: 16px;
-    }
-
-    .info-card {
-      padding: 16px;
-      border: 1px solid var(--border);
-      border-radius: 15px;
-      background: var(--white);
-    }
-
-    .info-card h3 {
-      margin-bottom: 5px;
-      color: var(--navy);
-      font-size: 0.88rem;
-    }
-
-    body.dark .info-card h3 {
-      color: #ffffff;
-    }
-
-    .info-card p {
-      color: var(--muted);
-      font-size: 0.76rem;
-      line-height: 1.5;
-    }
-
     .manual-note {
       margin-top: 18px;
       padding: 14px 16px;
@@ -425,6 +387,104 @@
       color: var(--text);
       font-size: 0.79rem;
       line-height: 1.55;
+    }
+
+    .manual-how-section {
+      margin-top: 30px;
+    }
+
+    .manual-section-heading {
+      margin-bottom: 16px;
+    }
+
+    .manual-section-heading h2 {
+      margin: 4px 0 7px;
+      color: var(--navy);
+      font-size: 1.35rem;
+      line-height: 1.3;
+    }
+
+    body.dark .manual-section-heading h2 {
+      color: #ffffff;
+    }
+
+    .manual-section-heading p {
+      color: var(--muted);
+      font-size: 0.84rem;
+    }
+
+    .manual-steps-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 13px;
+    }
+
+    .manual-step-card {
+      padding: 18px;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      background: var(--white);
+      box-shadow: var(--shadow-soft);
+    }
+
+    .manual-step-number {
+      display: grid;
+      place-items: center;
+      width: 34px;
+      height: 34px;
+      margin-bottom: 12px;
+      border-radius: 10px;
+      background: var(--gold-soft);
+      color: var(--gold);
+      font-size: 0.85rem;
+      font-weight: 850;
+    }
+
+    .manual-step-card h3 {
+      margin-bottom: 6px;
+      color: var(--navy);
+      font-size: 0.92rem;
+      line-height: 1.35;
+    }
+
+    body.dark .manual-step-card h3 {
+      color: #ffffff;
+    }
+
+    .manual-step-card p {
+      color: var(--muted);
+      font-size: 0.78rem;
+      line-height: 1.55;
+    }
+
+    .manual-benefits {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 13px;
+      margin-top: 16px;
+    }
+
+    .benefit-card {
+      padding: 16px;
+      border: 1px solid var(--border);
+      border-radius: 15px;
+      background: var(--white);
+    }
+
+    .benefit-card h3 {
+      margin-bottom: 5px;
+      color: var(--navy);
+      font-size: 0.88rem;
+    }
+
+    body.dark .benefit-card h3 {
+      color: #ffffff;
+    }
+
+    .benefit-card p {
+      color: var(--muted);
+      font-size: 0.76rem;
+      line-height: 1.5;
     }
 
     .site-footer {
@@ -505,7 +565,8 @@
         border-radius: 20px;
       }
 
-      .info-grid {
+      .manual-steps-grid,
+      .manual-benefits {
         grid-template-columns: 1fr;
       }
     }
@@ -687,8 +748,75 @@
         </div>
       </section>
 
-      <section class="info-grid">
-        <article class="info-card">
+      <section
+        class="manual-how-section"
+        aria-labelledby="manual-how-title">
+
+        <div class="manual-section-heading">
+          <div class="section-kicker">
+            Simple process
+          </div>
+
+          <h2 id="manual-how-title">
+            How manual counting works
+          </h2>
+
+          <p>
+            Use the counter at your own pace with a simple and clear
+            three-step practice.
+          </p>
+        </div>
+
+        <div class="manual-steps-grid">
+          <article class="manual-step-card">
+            <div class="manual-step-number">
+              1
+            </div>
+
+            <h3>
+              Get comfortable
+            </h3>
+
+            <p>
+              Sit peacefully, hold your mala if you use one, and keep
+              the counter open.
+            </p>
+          </article>
+
+          <article class="manual-step-card">
+            <div class="manual-step-number">
+              2
+            </div>
+
+            <h3>
+              Repeat your Naam
+            </h3>
+
+            <p>
+              Say or remember your chosen Naam, then tap “Add 1 Jap”
+              once after each repetition.
+            </p>
+          </article>
+
+          <article class="manual-step-card">
+            <div class="manual-step-number">
+              3
+            </div>
+
+            <h3>
+              Correct mistakes easily
+            </h3>
+
+            <p>
+              If you tap by mistake, use “Undo last” to remove the
+              previous manual count.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <section class="manual-benefits">
+        <article class="benefit-card">
           <h3>
             One-tap counting
           </h3>
@@ -698,23 +826,24 @@
           </p>
         </article>
 
-        <article class="info-card">
+        <article class="benefit-card">
           <h3>
-            Undo available
+            Same daily total
           </h3>
 
           <p>
-            Galti se tap ho jaye to last manual count undo karein.
+            Manual aur voice count ek hi daily history mein save hote
+            hain.
           </p>
         </article>
 
-        <article class="info-card">
+        <article class="benefit-card">
           <h3>
-            Saved daily
+            Private by design
           </h3>
 
           <p>
-            Aaj ka count browser storage mein save hota rahega.
+            Count browser ke local storage mein save hota hai.
           </p>
         </article>
       </section>
