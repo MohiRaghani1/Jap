@@ -1063,13 +1063,11 @@ function startVoiceRecognition() {
           }
 
           /*
-           * amount Android.js se latest
-           * recognized speech ke original text
-           * se aata hai.
+           * Android.js se amount direct
+           * latest final result ke basis par
+           * aa raha hai.
            *
-           * Radha Radha Radha Radha = 4
-           *
-           * Is amount ko pair/divide nahi karna.
+           * Isko divide ya pair nahi karna.
            */
           registerCount(amount);
 
@@ -1089,8 +1087,8 @@ function startVoiceRecognition() {
           }
 
           /*
-           * Latest recognized speech ko
-           * exactly display karo.
+           * Latest recognized speech
+           * exactly screen par show karo.
            */
           transcriptBox.textContent =
             text;
@@ -1153,11 +1151,6 @@ function startVoiceRecognition() {
           ) {
             return;
           }
-
-          /*
-           * Automatic restart android.js
-           * handle karega.
-           */
         }
       }
     );
