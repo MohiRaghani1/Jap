@@ -1163,32 +1163,54 @@ startBtn.addEventListener(
               text;
           },
 
-          onError: event => {
-            if (
-              currentSession !== sessionId
-            ) {
-              return;
-            }
+onError: event => {
+  if (
+    currentSession !== sessionId
+  ) {
+    return;
+  }
 
-            if (
-              event.error === "not-allowed" ||
-              event.error ===
-                "service-not-allowed"
-            ) {
-              setListening(false);
+  console.log("Voice error:", event);
 
-              showTapFallback(
-                "Microphone permission was not allowed."
-              );
-            } else if (
-              event.error === "no-speech"
-            ) {
-              setStatus(
-                "No speech detected. Please try again.",
-                "error"
-              );
-            }
-          },
+  if (
+    event.error === "not-allowed" ||
+    event.error ===
+      "service-not-allowed"
+  ) {
+    setListening(false);
+
+    showTapFallback(
+      "Microphone permission was not allowed."
+    );
+  } else if (
+    event.error === "deepgram-error"
+  ) {
+    setListening(false);
+
+    setStatus(
+      event.message ||
+        "Deepgram could not start.",
+      "error"
+    );
+  } else if (
+    event.error === "audio-error"
+  ) {
+    setListening(false);
+
+    setStatus(
+      event.message ||
+        "Audio recording is not supported.",
+      "error"
+    );
+  } else if (
+    event.error === "no-speech"
+  ) {
+    setStatus(
+      "No speech detected. Please try again.",
+      "error"
+    );
+  }
+},
 
           onEnd: () => {
             if (
