@@ -294,42 +294,42 @@ controller.socket = new WebSocket(
         };
 
         controller.socket.onerror = () => {
-          if (!controller.stopped) {
-            reportError(
-              "deepgram-error",
-              "Deepgram connection failed."
-            );
-          }
-        };
+  if (!controller.stopped) {
+    reportError(
+      "assemblyai-error",
+      "AssemblyAI connection failed."
+    );
+  }
+};
 
         controller.socket.onclose = event => {
-          console.log(
-            "Deepgram closed:",
-            event.code,
-            event.reason
-          );
+  console.log(
+    "AssemblyAI closed:",
+    event.code,
+    event.reason
+  );
 
-          if (!controller.stopped) {
-            reportError(
-              "deepgram-error",
-              "Deepgram closed: " +
-                event.code +
-                (
-                  event.reason
-                    ? " - " + event.reason
-                    : ""
-                )
-            );
-          }
+  if (!controller.stopped) {
+    reportError(
+      "assemblyai-error",
+      "AssemblyAI closed: " +
+        event.code +
+        (
+          event.reason
+            ? " - " + event.reason
+            : ""
+        )
+    );
+  }
 
-          if (
-            !controller.stopped &&
-            typeof callbacks.onEnd ===
-              "function"
-          ) {
-            callbacks.onEnd();
-          }
-        };
+  if (
+    !controller.stopped &&
+    typeof callbacks.onEnd ===
+      "function"
+  ) {
+    callbacks.onEnd();
+  }
+};
       } catch (error) {
         controller.started = false;
 
