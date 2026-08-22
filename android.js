@@ -132,8 +132,13 @@
           return;
         }
 
-        // 2. Vosk Model Load kar rahe hain (model.tar.gz aapke server par hona chahiye)
-        const modelUrl = "model.tar.gz"; 
+        // 2. Vosk Model Load kar rahe hain (language ke hisaab se)
+        let modelUrl = "en-us.zip";
+        if (language === "hi-IN") {
+          modelUrl = "hi.zip";
+        } else if (language === "en-IN") {
+          modelUrl = "en-in.zip";
+        }
         const model = await window.Vosk.createModel(modelUrl);
 
         if (controller.stopped) {
