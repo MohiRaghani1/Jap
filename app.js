@@ -1183,13 +1183,13 @@ onError: event => {
       "Microphone permission was not allowed."
     );
   } else if (
-    event.error === "deepgram-error"
+    event.error === "assemblyai-error"
   ) {
     setListening(false);
 
     setStatus(
       event.message ||
-        "Deepgram could not start.",
+        "AssemblyAI could not start.",
       "error"
     );
   } else if (
