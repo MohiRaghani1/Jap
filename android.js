@@ -8,7 +8,7 @@
   let activeController = null;
 
   function normalize(text) {
-    return String(text)
+    return String(text || "")
       .toLowerCase()
       .normalize("NFC")
       .replace(/[।,.;:!?()[\]{}"'`]/g, " ")
@@ -43,44 +43,100 @@
 
     const regex = new RegExp(
       "(^|\\s)" +
-      pattern +
-      "(?=\\s|$)",
+        pattern +
+        "(?=\\s|$)",
       "gi"
     );
 
     const matches = spoken.match(regex);
 
-    return matches
-      ? matches.length
-      : 0;
+    return matches ? matches.length : 0;
   }
 
-  // --- NAYA VOSK CONTROLLER (Offline, Bina Render Server) ---
-  function createVoskController(
+  function createVoiceRecognition(
     language,
     targetPhrase,
-    callbacks
+    callbacks = {}
   ) {
+    if (!SpeechRecognition) {
+      if (
+        typeof callbacks.onError ===
+        "function"
+      ) {
+        callbacks.onError({
+          error: "unsupported",
+          message:
+            "Is browser me Speech Recognition supported nahi hai."
+        });
+      }
+
+      return null;
+    }
+
+    if (activeController) {
+      activeController.stop();
+    }
+
+    /*
+     * User ka input screen par original rahega.
+     *
+     * Example:
+     * Radha -> Radha
+     * Jai Shri Radha -> Jai Shri Radha
+     */
+    const userTarget =
+      normalize(targetPhrase);
+
+    /*
+     * Sirf backend counting ke liye:
+     *
+     * Single word:
+     * Radha -> Radha Radha
+     *
+     * Multi-word:
+     * Jai Shri Radha -> Jai Shri Radha
+     */
+    const backendTarget =
+      isSingleWord(userTarget)
+        ? `${userTarget} ${userTarget}`
+        : userTarget;
+
     const controller = {
-      stream: null,
-      audioContext: null,
-      processor: null,
-      recognizer: null,
-      stopped: false,
+      recognition: null,
+      stopped: true,
       started: false,
+      restartTimer: null,
+
+      /*
+       * Ab tak ka final transcript.
+       * Counting isi text se hogi.
+       */
+      finalTranscript: "",
+
+      /*
+       * Is text ko already count kiya gaya hai.
+       */
+      countedTranscript: "",
+
       start: null,
       stop: null
     };
 
-    function reportError(error, message) {
+    function emitStart() {
       if (
-        typeof callbacks.onError ===
-          "function"
+        typeof callbacks.onStart ===
+        "function"
       ) {
-        callbacks.onError({
-          error,
-          message
-        });
+        callbacks.onStart();
+      }
+    }
+
+    function emitEnd() {
+      if (
+        typeof callbacks.onEnd ===
+        "function"
+      ) {
+        callbacks.onEnd();
       }
     }
 
@@ -88,7 +144,7 @@
       if (
         text &&
         typeof callbacks.onTranscript ===
-          "function"
+        "function"
       ) {
         callbacks.onTranscript(text);
       }
@@ -98,258 +154,95 @@
       if (
         amount > 0 &&
         typeof callbacks.onMatch ===
-          "function"
+        "function"
       ) {
         callbacks.onMatch(amount);
       }
     }
 
-    controller.start = async () => {
-      if (controller.started) {
-        return;
-      }
-
-      controller.started = true;
-      controller.stopped = false;
-
-      try {
-        if (!window.Vosk) {
-          throw new Error("Vosk library not found. HTML me script lagao.");
-        }
-
-        // 1. Mic permission le rahe hain
-        controller.stream = await navigator.mediaDevices.getUserMedia({
-          audio: {
-            channelCount: 1,
-            echoCancellation: true,
-            noiseSuppression: true,
-            sampleRate: 16000
-          }
-        });
-
-        if (controller.stopped) {
-          controller.stream.getTracks().forEach(track => track.stop());
-          return;
-        }
-
-        // 2. Language ke hisaab se sahi zip file uthayega
-        let modelUrl = "en-us.zip";
-        if (language === "hi-IN") {
-          modelUrl = "hi.zip";
-        } else if (language === "en-IN") {
-          modelUrl = "en-in.zip";
-        }
-
-        const model = await window.Vosk.createModel(modelUrl);
-
-        if (controller.stopped) {
-          model.free();
-          return;
-        }
-
-        controller.recognizer = new model.KaldiRecognizer(16000);
-
-        if (typeof callbacks.onStart === "function") {
-          callbacks.onStart();
-        }
-
-        // 3. Audio ko process kar rahe hain
-        controller.audioContext = new AudioContext({ sampleRate: 16000 });
-        const source = controller.audioContext.createMediaStreamSource(controller.stream);
-        controller.processor = controller.audioContext.createScriptProcessor(4096, 1, 1);
-
-        controller.processor.onaudioprocess = (event) => {
-          if (controller.stopped) return;
-
-          try {
-            const audioData = event.inputBuffer.getChannelData(0);
-            const isFinal = controller.recognizer.acceptWaveform(audioData);
-
-            let transcript = "";
-
-            if (isFinal) {
-              transcript = normalize(controller.recognizer.result().text);
-            } else {
-              transcript = normalize(controller.recognizer.partialResult().partial);
-            }
-
-            if (transcript) {
-              emitTranscript(transcript);
-
-              if (isFinal) {
-                const added = countMatches(transcript, targetPhrase);
-                if (added > 0) {
-                  emitMatch(added);
-                }
-              }
-            }
-          } catch (err) {
-            console.error("Vosk processing error:", err);
-          }
-        };
-
-        source.connect(controller.processor);
-        controller.processor.connect(controller.audioContext.destination);
-
-      } catch (error) {
-        controller.started = false;
-        reportError(
-          "vosk-error",
-          error.message || "Vosk start nahi ho paya."
-        );
-      }
-    };
-
-    controller.stop = () => {
-      controller.stopped = true;
-
-      if (controller.processor) {
-        try { controller.processor.disconnect(); } catch (e) {}
-      }
-      if (controller.audioContext) {
-        try { controller.audioContext.close(); } catch (e) {}
-      }
-      if (controller.stream) {
-        controller.stream.getTracks().forEach(track => track.stop());
-      }
-      if (controller.recognizer) {
-        try { controller.recognizer.free(); } catch (e) {}
-      }
-
-      if (typeof callbacks.onEnd === "function") {
-        callbacks.onEnd();
-      }
-
-      if (activeController === controller) {
-        activeController = null;
-      }
-    };
-
-    return controller;
-  }
-
-  function createVoiceRecognition(
-    language,
-    targetPhrase,
-    callbacks = {}
-  ) {
-    const isAndroid =
-      /android/i.test(
-        navigator.userAgent
-      );
-
-    const singleWord =
-      isSingleWord(targetPhrase);
-
-    if (isAndroid && singleWord) {
+    function emitError(error) {
       if (
-        !navigator.mediaDevices ||
-        !navigator.mediaDevices.getUserMedia
+        typeof callbacks.onError ===
+        "function"
       ) {
-        return null;
-      }
-
-      if (activeController) {
-        activeController.stop();
-      }
-
-      const controller =
-        createVoskController(
-          language,
-          targetPhrase,
-          callbacks
-        );
-
-      activeController = controller;
-
-      return controller;
-    }
-
-    if (!SpeechRecognition) {
-      return null;
-    }
-
-    if (activeController) {
-      activeController.stop();
-    }
-
-    const controller = {
-      recognition: null,
-      stopped: false,
-      restartTimer: null,
-      multiWordSeenText: "",
-      multiWordCountedText: "",
-      start: null,
-      stop: null
-    };
-
-    activeController = controller;
-
-    function sendMatch(amount) {
-      if (
-        amount > 0 &&
-        typeof callbacks.onMatch ===
-          "function"
-      ) {
-        callbacks.onMatch(amount);
+        callbacks.onError(error);
       }
     }
 
-    function processMultiWord(
-      currentText
+    function getNewTranscript(
+      currentText,
+      previousText
     ) {
-      const current =
-        normalize(currentText);
-
-      const previous =
-        controller.multiWordCountedText;
+      const current = normalize(currentText);
+      const previous = normalize(previousText);
 
       if (!current) {
-        return;
+        return "";
       }
-
-      if (current === previous) {
-        return;
-      }
-
-      let newText = current;
 
       if (
         previous &&
         current.startsWith(previous)
       ) {
-        newText =
-          current
-            .slice(previous.length)
-            .trim();
+        return current
+          .slice(previous.length)
+          .trim();
       }
+
+      return current;
+    }
+
+    function processFinalTranscript(
+      currentTranscript
+    ) {
+      const current =
+        normalize(currentTranscript);
+
+      if (!current) {
+        return;
+      }
+
+      const newText = getNewTranscript(
+        current,
+        controller.countedTranscript
+      );
 
       if (!newText) {
         return;
       }
 
-      const added = countMatches(
+      /*
+       * Single word ke liye:
+       *
+       * target = Radha Radha
+       *
+       * Multi-word ke liye:
+       *
+       * target = original phrase
+       */
+      const amount = countMatches(
         newText,
-        targetPhrase
+        backendTarget
       );
 
-      if (added > 0) {
-        sendMatch(added);
+      if (amount > 0) {
+        emitMatch(amount);
       }
 
-      controller.multiWordCountedText =
-        current;
-
-      controller.multiWordSeenText =
+      controller.countedTranscript =
         current;
     }
 
     function handleResult(event) {
-      let fullFinalText = "";
-      let interimText = "";
+      let newFinalPart = "";
+      let interimPart = "";
 
+      /*
+       * Sirf naye result items process kar rahe hain.
+       * Purane final results dobara process nahi honge.
+       */
       for (
-        let i = 0;
+        let i = event.resultIndex;
         i < event.results.length;
         i++
       ) {
@@ -368,79 +261,84 @@
         }
 
         if (result.isFinal) {
-          fullFinalText =
-            (
-              fullFinalText +
-              " " +
-              text
-            ).trim();
+          newFinalPart = (
+            newFinalPart +
+            " " +
+            text
+          ).trim();
         } else {
-          interimText =
-            (
-              interimText +
-              " " +
-              text
-            ).trim();
+          interimPart = (
+            interimPart +
+            " " +
+            text
+          ).trim();
         }
       }
 
-      if (fullFinalText) {
-        processMultiWord(
-          fullFinalText
+      /*
+       * Final transcript ko save karo.
+       */
+      if (newFinalPart) {
+        controller.finalTranscript = (
+          controller.finalTranscript +
+          " " +
+          newFinalPart
+        ).trim();
+
+        /*
+         * Niche original speech text dikhana.
+         */
+        emitTranscript(
+          controller.finalTranscript
+        );
+
+        /*
+         * Backend target ke according count karna.
+         */
+        processFinalTranscript(
+          controller.finalTranscript
         );
       }
 
-      const visibleText =
-        (
-          controller.multiWordSeenText +
+      /*
+       * Interim text sirf display hoga.
+       * Interim text count nahi hoga.
+       */
+      if (interimPart) {
+        const visibleText = (
+          controller.finalTranscript +
           " " +
-          interimText
+          interimPart
         ).trim();
 
-      if (
-        visibleText &&
-        typeof callbacks.onTranscript ===
-          "function"
-      ) {
-        callbacks.onTranscript(
-          visibleText
-        );
+        emitTranscript(visibleText);
       }
     }
 
-    function makeRecognition() {
+    function createRecognition() {
       const recognition =
         new SpeechRecognition();
 
-      recognition.continuous =
-        !isAndroid;
-
-      recognition.interimResults =
-        true;
-
+      recognition.continuous = true;
+      recognition.interimResults = true;
       recognition.lang = language;
       recognition.maxAlternatives = 1;
 
       recognition.onstart = () => {
-        if (
-          typeof callbacks.onStart ===
-            "function"
-        ) {
-          callbacks.onStart();
-        }
+        controller.started = true;
+        emitStart();
       };
 
       recognition.onresult =
         handleResult;
 
       recognition.onerror = event => {
-        if (
-          typeof callbacks.onError ===
-            "function"
-        ) {
-          callbacks.onError(event);
-        }
+        emitError(event);
 
+        /*
+         * Permission error par automatic restart
+         * nahi karna.
+         */
         if (
           event.error === "not-allowed" ||
           event.error ===
@@ -451,17 +349,14 @@
       };
 
       recognition.onend = () => {
-        if (
-          typeof callbacks.onEnd ===
-            "function"
-        ) {
-          callbacks.onEnd();
-        }
+        controller.started = false;
+        emitEnd();
 
-        if (
-          isAndroid &&
-          !controller.stopped
-        ) {
+        /*
+         * Browser recognition ko automatically
+         * restart karna.
+         */
+        if (!controller.stopped) {
           clearTimeout(
             controller.restartTimer
           );
@@ -483,7 +378,7 @@
 
       if (!controller.recognition) {
         controller.recognition =
-          makeRecognition();
+          createRecognition();
       }
 
       try {
@@ -502,12 +397,8 @@
 
     controller.start = () => {
       controller.stopped = false;
-
-      controller.multiWordSeenText =
-        "";
-
-      controller.multiWordCountedText =
-        "";
+      controller.finalTranscript = "";
+      controller.countedTranscript = "";
 
       startRecognition();
     };
@@ -530,16 +421,18 @@
         } catch (error) {
           try {
             recognition.stop();
-          } catch (stopError) {
-            // Already stopped.
-          }
+          } catch (stopError) {}
         }
       }
+
+      controller.started = false;
 
       if (activeController === controller) {
         activeController = null;
       }
     };
+
+    activeController = controller;
 
     return controller;
   }
@@ -548,11 +441,5 @@
     createVoiceRecognition;
 
   window.voiceRecognitionSupported =
-    Boolean(
-      SpeechRecognition ||
-      (
-        navigator.mediaDevices &&
-        navigator.mediaDevices.getUserMedia
-      )
-    );
+    Boolean(SpeechRecognition);
 })();
