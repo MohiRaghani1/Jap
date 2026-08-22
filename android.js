@@ -5,11 +5,8 @@
     window.SpeechRecognition ||
     window.webkitSpeechRecognition;
 
-  const SINGLE_WORD_API =
-    "https://naam-jap-vosk.onrender.com/transcribe";
-
-  const SINGLE_WORD_CHUNK_MS = 3000;
-  const SINGLE_WORD_OVERLAP_MS = 500;
+  const RENDER_URL =
+    "https://naam-jap-vosk.onrender.com";
 
   let activeController = null;
 
@@ -56,35 +53,9 @@
 
     const matches = spoken.match(regex);
 
-    return matches ? matches.length : 0;
-  }
-
-  function getNewText(
-    currentText,
-    previousText
-  ) {
-    const current = normalize(currentText);
-    const previous = normalize(previousText);
-
-    if (!current) {
-      return "";
-    }
-
-    if (!previous) {
-      return current;
-    }
-
-    if (current === previous) {
-      return "";
-    }
-
-    if (current.startsWith(previous)) {
-      return current
-        .slice(previous.length)
-        .trim();
-    }
-
-    return "";
+    return matches
+      ? matches.length
+      : 0;
   }
 
   function getRecorderMimeType() {
@@ -107,7 +78,7 @@
     return "";
   }
 
-  function createSingleWordBackendController(
+  function createDeepgramController(
     language,
     targetPhrase,
     callbacks
@@ -115,25 +86,20 @@
     const controller = {
       stream: null,
       recorder: null,
+      socket: null,
       stopped: false,
       started: false,
-      processing: false,
-      queue: [],
-      requestController: null,
-      chunks: [],
-      chunkTimer: null,
-      lastTranscript: "",
       start: null,
       stop: null
     };
 
-    function reportError(message) {
+    function reportError(error, message) {
       if (
         typeof callbacks.onError ===
-          "function"
+        "function"
       ) {
         callbacks.onError({
-          error: "backend-error",
+          error,
           message
         });
       }
@@ -143,7 +109,7 @@
       if (
         text &&
         typeof callbacks.onTranscript ===
-          "function"
+        "function"
       ) {
         callbacks.onTranscript(text);
       }
@@ -153,145 +119,38 @@
       if (
         amount > 0 &&
         typeof callbacks.onMatch ===
-          "function"
+        "function"
       ) {
         callbacks.onMatch(amount);
       }
     }
 
-    async function uploadAudio(blob) {
-      if (
-        controller.stopped ||
-        !blob ||
-        blob.size < 1500
-      ) {
-        return;
-      }
-
-      const formData = new FormData();
-
-      formData.append(
-        "audio",
-        blob,
-        "single-word.webm"
-      );
-
-      formData.append(
-        "target",
-        targetPhrase
-      );
-
-      controller.requestController =
-        new AbortController();
-
+    async function getTemporaryToken() {
       const response = await fetch(
-        SINGLE_WORD_API,
-        {
-          method: "POST",
-          body: formData,
-          signal:
-            controller.requestController.signal
-        }
+        RENDER_URL + "/deepgram-token"
       );
 
       if (!response.ok) {
+        const error = await response.text();
+
         throw new Error(
-          "Backend response: " +
-          response.status
+          "Token request failed: " + error
         );
       }
 
-      const result = await response.json();
+      const data = await response.json();
 
-      if (controller.stopped) {
-        return;
-      }
-
-      const transcript = normalize(
-        result.transcript || ""
-      );
-
-      /*
-        Backend har complete audio chunk ka
-        independent count return karta hai.
-      */
-      const added = Number(result.count) || 0;
-
-      if (transcript) {
-        controller.lastTranscript =
-          (
-            controller.lastTranscript +
-            " " +
-            transcript
-          ).trim();
-
-        emitTranscript(
-          controller.lastTranscript
+      if (!data.token) {
+        throw new Error(
+          "Deepgram token missing."
         );
       }
 
-      if (added > 0) {
-        emitMatch(added);
-      }
+      return data.token;
     }
 
-    async function processQueue() {
-      if (
-        controller.processing ||
-        controller.stopped
-      ) {
-        return;
-      }
-
-      controller.processing = true;
-
-      while (
-        controller.queue.length > 0 &&
-        !controller.stopped
-      ) {
-        const blob =
-          controller.queue.shift();
-
-        try {
-          await uploadAudio(blob);
-        } catch (error) {
-          if (
-            error.name !== "AbortError" &&
-            !controller.stopped
-          ) {
-            reportError(
-              "Single-word voice server could not process audio."
-            );
-          }
-        }
-      }
-
-      controller.processing = false;
-    }
-
-    function queueBlob(blob) {
-      if (
-        controller.stopped ||
-        !blob ||
-        blob.size < 1500
-      ) {
-        return;
-      }
-
-      controller.queue.push(blob);
-      processQueue();
-    }
-
-    function startNewRecorder() {
-      if (
-        controller.stopped ||
-        !controller.stream
-      ) {
-        return;
-      }
-
-      const mimeType =
-        getRecorderMimeType();
+    function startRecorder() {
+      const mimeType = getRecorderMimeType();
 
       try {
         controller.recorder = mimeType
@@ -304,60 +163,69 @@
             );
       } catch (error) {
         reportError(
-          "Audio recording is not supported on this device."
+          "audio-error",
+          "Audio recording is not supported."
         );
 
         return;
       }
 
-      controller.chunks = [];
-
       controller.recorder.ondataavailable =
         event => {
           if (
             event.data &&
-            event.data.size > 0
+            event.data.size > 0 &&
+            controller.socket &&
+            controller.socket.readyState ===
+              WebSocket.OPEN
           ) {
-            controller.chunks.push(
-              event.data
-            );
+            controller.socket.send(event.data);
           }
         };
 
-      controller.recorder.onstop = () => {
-        const mime =
-          controller.recorder &&
-          controller.recorder.mimeType
-            ? controller.recorder.mimeType
-            : "audio/webm";
+      /*
+        Har 250 ms audio Deepgram ko jayega.
+        3-second recording wait nahi hoga.
+      */
+      controller.recorder.start(250);
+    }
 
-        const blob = new Blob(
-          controller.chunks,
-          { type: mime }
-        );
+    function handleDeepgramResult(message) {
+      if (message.type !== "Results") {
+        return;
+      }
 
-        queueBlob(blob);
+      const transcript = normalize(
+        message.channel &&
+        message.channel.alternatives &&
+        message.channel.alternatives[0]
+          ? message.channel.alternatives[0]
+              .transcript
+          : ""
+      );
 
-        if (!controller.stopped) {
-          setTimeout(
-            startNewRecorder,
-            SINGLE_WORD_OVERLAP_MS
-          );
-        }
-      };
+      if (!transcript) {
+        return;
+      }
 
-      controller.recorder.start();
+      emitTranscript(transcript);
 
-      controller.chunkTimer =
-        setTimeout(() => {
-          if (
-            controller.recorder &&
-            controller.recorder.state ===
-              "recording"
-          ) {
-            controller.recorder.stop();
-          }
-        }, SINGLE_WORD_CHUNK_MS);
+      /*
+        Interim result screen par dikhega,
+        count sirf final par hoga.
+      */
+      if (!message.is_final) {
+        return;
+      }
+
+      const added = countMatches(
+        transcript,
+        targetPhrase
+      );
+
+      if (added > 0) {
+        emitMatch(added);
+      }
     }
 
     controller.start = async () => {
@@ -369,64 +237,130 @@
       controller.stopped = false;
 
       try {
-        controller.stream =
-          await navigator.mediaDevices.getUserMedia(
-            {
-              audio: {
-                channelCount: 1,
-                echoCancellation: true,
-                noiseSuppression: true,
-                autoGainControl: true
-              }
+        const token = await getTemporaryToken();
+
+        if (controller.stopped) {
+          return;
+        }
+
+        const params = new URLSearchParams({
+          model: "nova-3",
+          language: language || "en-IN",
+          interim_results: "true",
+          smart_format: "false",
+          punctuate: "false",
+          endpointing: "300",
+          keyterm: targetPhrase
+        });
+
+        controller.socket = new WebSocket(
+          "wss://api.deepgram.com/v1/listen?" +
+            params.toString(),
+          ["token", token]
+        );
+
+        controller.socket.onopen = async () => {
+          if (controller.stopped) {
+            controller.socket.close();
+            return;
+          }
+
+          try {
+            controller.stream =
+              await navigator.mediaDevices.getUserMedia(
+                {
+                  audio: {
+                    channelCount: 1,
+                    echoCancellation: true,
+                    noiseSuppression: true,
+                    autoGainControl: true
+                  }
+                }
+              );
+
+            if (controller.stopped) {
+              controller.stream
+                .getTracks()
+                .forEach(track => track.stop());
+
+              return;
             }
-          );
 
-        if (
-          typeof callbacks.onStart ===
-            "function"
-        ) {
-          callbacks.onStart();
-        }
+            startRecorder();
 
-        startNewRecorder();
-      } catch (error) {
-        controller.stopped = true;
-
-        if (
-          typeof callbacks.onError ===
-            "function"
-        ) {
-          callbacks.onError({
-            error: "not-allowed",
-            message:
+            if (
+              typeof callbacks.onStart ===
+              "function"
+            ) {
+              callbacks.onStart();
+            }
+          } catch (error) {
+            reportError(
+              "not-allowed",
               "Microphone permission was not allowed."
-          });
-        }
+            );
+
+            controller.stop();
+          }
+        };
+
+        controller.socket.onmessage = event => {
+          try {
+            handleDeepgramResult(
+              JSON.parse(event.data)
+            );
+          } catch (error) {
+            console.error(
+              "Deepgram message error:",
+              error
+            );
+          }
+        };
+
+        controller.socket.onerror = () => {
+          if (!controller.stopped) {
+            reportError(
+              "deepgram-error",
+              "Deepgram connection failed."
+            );
+          }
+        };
+
+        controller.socket.onclose = () => {
+          if (
+            !controller.stopped &&
+            typeof callbacks.onEnd ===
+              "function"
+          ) {
+            callbacks.onEnd();
+          }
+        };
+      } catch (error) {
+        controller.started = false;
+
+        reportError(
+          "deepgram-error",
+          error.message ||
+            "Deepgram could not start."
+        );
       }
     };
 
     controller.stop = () => {
-      controller.stopped = true;
-
-      clearTimeout(
-        controller.chunkTimer
-      );
-
-      if (controller.requestController) {
-        controller.requestController.abort();
+      if (controller.stopped) {
+        return;
       }
 
-      controller.queue = [];
+      controller.stopped = true;
 
       if (
         controller.recorder &&
-        controller.recorder.state ===
-          "recording"
+        controller.recorder.state !== "inactive"
       ) {
         try {
           controller.recorder.stop();
         } catch (error) {
-          // Recorder already stopped.
+          // Already stopped.
         }
       }
 
@@ -436,12 +370,31 @@
           .forEach(track => track.stop());
       }
 
-      controller.stream = null;
+      if (
+        controller.socket &&
+        controller.socket.readyState ===
+          WebSocket.OPEN
+      ) {
+        try {
+          controller.socket.send(
+            JSON.stringify({
+              type: "CloseStream"
+            })
+          );
+        } catch (error) {
+          // Socket already closing.
+        }
+
+        controller.socket.close();
+      }
+
       controller.recorder = null;
+      controller.stream = null;
+      controller.socket = null;
 
       if (
         typeof callbacks.onEnd ===
-          "function"
+        "function"
       ) {
         callbacks.onEnd();
       }
@@ -469,8 +422,8 @@
 
     /*
       ANDROID + SINGLE WORD:
-      Browser SpeechRecognition use nahi hoga.
-      Direct mic audio Render/Vosk backend par jayega.
+      Deepgram live streaming.
+      No Vosk, no 3-second chunks.
     */
     if (isAndroid && singleWord) {
       if (
@@ -485,23 +438,22 @@
         activeController.stop();
       }
 
-      const backendController =
-        createSingleWordBackendController(
+      const deepgramController =
+        createDeepgramController(
           language,
           targetPhrase,
           callbacks
         );
 
       activeController =
-        backendController;
+        deepgramController;
 
-      return backendController;
+      return deepgramController;
     }
 
     /*
-      Baaki:
-      iPhone, desktop, aur Android multi-word
-      ka current existing logic same.
+      iPhone, desktop and Android multi-word:
+      Existing browser recognition logic.
     */
     if (!SpeechRecognition) {
       return null;
@@ -514,7 +466,6 @@
     const controller = {
       recognition: null,
       stopped: false,
-      restartTimer: null,
 
       multiWordSeenText: "",
       multiWordCountedText: "",
@@ -535,9 +486,7 @@
       }
     }
 
-    function processMultiWord(
-      currentText
-    ) {
+    function processMultiWord(currentText) {
       const current =
         normalize(currentText);
 
@@ -558,21 +507,19 @@
         previous &&
         current.startsWith(previous)
       ) {
-        newText =
-          current
-            .slice(previous.length)
-            .trim();
+        newText = current
+          .slice(previous.length)
+          .trim();
       }
 
       if (!newText) {
         return;
       }
 
-      const added =
-        countMatches(
-          newText,
-          targetPhrase
-        );
+      const added = countMatches(
+        newText,
+        targetPhrase
+      );
 
       if (added > 0) {
         sendMatch(added);
@@ -594,11 +541,8 @@
         i < event.results.length;
         i++
       ) {
-        const result =
-          event.results[i];
-
-        const alternative =
-          result[0];
+        const result = event.results[i];
+        const alternative = result[0];
 
         if (!alternative) {
           continue;
@@ -629,9 +573,7 @@
       }
 
       if (fullFinalText) {
-        processMultiWord(
-          fullFinalText
-        );
+        processMultiWord(fullFinalText);
       }
 
       const visibleText =
@@ -656,34 +598,31 @@
       const recognition =
         new SpeechRecognition();
 
-      recognition.continuous =
-        !isAndroid;
-
-      recognition.interimResults =
-        true;
-
-      recognition.lang =
-        language;
-
-      recognition.maxAlternatives =
-        1;
+      /*
+        Android multi-word bhi now continuous.
+        Isliye result ke baad mic ko stop/start
+        nahi karna padega.
+      */
+      recognition.continuous = true;
+      recognition.interimResults = true;
+      recognition.lang = language;
+      recognition.maxAlternatives = 1;
 
       recognition.onstart = () => {
         if (
           typeof callbacks.onStart ===
-            "function"
+          "function"
         ) {
           callbacks.onStart();
         }
       };
 
-      recognition.onresult =
-        handleResult;
+      recognition.onresult = handleResult;
 
       recognition.onerror = event => {
         if (
           typeof callbacks.onError ===
-            "function"
+          "function"
         ) {
           callbacks.onError(event);
         }
@@ -693,31 +632,21 @@
           event.error ===
             "service-not-allowed"
         ) {
-          controller.stopped =
-            true;
+          controller.stopped = true;
         }
       };
 
       recognition.onend = () => {
+        /*
+          No Android restart loop.
+          Mic start only Start button,
+          stop only Stop button.
+        */
         if (
           typeof callbacks.onEnd ===
-            "function"
+          "function"
         ) {
           callbacks.onEnd();
-        }
-
-        if (
-          isAndroid &&
-          !controller.stopped
-        ) {
-          clearTimeout(
-            controller.restartTimer
-          );
-
-          controller.restartTimer =
-            setTimeout(() => {
-              startRecognition();
-            }, 350);
         }
       };
 
@@ -737,35 +666,24 @@
       try {
         controller.recognition.start();
       } catch (error) {
-        clearTimeout(
-          controller.restartTimer
+        console.error(
+          "Recognition start error:",
+          error
         );
-
-        controller.restartTimer =
-          setTimeout(() => {
-            startRecognition();
-          }, 600);
       }
     }
 
     controller.start = () => {
       controller.stopped = false;
 
-      controller.multiWordSeenText =
-        "";
-
-      controller.multiWordCountedText =
-        "";
+      controller.multiWordSeenText = "";
+      controller.multiWordCountedText = "";
 
       startRecognition();
     };
 
     controller.stop = () => {
       controller.stopped = true;
-
-      clearTimeout(
-        controller.restartTimer
-      );
 
       const recognition =
         controller.recognition;
