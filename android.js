@@ -185,35 +185,34 @@
       controller.recorder.start(250);
     }
 
-    function handleDeepgramMessage(message) {
-      if (message.type !== "Results") {
-        return;
-      }
+function handleAssemblyMessage(message) {
+  if (message.type !== "Turn") {
+    return;
+  }
 
-      const transcript = normalize(
-        message.channel?.alternatives?.[0]
-          ?.transcript || ""
-      );
+  const transcript = normalize(
+    message.transcript || ""
+  );
 
-      if (!transcript) {
-        return;
-      }
+  if (!transcript) {
+    return;
+  }
 
-      emitTranscript(transcript);
+  emitTranscript(transcript);
 
-      if (!message.is_final) {
-        return;
-      }
+  if (!message.end_of_turn) {
+    return;
+  }
 
-      const added = countMatches(
-        transcript,
-        targetPhrase
-      );
+  const added = countMatches(
+    transcript,
+    targetPhrase
+  );
 
-      if (added > 0) {
-        emitMatch(added);
-      }
-    }
+  if (added > 0) {
+    emitMatch(added);
+  }
+}
 
     controller.start = async () => {
       if (controller.started) {
@@ -233,20 +232,15 @@
 
 const params =
   new URLSearchParams({
-    model: "nova-2",
-    language: "en-IN",
-    interim_results: "true",
-    smart_format: "false",
-    punctuate: "false",
-    endpointing: "150",
-    keywords: targetPhrase + ":8"
+    token,
+    encoding: "opus",
+    format_turns: "true"
   });
 
-        controller.socket = new WebSocket(
-          "wss://api.deepgram.com/v1/listen?" +
-            params.toString(),
-          ["bearer", token]
-        );
+controller.socket = new WebSocket(
+  "wss://streaming.assemblyai.com/v3/ws?" +
+    params.toString()
+);
 
         controller.socket.onopen = async () => {
           try {
@@ -288,7 +282,7 @@ const params =
 
         controller.socket.onmessage = event => {
           try {
-            handleDeepgramMessage(
+            handleAssemblyMessage(
               JSON.parse(event.data)
             );
           } catch (error) {
