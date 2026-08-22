@@ -232,12 +232,15 @@
         }
 
         const params =
-          new URLSearchParams({
-            model: "nova-2",
-            interim_results: "true",
-            smart_format: "false",
-            punctuate: "false"
-          });
+  new URLSearchParams({
+    model: "nova-3",
+    language: "en-IN",
+    interim_results: "true",
+    smart_format: "false",
+    punctuate: "false",
+    endpointing: "300",
+    keyterm: targetPhrase
+  });
 
         controller.socket = new WebSocket(
           "wss://api.deepgram.com/v1/listen?" +
