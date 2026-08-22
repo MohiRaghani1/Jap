@@ -88,12 +88,6 @@ const soundToggle =
 const vibrationToggle =
   document.getElementById("vibrationToggle");
 
-const tapFallback =
-  document.getElementById("tapFallback");
-
-const tapBtn =
-  document.getElementById("tapBtn");
-
 const sessionTimer =
   document.getElementById("sessionTimer");
 
@@ -146,15 +140,13 @@ function getTodayKey() {
   return (
     date.getFullYear() +
     "-" +
-    String(date.getMonth() + 1).padStart(
-      2,
-      "0"
-    ) +
+    String(
+      date.getMonth() + 1
+    ).padStart(2, "0") +
     "-" +
-    String(date.getDate()).padStart(
-      2,
-      "0"
-    )
+    String(
+      date.getDate()
+    ).padStart(2, "0")
   );
 }
 
@@ -254,15 +246,13 @@ function calculateStreak() {
     const key =
       date.getFullYear() +
       "-" +
-      String(date.getMonth() + 1).padStart(
-        2,
-        "0"
-      ) +
+      String(
+        date.getMonth() + 1
+      ).padStart(2, "0") +
       "-" +
-      String(date.getDate()).padStart(
-        2,
-        "0"
-      );
+      String(
+        date.getDate()
+      ).padStart(2, "0");
 
     if (Number(history[key]) > 0) {
       streak++;
@@ -330,15 +320,13 @@ function getWeekData() {
     const key =
       date.getFullYear() +
       "-" +
-      String(date.getMonth() + 1).padStart(
-        2,
-        "0"
-      ) +
+      String(
+        date.getMonth() + 1
+      ).padStart(2, "0") +
       "-" +
-      String(date.getDate()).padStart(
-        2,
-        "0"
-      );
+      String(
+        date.getDate()
+      ).padStart(2, "0");
 
     const value =
       Number(history[key]) || 0;
@@ -732,35 +720,19 @@ function playFeedback() {
   }
 }
 
-function showTapFallback(message) {
-  tapFallback.classList.add(
-    "visible"
-  );
-
-  if (message) {
-    setStatus(message, "error");
-  }
-}
-
-function showPlaceholder() {
-  transcriptBox.innerHTML =
-    '<span class="placeholder">' +
-    "Your latest recognized speech will appear here." +
-    "</span>";
-}
-
 function showUnsupported() {
   supportPill.classList.add(
     "error"
   );
 
   supportText.textContent =
-    "Speech recognition unavailable";
+    "Voice recognition unavailable";
 
   startBtn.disabled = true;
 
-  showTapFallback(
-    "Voice recognition is unavailable. Use Chrome or Edge."
+  setStatus(
+    "Voice recognition unavailable. Open the manual counter below.",
+    "error"
   );
 }
 
@@ -785,7 +757,12 @@ function resetDailyCount() {
 
   updateDailyTools();
   renderHistory();
-  showPlaceholder();
+
+  transcriptBox.innerHTML =
+    '<span class="placeholder">' +
+    "Your latest recognized speech will appear here." +
+    "</span>";
+
   resetSession();
 
   setStatus("Count reset.");
@@ -1004,15 +981,8 @@ function loadSavedSettings() {
 function startVoiceRecognition() {
   updatePhrase();
 
-  tapFallback.classList.remove(
-    "visible"
-  );
-
   if (!window.voiceRecognitionSupported) {
-    showTapFallback(
-      "Use Chrome or Edge browser for voice recognition."
-    );
-
+    showUnsupported();
     return;
   }
 
@@ -1062,13 +1032,6 @@ function startVoiceRecognition() {
             return;
           }
 
-          /*
-           * Android.js se amount direct
-           * latest final result ke basis par
-           * aa raha hai.
-           *
-           * Isko divide ya pair nahi karna.
-           */
           registerCount(amount);
 
           setStatus(
@@ -1086,10 +1049,6 @@ function startVoiceRecognition() {
             return;
           }
 
-          /*
-           * Latest recognized speech
-           * exactly screen par show karo.
-           */
           transcriptBox.textContent =
             text;
         },
@@ -1117,18 +1076,15 @@ function startVoiceRecognition() {
               "error"
             );
 
-            showTapFallback(
-              "Microphone permission was not allowed."
+            setStatus(
+              "Microphone permission was not allowed.",
+              "error"
             );
           } else if (
             event.error === "unsupported"
           ) {
             setListening(false);
-
-            showTapFallback(
-              event.message ||
-                "Speech recognition is unavailable."
-            );
+            showUnsupported();
           } else if (
             event.error === "no-speech"
           ) {
@@ -1156,10 +1112,7 @@ function startVoiceRecognition() {
     );
 
   if (!recognition) {
-    showTapFallback(
-      "Recognition could not be started."
-    );
-
+    showUnsupported();
     return;
   }
 
@@ -1220,18 +1173,6 @@ stopBtn.addEventListener(
 resetBtn.addEventListener(
   "click",
   resetDailyCount
-);
-
-tapBtn.addEventListener(
-  "click",
-  () => {
-    registerCount(1);
-
-    setStatus(
-      "Tap counted. +1",
-      "success"
-    );
-  }
 );
 
 saveTargetBtn.addEventListener(
@@ -1348,6 +1289,24 @@ themeToggle.addEventListener(
 );
 
 window.addEventListener(
+  "storage",
+  event => {
+    if (
+      event.key ===
+      STORAGE_KEYS.history
+    ) {
+      totalCount = getTodayCount();
+
+      countDisplay.textContent =
+        String(totalCount);
+
+      updateDailyTools();
+      renderHistory();
+    }
+  }
+);
+
+window.addEventListener(
   "beforeinstallprompt",
   event => {
     event.preventDefault();
@@ -1380,6 +1339,7 @@ installBtn.addEventListener(
     }
 
     deferredInstallPrompt = null;
+
     installArea.classList.remove(
       "visible"
     );
