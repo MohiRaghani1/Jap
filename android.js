@@ -131,44 +131,34 @@
       );
 
       if (!response.ok) {
-        const error = await response.text();
-
         throw new Error(
-          "Token request failed: " + error
+          await response.text()
         );
       }
 
-      const data = await response.json();
+      const result = await response.json();
 
-      if (!data.token) {
+      if (!result.token) {
         throw new Error(
           "Deepgram token missing."
         );
       }
 
-      return data.token;
+      return result.token;
     }
 
     function startRecorder() {
-      const mimeType = getRecorderMimeType();
+      const mimeType =
+        getRecorderMimeType();
 
-      try {
-        controller.recorder = mimeType
-          ? new MediaRecorder(
-              controller.stream,
-              { mimeType }
-            )
-          : new MediaRecorder(
-              controller.stream
-            );
-      } catch (error) {
-        reportError(
-          "audio-error",
-          "Audio recording is not supported."
-        );
-
-        return;
-      }
+      controller.recorder = mimeType
+        ? new MediaRecorder(
+            controller.stream,
+            { mimeType }
+          )
+        : new MediaRecorder(
+            controller.stream
+          );
 
       controller.recorder.ondataavailable =
         event => {
@@ -183,25 +173,17 @@
           }
         };
 
-      /*
-        Har 250 ms audio Deepgram ko jayega.
-        3-second recording wait nahi hoga.
-      */
       controller.recorder.start(250);
     }
 
-    function handleDeepgramResult(message) {
+    function handleDeepgramMessage(message) {
       if (message.type !== "Results") {
         return;
       }
 
       const transcript = normalize(
-        message.channel &&
-        message.channel.alternatives &&
-        message.channel.alternatives[0]
-          ? message.channel.alternatives[0]
-              .transcript
-          : ""
+        message.channel?.alternatives?.[0]
+          ?.transcript || ""
       );
 
       if (!transcript) {
@@ -210,10 +192,6 @@
 
       emitTranscript(transcript);
 
-      /*
-        Interim result screen par dikhega,
-        count sirf final par hoga.
-      */
       if (!message.is_final) {
         return;
       }
@@ -237,21 +215,23 @@
       controller.stopped = false;
 
       try {
-        const token = await getTemporaryToken();
+        const token =
+          await getTemporaryToken();
 
         if (controller.stopped) {
           return;
         }
 
-        const params = new URLSearchParams({
-          model: "nova-3",
-          language: language || "en-IN",
-          interim_results: "true",
-          smart_format: "false",
-          punctuate: "false",
-          endpointing: "300",
-          keyterm: targetPhrase
-        });
+        const params =
+          new URLSearchParams({
+            model: "nova-3",
+            language: language || "en-IN",
+            interim_results: "true",
+            smart_format: "false",
+            punctuate: "false",
+            endpointing: "300",
+            keyterm: targetPhrase
+          });
 
         controller.socket = new WebSocket(
           "wss://api.deepgram.com/v1/listen?" +
@@ -260,21 +240,11 @@
         );
 
         controller.socket.onopen = async () => {
-          if (controller.stopped) {
-            controller.socket.close();
-            return;
-          }
-
           try {
             controller.stream =
               await navigator.mediaDevices.getUserMedia(
                 {
-                  audio: {
-                    channelCount: 1,
-                    echoCancellation: true,
-                    noiseSuppression: true,
-                    autoGainControl: true
-                  }
+                  audio: true
                 }
               );
 
@@ -299,21 +269,16 @@
               "not-allowed",
               "Microphone permission was not allowed."
             );
-
-            controller.stop();
           }
         };
 
         controller.socket.onmessage = event => {
           try {
-            handleDeepgramResult(
+            handleDeepgramMessage(
               JSON.parse(event.data)
             );
           } catch (error) {
-            console.error(
-              "Deepgram message error:",
-              error
-            );
+            console.error(error);
           }
         };
 
@@ -330,7 +295,7 @@
           if (
             !controller.stopped &&
             typeof callbacks.onEnd ===
-              "function"
+            "function"
           ) {
             callbacks.onEnd();
           }
@@ -341,16 +306,12 @@
         reportError(
           "deepgram-error",
           error.message ||
-            "Deepgram could not start."
+          "Deepgram could not start."
         );
       }
     };
 
     controller.stop = () => {
-      if (controller.stopped) {
-        return;
-      }
-
       controller.stopped = true;
 
       if (
@@ -370,27 +331,13 @@
           .forEach(track => track.stop());
       }
 
-      if (
-        controller.socket &&
-        controller.socket.readyState ===
-          WebSocket.OPEN
-      ) {
+      if (controller.socket) {
         try {
-          controller.socket.send(
-            JSON.stringify({
-              type: "CloseStream"
-            })
-          );
+          controller.socket.close();
         } catch (error) {
-          // Socket already closing.
+          // Already closed.
         }
-
-        controller.socket.close();
       }
-
-      controller.recorder = null;
-      controller.stream = null;
-      controller.socket = null;
 
       if (
         typeof callbacks.onEnd ===
@@ -420,11 +367,6 @@
     const singleWord =
       isSingleWord(targetPhrase);
 
-    /*
-      ANDROID + SINGLE WORD:
-      Deepgram live streaming.
-      No Vosk, no 3-second chunks.
-    */
     if (isAndroid && singleWord) {
       if (
         !navigator.mediaDevices ||
@@ -438,23 +380,18 @@
         activeController.stop();
       }
 
-      const deepgramController =
+      const controller =
         createDeepgramController(
           language,
           targetPhrase,
           callbacks
         );
 
-      activeController =
-        deepgramController;
+      activeController = controller;
 
-      return deepgramController;
+      return controller;
     }
 
-    /*
-      iPhone, desktop and Android multi-word:
-      Existing browser recognition logic.
-    */
     if (!SpeechRecognition) {
       return null;
     }
@@ -466,6 +403,7 @@
     const controller = {
       recognition: null,
       stopped: false,
+      restartTimer: null,
 
       multiWordSeenText: "",
       multiWordCountedText: "",
@@ -480,13 +418,15 @@
       if (
         amount > 0 &&
         typeof callbacks.onMatch ===
-          "function"
+        "function"
       ) {
         callbacks.onMatch(amount);
       }
     }
 
-    function processMultiWord(currentText) {
+    function processMultiWord(
+      currentText
+    ) {
       const current =
         normalize(currentText);
 
@@ -507,9 +447,10 @@
         previous &&
         current.startsWith(previous)
       ) {
-        newText = current
-          .slice(previous.length)
-          .trim();
+        newText =
+          current
+            .slice(previous.length)
+            .trim();
       }
 
       if (!newText) {
@@ -573,7 +514,9 @@
       }
 
       if (fullFinalText) {
-        processMultiWord(fullFinalText);
+        processMultiWord(
+          fullFinalText
+        );
       }
 
       const visibleText =
@@ -586,7 +529,7 @@
       if (
         visibleText &&
         typeof callbacks.onTranscript ===
-          "function"
+        "function"
       ) {
         callbacks.onTranscript(
           visibleText
@@ -598,13 +541,12 @@
       const recognition =
         new SpeechRecognition();
 
-      /*
-        Android multi-word bhi now continuous.
-        Isliye result ke baad mic ko stop/start
-        nahi karna padega.
-      */
-      recognition.continuous = true;
-      recognition.interimResults = true;
+      recognition.continuous =
+        !isAndroid;
+
+      recognition.interimResults =
+        true;
+
       recognition.lang = language;
       recognition.maxAlternatives = 1;
 
@@ -617,7 +559,8 @@
         }
       };
 
-      recognition.onresult = handleResult;
+      recognition.onresult =
+        handleResult;
 
       recognition.onerror = event => {
         if (
@@ -630,23 +573,32 @@
         if (
           event.error === "not-allowed" ||
           event.error ===
-            "service-not-allowed"
+          "service-not-allowed"
         ) {
           controller.stopped = true;
         }
       };
 
       recognition.onend = () => {
-        /*
-          No Android restart loop.
-          Mic start only Start button,
-          stop only Stop button.
-        */
         if (
           typeof callbacks.onEnd ===
           "function"
         ) {
           callbacks.onEnd();
+        }
+
+        if (
+          isAndroid &&
+          !controller.stopped
+        ) {
+          clearTimeout(
+            controller.restartTimer
+          );
+
+          controller.restartTimer =
+            setTimeout(() => {
+              startRecognition();
+            }, 350);
         }
       };
 
@@ -666,24 +618,35 @@
       try {
         controller.recognition.start();
       } catch (error) {
-        console.error(
-          "Recognition start error:",
-          error
+        clearTimeout(
+          controller.restartTimer
         );
+
+        controller.restartTimer =
+          setTimeout(() => {
+            startRecognition();
+          }, 600);
       }
     }
 
     controller.start = () => {
       controller.stopped = false;
 
-      controller.multiWordSeenText = "";
-      controller.multiWordCountedText = "";
+      controller.multiWordSeenText =
+        "";
+
+      controller.multiWordCountedText =
+        "";
 
       startRecognition();
     };
 
     controller.stop = () => {
       controller.stopped = true;
+
+      clearTimeout(
+        controller.restartTimer
+      );
 
       const recognition =
         controller.recognition;
