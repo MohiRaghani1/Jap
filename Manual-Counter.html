@@ -1,32 +1,32 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
 
   <meta
     name="viewport"
     content="width=device-width, initial-scale=1"
-  />
+  >
 
   <meta
     name="description"
     content="Manual Naam Jap Counter for daily mantra and Naam Simran practice."
-  />
+  >
 
-  <meta name="robots" content="index, follow" />
+  <meta name="robots" content="index, follow">
 
-  <meta name="theme-color" content="#102a43" />
+  <meta name="theme-color" content="#102a43">
 
   <link
     rel="canonical"
     href="https://mohiraghani1.github.io/Jap/Manual-Counter.html"
-  />
+  >
 
   <link
     rel="icon"
     type="image/svg+xml"
     href="./icon-192.svg"
-  />
+  >
 
   <title>
     Manual Jap Counter | Naam Jap Voice Counter
@@ -65,6 +65,10 @@
       box-sizing: border-box;
       margin: 0;
       padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
     }
 
     body {
@@ -130,7 +134,7 @@
     }
 
     .theme-btn {
-      min-height: 40px;
+      min-height: 44px;
       padding: 8px 12px;
       border: 1px solid var(--border);
       border-radius: 999px;
@@ -150,6 +154,8 @@
     }
 
     .main-nav a {
+      display: inline-flex;
+      align-items: center;
       min-height: 40px;
       padding: 7px 12px;
       border-radius: 999px;
@@ -518,6 +524,8 @@
     }
 
     .footer-links a {
+      min-height: 40px;
+      padding: 7px 4px;
       text-decoration: none;
     }
 
@@ -592,7 +600,7 @@
     <div class="header-inner">
       <a
         class="brand"
-        href="index.html">
+        href="https://mohiraghani1.github.io/Jap/">
 
         <span class="brand-name">
           Naam Jap Voice Counter
@@ -617,25 +625,27 @@
     class="main-nav"
     aria-label="Main navigation">
 
-    <a href="index.html">
+    <a
+      href="https://mohiraghani1.github.io/Jap/">
       Home
     </a>
 
     <a
       class="active"
-      href="Manual-Counter.html">
+      href="https://mohiraghani1.github.io/Jap/Manual-Counter.html">
       Manual Counter
     </a>
 
-    <a href="index.html#how-it-works">
+    <a
+      href="https://mohiraghani1.github.io/Jap/#how-it-works">
       How It Works
     </a>
 
-    <a href="guides.html">
+    <a href="./guides.html">
       Guides
     </a>
 
-    <a href="about.html">
+    <a href="./about.html">
       About
     </a>
   </nav>
@@ -660,7 +670,6 @@
         <span class="hero-note">
           Calm interface. Clear count. No distractions.
         </span>
-
       </div>
     </section>
 
@@ -855,12 +864,33 @@
     </div>
 
     <div class="footer-links">
-      <a href="index.html">Home</a>
-      <a href="guides.html">Guides</a>
-      <a href="about.html">About</a>
-      <a href="privacy.html">Privacy</a>
-      <a href="terms.html">Terms</a>
-      <a href="contact.html">Contact</a>
+      <a href="https://mohiraghani1.github.io/Jap/">
+        Home
+      </a>
+
+      <a href="https://mohiraghani1.github.io/Jap/Manual-Counter.html">
+        Manual Counter
+      </a>
+
+      <a href="./guides.html">
+        Guides
+      </a>
+
+      <a href="./about.html">
+        About
+      </a>
+
+      <a href="./privacy.html">
+        Privacy
+      </a>
+
+      <a href="./terms.html">
+        Terms
+      </a>
+
+      <a href="./contact.html">
+        Contact
+      </a>
     </div>
 
     <div class="footer-text">
@@ -951,10 +981,15 @@
     }
 
     function saveHistory(history) {
-      localStorage.setItem(
-        HISTORY_KEY,
-        JSON.stringify(history)
-      );
+      try {
+        localStorage.setItem(
+          HISTORY_KEY,
+          JSON.stringify(history)
+        );
+      } catch (error) {
+        feedbackElement.textContent =
+          "Count save nahi ho paaya.";
+      }
     }
 
     function getTodayTotal() {
@@ -1097,7 +1132,9 @@
 
       localStorage.setItem(
         THEME_KEY,
-        isdark ? "dark" : "light"
+        isDark
+          ? "dark"
+          : "light"
       );
 
       themeButton.textContent =
