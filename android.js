@@ -5,9 +5,6 @@
     window.SpeechRecognition ||
     window.webkitSpeechRecognition;
 
-  const RENDER_URL =
-    "https://naam-jap-vosk.onrender.com";
-
   let activeController = null;
 
   function normalize(text) {
@@ -58,35 +55,17 @@
       : 0;
   }
 
-  function getRecorderMimeType() {
-    const options = [
-      "audio/webm;codecs=opus",
-      "audio/webm",
-      "audio/ogg;codecs=opus",
-      "audio/mp4"
-    ];
-
-    for (const type of options) {
-      if (
-        window.MediaRecorder &&
-        MediaRecorder.isTypeSupported(type)
-      ) {
-        return type;
-      }
-    }
-
-    return "";
-  }
-
-  function createAssemblyAIController(
+  // --- NAYA VOSK CONTROLLER (Offline, Bina Render Server) ---
+  function createVoskController(
     language,
     targetPhrase,
     callbacks
   ) {
     const controller = {
       stream: null,
-      recorder: null,
-      socket: null,
+      audioContext: null,
+      processor: null,
+      recognizer: null,
       stopped: false,
       started: false,
       start: null,
@@ -125,95 +104,6 @@
       }
     }
 
-    async function getTemporaryToken() {
-      const response = await fetch(
-        RENDER_URL + "/assemblyai-token"
-      );
-
-      if (!response.ok) {
-        throw new Error(
-          await response.text()
-        );
-      }
-
-      const result = await response.json();
-
-      if (!result.token) {
-        throw new Error(
-          "AssemblyAI token missing."
-        );
-      }
-
-      return result.token;
-    }
-
-    function startRecorder() {
-      const mimeType =
-        getRecorderMimeType();
-
-      try {
-        controller.recorder = mimeType
-          ? new MediaRecorder(
-              controller.stream,
-              { mimeType }
-            )
-          : new MediaRecorder(
-              controller.stream
-            );
-      } catch (error) {
-        reportError(
-          "audio-error",
-          "Audio recording is not supported."
-        );
-
-        return;
-      }
-
-      controller.recorder.ondataavailable =
-        event => {
-          if (
-            event.data &&
-            event.data.size > 0 &&
-            controller.socket &&
-            controller.socket.readyState ===
-              WebSocket.OPEN
-          ) {
-            controller.socket.send(event.data);
-          }
-        };
-
-      controller.recorder.start(250);
-    }
-
-function handleAssemblyMessage(message) {
-  if (message.type !== "Turn") {
-    return;
-  }
-
-  const transcript = normalize(
-    message.transcript || ""
-  );
-
-  if (!transcript) {
-    return;
-  }
-
-  emitTranscript(transcript);
-
-  if (!message.end_of_turn) {
-    return;
-  }
-
-  const added = countMatches(
-    transcript,
-    targetPhrase
-  );
-
-  if (added > 0) {
-    emitMatch(added);
-  }
-}
-
     controller.start = async () => {
       if (controller.started) {
         return;
@@ -223,120 +113,84 @@ function handleAssemblyMessage(message) {
       controller.stopped = false;
 
       try {
-        const token =
-          await getTemporaryToken();
+        if (!window.Vosk) {
+          throw new Error("Vosk library not found. HTML me script lagao.");
+        }
+
+        // 1. Mic permission le rahe hain
+        controller.stream = await navigator.mediaDevices.getUserMedia({
+          audio: {
+            channelCount: 1,
+            echoCancellation: true,
+            noiseSuppression: true,
+            sampleRate: 16000 // Vosk ko 16000hz chahiye
+          }
+        });
 
         if (controller.stopped) {
+          controller.stream.getTracks().forEach(track => track.stop());
           return;
         }
 
-const params =
-  new URLSearchParams({
-    token,
-    encoding: "opus",
-    format_turns: "true"
-  });
+        // 2. Vosk Model Load kar rahe hain (model.tar.gz aapke server par hona chahiye)
+        const modelUrl = "model.tar.gz"; 
+        const model = await window.Vosk.createModel(modelUrl);
 
-controller.socket = new WebSocket(
-  "wss://streaming.assemblyai.com/v3/ws?" +
-    params.toString()
-);
+        if (controller.stopped) {
+          model.free();
+          return;
+        }
 
-        controller.socket.onopen = async () => {
+        controller.recognizer = new model.KaldiRecognizer(16000);
+
+        if (typeof callbacks.onStart === "function") {
+          callbacks.onStart();
+        }
+
+        // 3. Audio ko process kar rahe hain
+        controller.audioContext = new AudioContext({ sampleRate: 16000 });
+        const source = controller.audioContext.createMediaStreamSource(controller.stream);
+        controller.processor = controller.audioContext.createScriptProcessor(4096, 1, 1);
+
+        controller.processor.onaudioprocess = (event) => {
+          if (controller.stopped) return;
+
           try {
-            controller.stream =
-              await navigator.mediaDevices.getUserMedia(
-                {
-                  audio: {
-                    channelCount: 1,
-                    echoCancellation: true,
-                    noiseSuppression: true,
-                    autoGainControl: true
-                  }
+            const audioData = event.inputBuffer.getChannelData(0);
+            const isFinal = controller.recognizer.acceptWaveform(audioData);
+
+            let transcript = "";
+
+            if (isFinal) {
+              transcript = normalize(controller.recognizer.result().text);
+            } else {
+              transcript = normalize(controller.recognizer.partialResult().partial);
+            }
+
+            if (transcript) {
+              emitTranscript(transcript);
+
+              // Agar word poora ho gaya toh target word se match karenge
+              if (isFinal) {
+                const added = countMatches(transcript, targetPhrase);
+                if (added > 0) {
+                  emitMatch(added);
                 }
-              );
-
-            if (controller.stopped) {
-              controller.stream
-                .getTracks()
-                .forEach(track => track.stop());
-
-              return;
+              }
             }
-
-            startRecorder();
-
-            if (
-              typeof callbacks.onStart ===
-                "function"
-            ) {
-              callbacks.onStart();
-            }
-          } catch (error) {
-            reportError(
-              "not-allowed",
-              "Microphone permission was not allowed."
-            );
+          } catch (err) {
+            console.error("Vosk processing error:", err);
           }
         };
 
-        controller.socket.onmessage = event => {
-          try {
-            handleAssemblyMessage(
-              JSON.parse(event.data)
-            );
-          } catch (error) {
-            console.error(
-              "AssemblyAI message error:",
-              error
-            );
-          }
-        };
+        source.connect(controller.processor);
+        controller.processor.connect(controller.audioContext.destination);
 
-        controller.socket.onerror = () => {
-  if (!controller.stopped) {
-    reportError(
-      "assemblyai-error",
-      "AssemblyAI connection failed."
-    );
-  }
-};
-
-        controller.socket.onclose = event => {
-  console.log(
-    "AssemblyAI closed:",
-    event.code,
-    event.reason
-  );
-
-  if (!controller.stopped) {
-    reportError(
-      "assemblyai-error",
-      "AssemblyAI closed: " +
-        event.code +
-        (
-          event.reason
-            ? " - " + event.reason
-            : ""
-        )
-    );
-  }
-
-  if (
-    !controller.stopped &&
-    typeof callbacks.onEnd ===
-      "function"
-  ) {
-    callbacks.onEnd();
-  }
-};
       } catch (error) {
         controller.started = false;
-
         reportError(
-          "assemblyai-error",
-          error.message ||
-            "AssemblyAI could not start."
+          "vosk-error",
+          error.message || "Vosk start nahi ho paya."
         );
       }
     };
@@ -344,35 +198,20 @@ controller.socket = new WebSocket(
     controller.stop = () => {
       controller.stopped = true;
 
-      if (
-        controller.recorder &&
-        controller.recorder.state !== "inactive"
-      ) {
-        try {
-          controller.recorder.stop();
-        } catch (error) {
-          // Already stopped.
-        }
+      if (controller.processor) {
+        try { controller.processor.disconnect(); } catch (e) {}
       }
-
+      if (controller.audioContext) {
+        try { controller.audioContext.close(); } catch (e) {}
+      }
       if (controller.stream) {
-        controller.stream
-          .getTracks()
-          .forEach(track => track.stop());
+        controller.stream.getTracks().forEach(track => track.stop());
+      }
+      if (controller.recognizer) {
+        try { controller.recognizer.free(); } catch (e) {}
       }
 
-      if (controller.socket) {
-        try {
-          controller.socket.close();
-        } catch (error) {
-          // Already closed.
-        }
-      }
-
-      if (
-        typeof callbacks.onEnd ===
-          "function"
-      ) {
+      if (typeof callbacks.onEnd === "function") {
         callbacks.onEnd();
       }
 
@@ -398,14 +237,12 @@ controller.socket = new WebSocket(
       isSingleWord(targetPhrase);
 
     /*
-      Android single-word:
-      AssemblyAI live streaming.
+      Android single-word ab Vosk par chalega!
     */
     if (isAndroid && singleWord) {
       if (
         !navigator.mediaDevices ||
-        !navigator.mediaDevices.getUserMedia ||
-        !window.MediaRecorder
+        !navigator.mediaDevices.getUserMedia
       ) {
         return null;
       }
@@ -415,7 +252,7 @@ controller.socket = new WebSocket(
       }
 
       const controller =
-        createAssemblyAIController(
+        createVoskController(
           language,
           targetPhrase,
           callbacks
@@ -577,10 +414,6 @@ controller.socket = new WebSocket(
       const recognition =
         new SpeechRecognition();
 
-      /*
-        OLD MULTI-WORD SETTINGS:
-        Android false, others true.
-      */
       recognition.continuous =
         !isAndroid;
 
@@ -627,10 +460,6 @@ controller.socket = new WebSocket(
           callbacks.onEnd();
         }
 
-        /*
-          OLD ANDROID MULTI-WORD RESTART:
-          exactly 350ms.
-        */
         if (
           isAndroid &&
           !controller.stopped
@@ -725,8 +554,7 @@ controller.socket = new WebSocket(
       SpeechRecognition ||
       (
         navigator.mediaDevices &&
-        navigator.mediaDevices.getUserMedia &&
-        window.MediaRecorder
+        navigator.mediaDevices.getUserMedia
       )
     );
 })();
