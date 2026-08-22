@@ -127,7 +127,7 @@
 
     async function getTemporaryToken() {
       const response = await fetch(
-        RENDER_URL + "/deepgram-token"
+        RENDER_URL + "/assemblyai-token"
       );
 
       if (!response.ok) {
