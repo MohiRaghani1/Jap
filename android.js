@@ -123,7 +123,7 @@
             channelCount: 1,
             echoCancellation: true,
             noiseSuppression: true,
-            sampleRate: 16000 // Vosk ko 16000hz chahiye
+            sampleRate: 16000
           }
         });
 
@@ -132,13 +132,14 @@
           return;
         }
 
-        // 2. Vosk Model Load kar rahe hain (language ke hisaab se)
+        // 2. Language ke hisaab se sahi zip file uthayega
         let modelUrl = "en-us.zip";
         if (language === "hi-IN") {
           modelUrl = "hi.zip";
         } else if (language === "en-IN") {
           modelUrl = "en-in.zip";
         }
+
         const model = await window.Vosk.createModel(modelUrl);
 
         if (controller.stopped) {
@@ -175,7 +176,6 @@
             if (transcript) {
               emitTranscript(transcript);
 
-              // Agar word poora ho gaya toh target word se match karenge
               if (isFinal) {
                 const added = countMatches(transcript, targetPhrase);
                 if (added > 0) {
@@ -241,9 +241,6 @@
     const singleWord =
       isSingleWord(targetPhrase);
 
-    /*
-      Android single-word ab Vosk par chalega!
-    */
     if (isAndroid && singleWord) {
       if (
         !navigator.mediaDevices ||
@@ -268,10 +265,6 @@
       return controller;
     }
 
-    /*
-      Multi-word:
-      Old working Web Speech behavior unchanged.
-    */
     if (!SpeechRecognition) {
       return null;
     }
