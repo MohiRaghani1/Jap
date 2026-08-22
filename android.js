@@ -78,7 +78,7 @@
     return "";
   }
 
-  function createDeepgramController(
+  function createAssemblyAIController(
     language,
     targetPhrase,
     callbacks
@@ -140,7 +140,7 @@
 
       if (!result.token) {
         throw new Error(
-          "Deepgram token missing."
+          "AssemblyAI token missing."
         );
       }
 
@@ -287,7 +287,7 @@ controller.socket = new WebSocket(
             );
           } catch (error) {
             console.error(
-              "Deepgram message error:",
+              "AssemblyAI message error:",
               error
             );
           }
@@ -334,9 +334,9 @@ controller.socket = new WebSocket(
         controller.started = false;
 
         reportError(
-          "deepgram-error",
+          "assemblyai-error",
           error.message ||
-            "Deepgram could not start."
+            "AssemblyAI could not start."
         );
       }
     };
@@ -399,7 +399,7 @@ controller.socket = new WebSocket(
 
     /*
       Android single-word:
-      Deepgram live streaming.
+      AssemblyAI live streaming.
     */
     if (isAndroid && singleWord) {
       if (
@@ -415,7 +415,7 @@ controller.socket = new WebSocket(
       }
 
       const controller =
-        createDeepgramController(
+        createAssemblyAIController(
           language,
           targetPhrase,
           callbacks
